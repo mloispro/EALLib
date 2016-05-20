@@ -7,8 +7,8 @@ using namespace Controllers;
 
 //LCDMenuController::LCDMenuController()
 //{
-//	_lcd(8, 13, 9, 4, 5, 6, 7);
-//	CreateMenus();
+	//_lcd(8, 13, 9, 4, 5, 6, 7);
+	//CreateMenus();
 //}
 void LCDMenuController::Init(){
 	RTCExt::Init();

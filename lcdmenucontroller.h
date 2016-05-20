@@ -16,7 +16,7 @@ using namespace std;
 #include <LiquidCrystal.h>
 
 #include "SerialExt.h"
-#include <LCDMenu.h>
+#include "LCDMenu.h"
 #include "DigitalTime.h"
 #include "RTCExt.h"
 using namespace Utils;
@@ -70,6 +70,37 @@ namespace Controllers {
 		//--key press
 		int _keyValues[5] = { 50, 200, 400, 600, 800 };
 		short _numOfKeys = 5;
+
+		LiquidCrystal _lcd;
+		//LiquidCrystal* _lcd = new LiquidCrystal(8, 9, 4, 5, 6, 7);
+	
+	public:
+		int _optionCount;
+
+		LCDMenuController() :_lcd(8, 9, 4, 5, 6, 7){};
+		//LCDMenuController();
+		//LCDMenuController(LiquidCrystal lcd):_lcd(lcd){};
+
+		void Init();
+
+		String GetRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
+		void SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
+
+		int GetKey();
+		void SelectMainMenu();
+		void ExitMainMenu();
+
+		void PrintRunInfo(String lablel, AccessoryType accType);
+		void PrintTime();
+		void Scroll();
+
+		String GetTimeFrequency(AccessoryType accType);
+		String GetTimeLong(AccessoryType accType);
+
+		void SetShakesOrTurns(AccessoryType accType, short shakesOrTurns);
+		int GetShakesOrTurns(AccessoryType accType);
+
+	private:
 		int GetKeyFromVal(unsigned int input);
 		void NextOption();
 		void PreviousOption();
@@ -93,34 +124,6 @@ namespace Controllers {
 		String GetOptionAsNumber(String defaultNumber);
 
 		void PrintInstructions();
-
-		LiquidCrystal _lcd;
-		//LiquidCrystal* _lcd = new LiquidCrystal(8, 9, 4, 5, 6, 7);
-	
-	public:
-		int _optionCount;
-
-		LCDMenuController() :_lcd(8, 9, 4, 5, 6, 7){}
-		//LCDMenuController();
-
-		void Init();
-
-		String GetRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
-		void SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
-
-		int GetKey();
-		void SelectMainMenu();
-		void ExitMainMenu();
-
-		void PrintRunInfo(String lablel, AccessoryType accType);
-		void PrintTime();
-		void Scroll();
-
-		String GetTimeFrequency(AccessoryType accType);
-		String GetTimeLong(AccessoryType accType);
-
-		void SetShakesOrTurns(AccessoryType accType, short shakesOrTurns);
-		int GetShakesOrTurns(AccessoryType accType);
 	};
 }
 
