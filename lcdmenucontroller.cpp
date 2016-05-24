@@ -11,6 +11,7 @@ using namespace Controllers;
 	//CreateMenus();
 //}
 void LCDMenuController::Init(){
+	pinMode(10, INPUT);
 	RTCExt::Init();
 	_lcd.begin(16, 2);
 	_lcd.clear();
