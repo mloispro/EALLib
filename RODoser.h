@@ -8,8 +8,8 @@
 #include "Servo.h"
 #include "ServoMotor.h"
 
-#include "StandardCplusplus.h"
-#include "vector"
+//#include "StandardCplusplus.h"
+#include <vector>
 
 #include "SerialExt.h"
 #include "AnalogSwitch.h"
@@ -19,14 +19,14 @@ using namespace std;
 
 
 class RODoser : public ServoMotor {
-private:
+  private:
 
-public:
-	RODoser(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds, AnalogSwitch theSwitch);
-	RODoser(Servo servo, int pin, int shakes, long runEverySeconds, AnalogSwitch theSwitch);
-	RODoser();
-	static void RunDemo(vector<RODoser> dosers);
-	void Dose();
+  public:
+    RODoser(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds, AnalogSwitch theSwitch);
+    RODoser(Servo servo, int pin, int shakes, long runEverySeconds, AnalogSwitch theSwitch);
+    RODoser();
+    static void RunDemo(vector<RODoser> dosers);
+    void Dose();
 };
 
 //vector<RODoser> RODoser::Feeders;

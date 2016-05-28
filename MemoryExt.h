@@ -3,9 +3,10 @@
 #ifndef EEPROMMEM_h
 #define EEPROMMEM_h
 
+#include <Arduino.h>
 
-#include <StandardCplusplus.h>
-#include <string>
+//#include <StandardCplusplus.h>
+//#include <string>
 #include <vector>
 using namespace std;
 
@@ -20,138 +21,137 @@ using namespace std;
 //#include "RTCExt.h"
 using namespace Utils;
 
-namespace Models{
+namespace Models {
 
-	struct NextRunMemory{
-		 int AccType = 0; //id
-		 long LastRun = 0;
-		 long NextRun = 0;
-		 long CountDown = 0;
-		 long RunEvery = 0;
-		 short ShakesOrTurns = 0;
-		 long LastSave = 0;
-	};
-	struct MemAddress{
-		 int AccType; //id
-		 int Index;
-	};
+    struct NextRunMemory {
+        short Pin = -1;
+        int AccType = 0; //id
+        long LastRun = 0;
+        long NextRun = 0;
+        long CountDown = 0;
+        long RunEvery = 0;
+        short ShakesOrTurns = 0;
+        long LastSave = 0;
+    };
+    struct MemAddress {
+        int Pin; //id
+        int Index;
+    };
 }
-namespace Utils{
-	using namespace Models;
+namespace Utils {
+    using namespace Models;
 
-	namespace MemoryExt{
-		static vector<MemAddress> _memAddresses;
+    namespace MemoryExt {
+        static vector<MemAddress> _memAddresses;
 
-		template<typename T = String, typename M = NextRunMemory>
-		void PrintNextRunMemory(T&& label, M&& mem)
-		{
-			SerialExt::Debug(F("mem"), label);
-			SerialExt::Debug(F("AccType"), mem.AccType);
-			SerialExt::Debug(F("CountDown"), mem.CountDown);
-			SerialExt::Debug(F("LastRun"), mem.LastRun);
-			SerialExt::Debug(F("LastSave"), mem.LastSave);
-			SerialExt::Debug(F("NextRun"), mem.NextRun);
-			SerialExt::Debug(F("RunEvery"), mem.RunEvery);
-			SerialExt::Debug(F("ShakesOrTurns"), mem.ShakesOrTurns);
-		}
+        template<typename T = String, typename M = NextRunMemory>
+        void PrintNextRunMemory(T && label, M && mem) {
+            SerialExt::Debug(F("mem"), label);
+            SerialExt::Debug(F("Pin"), mem.Pin);
+            SerialExt::Debug(F("AccType"), mem.AccType);
+            SerialExt::Debug(F("CountDown"), mem.CountDown);
+            SerialExt::Debug(F("LastRun"), mem.LastRun);
+            SerialExt::Debug(F("LastSave"), mem.LastSave);
+            SerialExt::Debug(F("NextRun"), mem.NextRun);
+            SerialExt::Debug(F("RunEvery"), mem.RunEvery);
+            SerialExt::Debug(F("ShakesOrTurns"), mem.ShakesOrTurns);
+        }
 
-		template<typename T>
-		int GetUpdateIndex(T&& mem){
+        template<typename T>
+        int GetUpdateIndex(T&& mem) {
 
-			int index = 0;
-			int memSize = sizeof(NextRunMemory);
+            int index = 0;
+            int memSize = sizeof(NextRunMemory);
 
-			if (_memAddresses.size() <= 0)
-				_memAddresses.push_back(MemAddress{ mem.AccType, memSize });
+            if(_memAddresses.size() <= 0)
+                _memAddresses.push_back(MemAddress{ mem.Pin, memSize });
 
-			//auto& memAddress = _memAddresses[0];
-			bool foundMem = false;
-			int agregateMemSize = 0;
-			for (auto& memAddr : _memAddresses)
-			{
-				agregateMemSize += memAddr.Index; //totals incase we have to add a new one
-				if (memAddr.AccType == mem.AccType){
-					index = memAddr.Index - memSize;
-					foundMem = true;
-					break;
-				}
-			}
+            //auto& memAddress = _memAddresses[0];
+            bool foundMem = false;
+            int agregateMemSize = 0;
+            for(auto& memAddr : _memAddresses) {
+                agregateMemSize += memAddr.Index; //totals incase we have to add a new one
+                if(memAddr.Pin == mem.Pin) {
+                    index = memAddr.Index - memSize;
+                    foundMem = true;
+                    break;
+                }
+            }
 
-			if (!foundMem){ //if added, dont re-add
-				agregateMemSize += memSize;
-				_memAddresses.push_back(MemAddress{ mem.AccType, agregateMemSize });
-				index = agregateMemSize;
-			}
+            if(!foundMem) { //if added, dont re-add
+                agregateMemSize += memSize;
+                _memAddresses.push_back(MemAddress{ mem.Pin, agregateMemSize });
+                index = agregateMemSize;
+            }
 
-			return index;
+            return index;
 
-		}
+        }
 
-		template<typename T>
-		T& SaveNextRunMem(T&& mem){
-			SerialExt::Debug("--SaveNextRunMem--");
+        template<typename T>
+        T& SaveNextRunMem(T&& mem) {
+            SerialExt::Debug("--SaveNextRunMem--");
 
-			int index = GetUpdateIndex(mem);
-			mem.LastSave = now();
+            int index = GetUpdateIndex(mem);
+            mem.LastSave = now();
 
-			EEPROM.put(index, mem);
+            EEPROM.put(index, mem);
 
-			delay(200); //wait for save to complete
+            delay(200); //wait for save to complete
 
-			PrintNextRunMemory("eEEPROMmem_Save", mem);
+            PrintNextRunMemory("eEEPROMmem_Save", mem);
 
-			return mem;
-		}
-		template<typename T>
-		T& GetNextRunMem(T&& mem){
-			T t(mem);
+            return mem;
+        }
+        template<typename T>
+        T& GetNextRunMem(T&& mem) {
+            T t(mem);
 
-			SerialExt::Debug("--GetNextRunMem--");
+            SerialExt::Debug("--GetNextRunMem--");
 
-			int index = GetUpdateIndex(mem); //Move address to the next byte.
+            int index = GetUpdateIndex(mem); //Move address to the next byte.
 
-			NextRunMemory eEEPROMmem; //Variable to store custom object read from EEPROM.
-			EEPROM.get(index, eEEPROMmem);
+            NextRunMemory eEEPROMmem; //Variable to store custom object read from EEPROM.
+            EEPROM.get(index, eEEPROMmem);
 
-			PrintNextRunMemory("eEEPROMmem_Get", eEEPROMmem);
+            PrintNextRunMemory("eEEPROMmem_Get", eEEPROMmem);
 
-			return eEEPROMmem;
-		}
+            return eEEPROMmem;
+        }
 
-		
 
-		//retuns first if none have been saved.
-		//MemAddress& MemoryController::FindAddress(AccessoryType accType){
-		//	
-		//	if (_memAddresses.size() <= 0)
-		//		_memAddresses.push_back(MemAddress{ accType, 0 });
-		//
-		//	auto& memAddress = _memAddresses[0];
-		//	for (auto& mem : _memAddresses)
-		//	{
-		//		if (mem.AccType == accType)
-		//			return mem;
-		//	}
-		//
-		//	return memAddress;
-		//}
 
-		
-		template<typename T>
-		extern void PrintFreeMemory(T&& text)
-		{
-			T t(text);
+        //retuns first if none have been saved.
+        //MemAddress& MemoryController::FindAddress(AccessoryType accType){
+        //
+        //	if (_memAddresses.size() <= 0)
+        //		_memAddresses.push_back(MemAddress{ accType, 0 });
+        //
+        //	auto& memAddress = _memAddresses[0];
+        //	for (auto& mem : _memAddresses)
+        //	{
+        //		if (mem.AccType == accType)
+        //			return mem;
+        //	}
+        //
+        //	return memAddress;
+        //}
 
-			String msg = String(" - ") + text;
-			int mem = freeMemory();
-			Serial.print(msg);
-			Serial.print(F("Free Mem : "));
-			Serial.println(mem);
 
-		}
+        template<typename T>
+        extern void PrintFreeMemory(T&& text) {
+            T t(text);
 
-		
-	}
+            String msg = String(" - ") + text;
+            int mem = freeMemory();
+            Serial.print(msg);
+            Serial.print(F("Free Mem : "));
+            Serial.println(mem);
+
+        }
+
+
+    }
 
 }
 

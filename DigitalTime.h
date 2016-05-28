@@ -5,8 +5,8 @@
 
 #include <Arduino.h>
 
-#include <StandardCplusplus.h>
-#include <string>
+//#include <StandardCplusplus.h>
+//#include <string>
 //#include <vector>
 
 #include <Wire.h>
@@ -22,164 +22,161 @@ using namespace std;
 
 namespace Models {
 
-	//template<class T>
-	class DigitalTime{
+    //template<class T>
+    class DigitalTime {
 
-	public:
-		int Hours;
-		int Minutes;
-		int Seconds;
-		
-		DigitalTime(int hours, int minutes, int seconds) : Hours(hours), Minutes(minutes), Seconds(seconds){}
-	};
+      public:
+        int Hours;
+        int Minutes;
+        int Seconds;
+
+        DigitalTime(int hours, int minutes, int seconds) : Hours(hours), Minutes(minutes), Seconds(seconds) {}
+    };
 }
 
-namespace TimeHelpers{
-	using namespace Models;
+namespace TimeHelpers {
+    using namespace Models;
 
-	template<typename H = int, typename M = int, typename S = int, typename I = bool>
-	String FormatDigialTime(H&& hours, M&& minutes, S&& seconds, I&& includeSeconds)
-	{
+    template<typename H = int, typename M = int, typename S = int, typename I = bool>
+    String FormatDigialTime(H && hours, M && minutes, S && seconds, I && includeSeconds) {
 
-		String hourString = String(hours);
-		if (hours < 10)
-			hourString = "0" + hourString;
-		String minString = String(minutes);
-		if (minutes < 10)
-			minString = "0" + minString;
-	
-		String timeString = hourString + ":";
-		timeString += minString; //+":";
-		
-		if (includeSeconds){
-			String secString = String(seconds);
-			if (seconds < 10)
-				secString = "0" + secString;
-			timeString = timeString + ":" + secString;
-		}
+        String hourString = String(hours);
+        if(hours < 10)
+            hourString = "0" + hourString;
+        String minString = String(minutes);
+        if(minutes < 10)
+            minString = "0" + minString;
 
-		return timeString;
-	}
+        String timeString = hourString + ":";
+        timeString += minString; //+":";
 
-	template<typename T = DigitalTime>
-	String FormatDigialTime(T&& time){
+        if(includeSeconds) {
+            String secString = String(seconds);
+            if(seconds < 10)
+                secString = "0" + secString;
+            timeString = timeString + ":" + secString;
+        }
 
-		String timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, false);
+        return timeString;
+    }
 
-		return timeString;
-	}
-	template<typename T = time_t>
-	DigitalTime GetDigitalTime(T&& seconds){
+    template<typename T = DigitalTime>
+    String FormatDigialTime(T && time) {
 
-		int h, m, s;
-		s = second(seconds); //seconds;
-		m = minute(seconds);
-		h = hourFormat12(seconds);
+        String timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, false);
 
-		DigitalTime time = DigitalTime(h, m, s);
+        return timeString;
+    }
+    template<typename T = time_t>
+    DigitalTime GetDigitalTime(T && seconds) {
 
-		return time;
-	}
-	template<typename T = time_t>
-	String GetDigitalTimeString(T&& seconds){
-	
-		DigitalTime time = GetDigitalTime(seconds);
+        int h, m, s;
+        s = second(seconds); //seconds;
+        m = minute(seconds);
+        h = hourFormat12(seconds);
 
-		String runTime = FormatDigialTime(time);
-		return runTime;
-	}
+        DigitalTime time = DigitalTime(h, m, s);
 
-	template<typename T = time_t, typename I = bool>
-	String GetTimeString(T&& seconds, I&& includeSeconds){
-		
+        return time;
+    }
+    template<typename T = time_t>
+    String GetDigitalTimeString(T && seconds) {
 
-		DigitalTime time = GetDigitalTime(seconds);
+        DigitalTime time = GetDigitalTime(seconds);
 
-		String runTime = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, includeSeconds);
-		return runTime;
-	}
+        String runTime = FormatDigialTime(time);
+        return runTime;
+    }
 
-	template<typename T = time_t>
-	String GetMonthAndDateString(T&& seconds){
+    template<typename T = time_t, typename I = bool>
+    String GetTimeString(T && seconds, I && includeSeconds) {
 
 
-		String theDate;
+        DigitalTime time = GetDigitalTime(seconds);
 
-		int theDay = day(seconds);
-		int theMonth = month(seconds);
-		int theYear = year(seconds);
+        String runTime = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, includeSeconds);
+        return runTime;
+    }
 
-		//SerialExt::Debug("theDay", theDay);
-
-		String dayString = String(theDay);
-		if (theDay < 10)
-			dayString = "0" + dayString;
-		String monthString = String(theMonth);
-		if (theMonth < 10)
-			monthString = "0" + monthString;
-		String yearString = String(theYear);
-		yearString.remove(0, 2);
-
-		theDate = monthString + "/" + dayString + "/" + yearString;
-
-		return theDate;
-	}
-	//returns digital date & time ##/##/#### ##:##:##
-	template<typename T = time_t>
-	extern String GetShortDateTimeString(T&& seconds){
+    template<typename T = time_t>
+    String GetMonthAndDateString(T && seconds) {
 
 
-		String result;
+        String theDate;
 
-		String theDate = GetMonthAndDateString(seconds);
-		String theTime = GetDigitalTimeString(seconds);
+        int theDay = day(seconds);
+        int theMonth = month(seconds);
+        int theYear = year(seconds);
 
-		result = theDate + " " + theTime;
+        //SerialExt::Debug("theDay", theDay);
 
-		String am = F("AM");
-		if (isPM(seconds))
-			am = F("PM");
+        String dayString = String(theDay);
+        if(theDay < 10)
+            dayString = "0" + dayString;
+        String monthString = String(theMonth);
+        if(theMonth < 10)
+            monthString = "0" + monthString;
+        String yearString = String(theYear);
+        yearString.remove(0, 2);
 
-		result += am;
+        theDate = monthString + "/" + dayString + "/" + yearString;
 
-		return result;
-
-	}
-	template<typename T = void>
-	long ConvHoursToSec(int hour)
-	{
-		//T t(hour);
-		long sec = (long)(hour * SECS_PER_HOUR);
-		return sec;
-	}
-	template<typename T = void>
-	int ConvSecToHour(long seconds)
-	{
-		//T t(hour);
-		int h = (int)(seconds / SECS_PER_HOUR);
-		return h;
-	}
-	template<typename T = time_t>
-	DigitalTime GetTimeRemaining(T&& seconds){
-	
-
-		int h, m;
-		m = seconds / SECS_PER_MIN;
-		h = seconds / SECS_PER_HOUR;
-		auto min = fmod(m, 60);
-
-		DigitalTime time = DigitalTime(h, min, 0);
-
-		return time;
-	}
-	template<typename T = long>
-	String GetTimeRemainingString(T&& seconds){
+        return theDate;
+    }
+    //returns digital date & time ##/##/#### ##:##:##
+    template<typename T = time_t>
+    extern String GetShortDateTimeString(T && seconds) {
 
 
-		DigitalTime time = GetTimeRemaining(seconds);
-		auto timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, false);
-		return timeString;
-	}
+        String result;
+
+        String theDate = GetMonthAndDateString(seconds);
+        String theTime = GetDigitalTimeString(seconds);
+
+        result = theDate + " " + theTime;
+
+        String am = F("AM");
+        if(isPM(seconds))
+            am = F("PM");
+
+        result += am;
+
+        return result;
+
+    }
+    template<typename T = void>
+    long ConvHoursToSec(int hour) {
+        //T t(hour);
+        long sec = (long)(hour * SECS_PER_HOUR);
+        return sec;
+    }
+    template<typename T = void>
+    int ConvSecToHour(long seconds) {
+        //T t(hour);
+        int h = (int)(seconds / SECS_PER_HOUR);
+        return h;
+    }
+    template<typename T = time_t>
+    DigitalTime GetTimeRemaining(T && seconds) {
+
+
+        int h, m;
+        m = seconds / SECS_PER_MIN;
+        h = seconds / SECS_PER_HOUR;
+        auto min = fmod(m, 60);
+
+        DigitalTime time = DigitalTime(h, min, 0);
+
+        return time;
+    }
+    template<typename T = long>
+    String GetTimeRemainingString(T && seconds) {
+
+
+        DigitalTime time = GetTimeRemaining(seconds);
+        auto timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, false);
+        return timeString;
+    }
 
 }
 

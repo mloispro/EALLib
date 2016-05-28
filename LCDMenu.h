@@ -9,9 +9,10 @@
 //#include <string>
 //#include <vector>
 using namespace std;
-
+#include "_globals.h"
 #include "SerialExt.h"
 using namespace Utils;
+using namespace Globals;
 
 class LCDMenu
 {

@@ -10,12 +10,16 @@
 using namespace std;
 
 #include <Servo.h>
+#include "_globals.h"
 
 #include "SerialExt.h"
 #include "RTCExt.h"
 //#include "RunScheduleExt.h" <- only needed for non RTC Timer
 //#include "PinValMemoryExt.h"
+
 #include "AnalogSwitch.h"
+
+using namespace Globals;
 using namespace Utils;
 using namespace Models;
 
