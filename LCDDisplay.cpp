@@ -1,28 +1,25 @@
-#include "LCDMenuController.h"
 
-using namespace Controllers;
 
-//LiquidCrystal LCDMenuController::_lcd(8, 9, 4, 5, 6, 7);
-//LiquidCrystal _lcd(8, 13, 9, 4, 5, 6, 7)
+#include "LCDDisplay.h"
 
-//LCDMenuController::LCDMenuController(LiquidCrystal lcd) {
-//_lcd = lcd;
-////_lcd(8, 9, 4, 5, 6, 7);
-////CreateMenus();
-//}
-void LCDMenuController::Init() {
-    //pinMode(10, INPUT);
-    //RTCExt::Init();
-    //_lcd.begin(16, 2);
-    //_lcd.clear();
-    //_lcd.setCursor(0, 0);
-    //CreateMenus();
-    //
-    //if(!RTCExt::IsRTCTimeSet())
-    //SetClockMenu();
+using namespace LCD;
+
+void LCDDisplay::Init() {
+
+    pinMode(10, INPUT);
+    RTCExt::Init();
+    _lcd.begin(16, 2);
+    _lcd.clear();
+    _lcd.setCursor(0, 0);
+    CreateMenus();
 
 }
-void LCDMenuController::CreateMenus() {
+
+//void DumbFuckerController::Select() {
+////_dumbFucker.Print(4);
+//}
+
+void LCDDisplay::CreateMenus() {
 
     const String mainMenuText = F("Menu: [>] Exit");
     const String feedMenuText = F("Feeder: [<] Back");
@@ -85,7 +82,7 @@ void LCDMenuController::CreateMenus() {
     //MemoryExt::PrintFreeMemory(F("cm5"));
 
 }
-String LCDMenuController::GetRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType) {
+String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType) {
 
     if(rangeType == LCDMenu::RangeType::Frequency) {
         LimitRange(0, 1);
@@ -96,14 +93,13 @@ String LCDMenuController::GetRangeOption(LCDMenu::RangeType rangeType, Accessory
 
     } else if(rangeType == LCDMenu::RangeType::Hour) {
         LimitRange(1, 12);
-        String hour = GetOptionAsNumber("01", true);
+        String hour = GetOptionAsNumber(F("01"), true);
         //SerialExt::Debug("feed hour", hour);
-        return hour;
+        return hour.c_str();
     } else if(rangeType == LCDMenu::RangeType::Minute) {
         LimitRange(0, 59);
-
         String minute = GetOptionAsNumber(F("01"), true);
-        return minute;
+        return minute.c_str();
     } else if(rangeType == LCDMenu::RangeType::AmPm) {
         LimitRange(0, 1);
         if(_optionCount <= _lowerLimit)
@@ -113,32 +109,32 @@ String LCDMenuController::GetRangeOption(LCDMenu::RangeType rangeType, Accessory
     } else if(rangeType == LCDMenu::RangeType::TimeFrequency) {
         //Daily, 08:30AM
         String freq = GetTimeFrequency(accType);
-        return freq;
+        return freq.c_str();
     } else if(rangeType == LCDMenu::RangeType::TimeLong) {
         // 03/04/2016 08:30AM
         String time = GetTimeLong(accType);
-        return time;
+        return time.c_str();
     } else if(rangeType == LCDMenu::RangeType::Year) {
         LimitRange(2016, 2050);
         String txt = GetOptionAsNumber(F("2016"));
 
-        return txt;
+        return txt.c_str();
     } else if(rangeType == LCDMenu::RangeType::Month) {
         LimitRange(1, 12);
         String txt = GetOptionAsNumber(F("01"), true);
-        return txt;
+        return txt.c_str();
     } else if(rangeType == LCDMenu::RangeType::Day) {
         LimitRange(1, 31);
         String txt = GetOptionAsNumber(F("01"), true);
-        return txt;
+        return txt.c_str();
     } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns) {
         int shakes = GetShakesOrTurns(accType);
-        return String(shakes);
+        return String(shakes).c_str();
     } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns) {
         LimitRange(0, 13);
 
         String txt = GetOptionAsNumber(F("0"));
-        return txt;
+        return txt.c_str();
     }
     //else if (rangeType == LCDMenu::RangeType::OutPin)
     //{
@@ -161,11 +157,12 @@ String LCDMenuController::GetRangeOption(LCDMenu::RangeType rangeType, Accessory
     //}
     else
         return "";
-
+    //
+    //return "";
 
 }
 
-void LCDMenuController::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType) {
+void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType) {
     //SerialExt::Debug("save", selectedMenu.OptionText);
 
     if(rangeType == LCDMenu::RangeType::Frequency &&
@@ -209,30 +206,38 @@ void LCDMenuController::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryT
 
 }
 //--Menu functions
-void LCDMenuController::AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, LCDMenu::RangeType rangeType, AccessoryType accType) {
+void LCDDisplay::AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, LCDMenu::RangeType rangeType, AccessoryType accType) {
     LCDMenu menu(id, optionId, nextMenuId, prevMenuId, text, optionText, rangeType, accType);
     _menus.push_back(menu);
 }
-void LCDMenuController::AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, LCDMenu::RangeType rangeType) {
+void LCDDisplay::AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, LCDMenu::RangeType rangeType) {
     AddMenu(id, optionId, nextMenuId, prevMenuId, text, optionText, rangeType, AccessoryType::None);
 }
 
-String LCDMenuController::GetOptionAsNumber(String defaultNumber) {
-    return GetOptionAsNumber(defaultNumber, false);
-}
-String LCDMenuController::GetOptionAsNumber(String defaultNumber, bool isTwoDigits) {
+template<typename T>
+String LCDDisplay::GetOptionAsNumber(T&& defaultNumber, bool isTwoDigits) {
     String txt = defaultNumber;
     if(_optionCount <= _upperLimit && _optionCount >= _lowerLimit) {
-        txt = String(_optionCount);
+        String oc = String(_optionCount);
+        txt = oc;
         if(_optionCount < 10 && isTwoDigits)
             txt = "0" + txt;
     }
     return txt;
 }
 
+template<typename T>
+String LCDDisplay::GetOptionAsNumber(T&& defaultNumber) {
+    String optnum = GetOptionAsNumber(defaultNumber, false);
+    return optnum;
+}
+
+
+
 //get by ref example
 //auto& menu = GetMenu(5);
-LCDMenu LCDMenuController::GetMenu(short id, short optionId) {
+//LCDMenu& operator=(const LCDMenu& c);
+LCDMenu LCDDisplay::GetMenu(short id, short optionId) {
     auto selectedMenu = _menus[0];
     for(auto menu : _menus) {
         if(menu.Id == id && menu.OptionId == optionId)
@@ -241,21 +246,21 @@ LCDMenu LCDMenuController::GetMenu(short id, short optionId) {
 
     return selectedMenu;
 }
-LCDMenu LCDMenuController::GetSelectedMenu() {
+LCDMenu LCDDisplay::GetSelectedMenu() {
     auto selectedMenu = GetMenu(_selectedMenuId, _selectedOptionId);
     return selectedMenu;
 }
-void LCDMenuController::SetSelectedMenu(LCDMenu menu) {
+void LCDDisplay::SetSelectedMenu(LCDMenu menu) {
     _selectedMenuId = menu.Id;
     _selectedOptionId = menu.OptionId;
 
 }
-void LCDMenuController::SetShakesOrTurns(AccessoryType accType, short shakesOrTurns) {
+void LCDDisplay::SetShakesOrTurns(AccessoryType accType, short shakesOrTurns) {
 
     NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
     mem.ShakesOrTurns = shakesOrTurns;
 }
-int LCDMenuController::GetShakesOrTurns(AccessoryType accType) {
+int LCDDisplay::GetShakesOrTurns(AccessoryType accType) {
 
     NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
     int shakes = mem.ShakesOrTurns;
@@ -267,7 +272,7 @@ int LCDMenuController::GetShakesOrTurns(AccessoryType accType) {
 //{
 //	_lcd.clear();
 //}
-void LCDMenuController::SetClockMenu() {
+void LCDDisplay::SetClockMenu() {
     //SelectMainMenu();
 
     _selectedMenuId = clockYearMenu;
@@ -285,12 +290,13 @@ void LCDMenuController::SetClockMenu() {
         delay(200);
     }
 }
-void LCDMenuController::SelectMainMenu() {
+void LCDDisplay::SelectMainMenu() {
 
     _selectedMenuId = 0;
     _selectedOptionId = 0;
 
     auto menu = GetSelectedMenu();
+
     PrintMenu(menu);
 
     delay(_selectDelay);
@@ -306,12 +312,12 @@ void LCDMenuController::SelectMainMenu() {
     }
 }
 
-void LCDMenuController::ExitMainMenu() {
+void LCDDisplay::ExitMainMenu() {
     _selectedMenuId = -1;
     _selectedOptionId = -1;
 }
 
-void LCDMenuController::LimitRange(int lower, int upper) {
+void LCDDisplay::LimitRange(int lower, int upper) {
     _lowerLimit = lower;
     _upperLimit = upper;
     if(_optionCount <= lower) {
@@ -321,7 +327,7 @@ void LCDMenuController::LimitRange(int lower, int upper) {
     }
 }
 
-void LCDMenuController::NextOption() {
+void LCDDisplay::NextOption() {
 
     if(_selectedOptionId >= 0) {
         short nextOptionId = _selectedOptionId + 1;
@@ -336,7 +342,7 @@ void LCDMenuController::NextOption() {
     PrintMenu(selectedMenu);
 }
 
-void LCDMenuController::PreviousOption() {
+void LCDDisplay::PreviousOption() {
 
     if(_selectedOptionId > 0) {
         short prevOptionId = _selectedOptionId - 1;
@@ -352,7 +358,7 @@ void LCDMenuController::PreviousOption() {
     PrintMenu(selectedMenu);
 }
 
-void LCDMenuController::LeftButton() {
+void LCDDisplay::LeftButton() {
     //navigates back
     _optionCount = 0;
     auto selectedMenu = GetSelectedMenu();
@@ -361,7 +367,7 @@ void LCDMenuController::LeftButton() {
     PrintMenu(prevMenu);
 }
 
-void LCDMenuController::SelectButton() {
+void LCDDisplay::SelectButton() {
 
     auto selectedMenu = GetSelectedMenu();
     SaveRangeOption(selectedMenu.TheRangeType, selectedMenu.AccType);
@@ -374,7 +380,7 @@ void LCDMenuController::SelectButton() {
 
 }
 
-void LCDMenuController::DetectKeyPress() {
+void LCDDisplay::DetectKeyPress() {
     int key = GetKey();
     //SerialExt::Debug("key_dkp:", key);
 
@@ -401,16 +407,16 @@ void LCDMenuController::DetectKeyPress() {
 
 }
 
-void LCDMenuController::PrintMenu(LCDMenu menu) {
+void LCDDisplay::PrintMenu(LCDMenu menu) {
     /*SerialExt::Debug("menu", menu.Text);
     SerialExt::Debug("option", menu.OptionText);
     */
 
-    //auto menu = GetSelectedMenu();
-    //String optionText = menu.OptionText;
     String optionText = menu.OptionText;
-
+    //todo: uncomment
     String rangeOptionText = GetRangeOption(menu.TheRangeType, menu.AccType);
+
+
 
     if(rangeOptionText != "") {
         optionText = rangeOptionText;
@@ -427,11 +433,11 @@ void LCDMenuController::PrintMenu(LCDMenu menu) {
     PrintLine(1, optionText);
 }
 
-void LCDMenuController::PrintLine(short lineNum, String text) {
+void LCDDisplay::PrintLine(short lineNum, String text) {
     _lcd.setCursor(0, lineNum);
     _lcd.print(text);
 }
-void LCDMenuController::PrintTime() {
+void LCDDisplay::PrintTime() {
     _lcd.clear();
     auto time = RTCExt::GetRTCTime();
     //auto theMonth = month(time);
@@ -446,7 +452,7 @@ void LCDMenuController::PrintTime() {
     delay(_scrollDelay);
 }
 
-void LCDMenuController::PrintRunInfo(String label, AccessoryType accType) {
+void LCDDisplay::PrintRunInfo(String label, AccessoryType accType) {
     RTCExt::UpdateNextRun(accType);
     NextRunMemory& nextRunMem = RTCExt::FindNextRunInfo(accType);
 
@@ -487,14 +493,14 @@ void LCDMenuController::PrintRunInfo(String label, AccessoryType accType) {
         //_lcd.clear();
     }
 }
-void LCDMenuController::PrintInstructions() {
+void LCDDisplay::PrintInstructions() {
     _lcd.clear();
     PrintLine(0, F("Hold [Select]"));
     PrintLine(1, F("for Menu"));
     delay(_scrollDelay);
 }
 
-void LCDMenuController::Scroll() {
+void LCDDisplay::Scroll() {
     static bool scrolling; //= (_scrollIndex < 3);
 
     if(scrolling)  //dont scroll if already scrolling
@@ -527,7 +533,7 @@ void LCDMenuController::Scroll() {
     }//scrolling
 }
 
-String LCDMenuController::GetTimeLong(AccessoryType accType) {
+String LCDDisplay::GetTimeLong(AccessoryType accType) {
     long time;
 
     if(accType == AccessoryType::Clock) {
@@ -539,7 +545,7 @@ String LCDMenuController::GetTimeLong(AccessoryType accType) {
 
 }
 
-String LCDMenuController::GetTimeFrequency(AccessoryType accType) {
+String LCDDisplay::GetTimeFrequency(AccessoryType accType) {
     long runEvery;
     long nextRun;
 
@@ -552,12 +558,12 @@ String LCDMenuController::GetTimeFrequency(AccessoryType accType) {
         return F("Not Set");
 
     String freqTime = RTCExt::GetTimeFrequencyString(runEvery, nextRun);
-    return freqTime;
+    return freqTime.c_str();
 
 }
 
 //--key press
-int LCDMenuController::GetKeyFromVal(unsigned int input) {
+int LCDDisplay::GetKeyFromVal(unsigned int input) {
     int k;
     for(k = 0; k < _numOfKeys; k++) {
         if(input < _keyValues[k]) {
@@ -568,7 +574,7 @@ int LCDMenuController::GetKeyFromVal(unsigned int input) {
     return k;
 }
 
-int LCDMenuController::GetKey() {
+int LCDDisplay::GetKey() {
     int keyVal = analogRead(0);
     //SerialExt::Debug(F("keyVal"), keyVal);
     int key = GetKeyFromVal(keyVal);
