@@ -5,11 +5,12 @@
 
 #include <Arduino.h>
 //#include <Stream.h>
-//#include <stdlib.h>
-//#include <StandardCplusplus.h>
-//#include <string.h>
+#include <stdlib.h>
+#include <StandardCplusplus.h>
+#include <string.h>
 //#include <iterator>
-//#include <string>
+#include <sstream>
+#include <string>
 using namespace std;
 
 
@@ -56,35 +57,37 @@ namespace Utils {
         //static return example
         template <int... T>
         extern auto Read() -> int{
-            //todo: uncomment this
-            //int num;
-            //while(Serial.available() > 0) {
-            ////int incomingbyte = Serial.read(); Serial.readString();// read the incoming byte:
-            //
-            //int option = Serial.parseInt();
-            //long val = 0;
-            //String valString = "";
-            //if(Serial.read() == '-') {
-            //val = Serial.parseInt();
-            //valString = String(val);
-            //}
-            //
-            //String optionString(option);
-            //String numString = optionString + valString;
-            //num = numString.toInt();
-            //
-            //if(Serial.read() == '\n') {
-            //break;
-            //}
-            //
-            ////int num = 5;
-            //
-            ////SerialExt::Print("Incomming Text: ", incomingbyte);
-            //}
-            //if(num > 0) {
-            //SerialExt::Print(F("Incomming number: "), num);
-            //return num;
-            //}
+
+            int num;
+            while(Serial.available() > 0) {
+                //int incomingbyte = Serial.read(); Serial.readString();// read the incoming byte:
+
+                int option = Serial.parseInt();
+                long val = 0;
+                String valString = "";
+                if(Serial.read() == '-') {
+                    valString += (char)Serial.parseInt();
+
+                    //valString = String(val);
+
+                }
+
+                String optionString(option);
+                String numString = optionString + valString;
+                num = numString.toInt();
+
+                if(Serial.read() == '\n') {
+                    break;
+                }
+
+                //int num = 5;
+
+                //SerialExt::Print("Incomming Text: ", incomingbyte);
+            }
+            if(num > 0) {
+                ////SerialExt::Print(F("Incomming number: "), num);
+                return num;
+            }
             return 0;
         }
         //use debug prints for debug statements that should be removed, after debugging.

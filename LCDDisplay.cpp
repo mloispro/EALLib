@@ -14,11 +14,6 @@ void LCDDisplay::Init() {
     CreateMenus();
 
 }
-
-//void DumbFuckerController::Select() {
-////_dumbFucker.Print(4);
-//}
-
 void LCDDisplay::CreateMenus() {
 
     const String mainMenuText = F("Menu: [>] Exit");
@@ -413,10 +408,8 @@ void LCDDisplay::PrintMenu(LCDMenu menu) {
     */
 
     String optionText = menu.OptionText;
-    //todo: uncomment
+
     String rangeOptionText = GetRangeOption(menu.TheRangeType, menu.AccType);
-
-
 
     if(rangeOptionText != "") {
         optionText = rangeOptionText;
