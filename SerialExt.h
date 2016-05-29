@@ -4,15 +4,10 @@
 #define SERIALEXT_h
 
 #include <Arduino.h>
-//#include <Stream.h>
-#include <stdlib.h>
 #include <StandardCplusplus.h>
-#include <string.h>
-//#include <iterator>
-#include <sstream>
 #include <string>
-using namespace std;
 
+using namespace std;
 
 namespace Utils {
 
