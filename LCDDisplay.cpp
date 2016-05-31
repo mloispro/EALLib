@@ -6,7 +6,7 @@ using namespace LCD;
 
 void LCDDisplay::Init() {
 
-    pinMode(10, INPUT);
+    pinMode(10, INPUT); //keep lcd from shorting out.
     RTCExt::Init();
     _lcd.begin(16, 2);
     _lcd.clear();
@@ -432,10 +432,10 @@ void LCDDisplay::PrintLine(short lineNum, String text) {
 }
 void LCDDisplay::PrintTime() {
     _lcd.clear();
-    auto time = RTCExt::GetRTCTime();
+    auto rtcTime = RTCExt::GetRTCTime();
     //auto theMonth = month(time);
 
-    auto dateTimeString = TimeHelpers::GetShortDateTimeString(time);
+    auto dateTimeString = TimeHelpers::GetShortDateTimeString(rtcTime, false);
 
     //SerialExt::Debug("dtStringp", dateTimeString);
 
@@ -457,9 +457,9 @@ void LCDDisplay::PrintRunInfo(String label, AccessoryType accType) {
         return;
     }
 
-    String lastRun = TimeHelpers::GetShortDateTimeString(nextRunMem.LastRun);
-    String countDown = TimeHelpers::GetTimeRemainingString(nextRunMem.CountDown);
-    String nextRun = TimeHelpers::GetShortDateTimeString(nextRunMem.NextRun);
+    String lastRun = TimeHelpers::GetShortDateTimeString(nextRunMem.LastRun, false);
+    String countDown = TimeHelpers::GetTimeRemainingString(nextRunMem.CountDown, false);
+    String nextRun = TimeHelpers::GetShortDateTimeString(nextRunMem.NextRun, false);
 
 
     for(int i = 0; i <= 3; i++) {
@@ -533,7 +533,7 @@ String LCDDisplay::GetTimeLong(AccessoryType accType) {
         time = RTCExt::GetRTCTime();
     }
 
-    String timeString = TimeHelpers::GetShortDateTimeString(time);
+    String timeString = TimeHelpers::GetShortDateTimeString(time, false);
     return timeString;
 
 }

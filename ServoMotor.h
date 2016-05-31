@@ -75,7 +75,7 @@ class ServoMotor {
     void Init();
     void TranslateSpeed();
     bool ShouldSignalRelay();
-    int GetNextRunInSeconds();
+    void UpdateServoNextRun();
     bool IsSwitchOn(bool isTimeToRun);
     void RunServo();
 };

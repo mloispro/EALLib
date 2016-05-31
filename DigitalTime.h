@@ -60,10 +60,10 @@ namespace TimeHelpers {
         return timeString;
     }
 
-    template<typename T = DigitalTime>
-    String FormatDigialTime(T && time) {
+    template<typename T = DigitalTime, typename I = bool>
+    String FormatDigialTime(T && time, I && includeSeconds) {
 
-        String timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, false);
+        String timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, includeSeconds);
 
         return timeString;
     }
@@ -79,12 +79,12 @@ namespace TimeHelpers {
 
         return time;
     }
-    template<typename T = time_t>
-    String GetDigitalTimeString(T && seconds) {
+    template<typename T = time_t, typename I = bool>
+    String GetDigitalTimeString(T && seconds, I && includeSeconds) {
 
         DigitalTime time = GetDigitalTime(seconds);
 
-        String runTime = FormatDigialTime(time);
+        String runTime = FormatDigialTime(time, includeSeconds);
         return runTime;
     }
 
@@ -124,14 +124,14 @@ namespace TimeHelpers {
         return theDate;
     }
     //returns digital date & time ##/##/#### ##:##:##
-    template<typename T = time_t>
-    extern String GetShortDateTimeString(T && seconds) {
+    template<typename T = time_t, typename I = bool>
+    extern String GetShortDateTimeString(T && seconds, I && includeSeconds) {
 
 
         String result;
 
         String theDate = GetMonthAndDateString(seconds);
-        String theTime = GetDigitalTimeString(seconds);
+        String theTime = GetDigitalTimeString(seconds, includeSeconds);
 
         result = theDate + " " + theTime;
 
@@ -165,16 +165,18 @@ namespace TimeHelpers {
         h = seconds / SECS_PER_HOUR;
         auto min = fmod(m, 60);
 
-        DigitalTime time = DigitalTime(h, min, 0);
+        int s = second(seconds);
+
+        DigitalTime time = DigitalTime(h, min, s);
 
         return time;
     }
-    template<typename T = long>
-    String GetTimeRemainingString(T && seconds) {
+    template<typename T = long, typename I = bool>
+    String GetTimeRemainingString(T && seconds, I && includeSeconds) {
 
 
         DigitalTime time = GetTimeRemaining(seconds);
-        auto timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, false);
+        auto timeString = FormatDigialTime(time.Hours, time.Minutes, time.Seconds, includeSeconds);
         return timeString;
     }
 
