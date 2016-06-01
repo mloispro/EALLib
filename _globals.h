@@ -19,19 +19,19 @@ namespace Globals {
       public:
         bool Feeder;
         bool Doser ;
-        bool Timer;
+        bool Pump;
 
-        ControllerType(bool feeder, bool doser, bool timer): Feeder(feeder), Doser(doser), Timer(timer) {};
-        ControllerType(): Feeder(false), Doser(false), Timer(false) {};
+        ControllerType(bool feeder, bool doser, bool pump): Feeder(feeder), Doser(doser), Pump(pump) {};
+        ControllerType(): Feeder(false), Doser(false), Pump(false) {};
     };
 
     extern Globals::ControllerType TheControllerType;
 
     template<typename T = void>
-    void InitController(bool feeder, bool doser, bool timer) {
+    void InitController(bool feeder, bool doser, bool pump) {
         TheControllerType.Feeder = feeder;
         TheControllerType.Doser = doser;
-        TheControllerType.Timer = timer;
+        TheControllerType.Pump = pump;
     }
 }
 

@@ -63,8 +63,13 @@ namespace LCD {
         static const short doserShakesMenu = 22;
         static const short doserSetShakesMenu = 23;
         static const short settingsMenu = 24;
+        static const short settingsFeederMenu = 25;
+        static const short settingsDoserMenu = 26;
+        static const short settingsPumpMenu = 27;
 
         //ControllerType _controllerType;
+        short _menuIndex = 0;
+        String _mainMenuText = "";
 
         short _scrollIndex;
         int _scrollDelay = 3000;
@@ -86,6 +91,7 @@ namespace LCD {
         LiquidCrystal _lcd;
         //LiquidCrystal* _lcd = new LiquidCrystal(8, 9, 4, 5, 6, 7);
 
+        void AddDoserMenu();
         //functions
       public:
         //DumbFuckerController() : _lcd(8, 9, 4, 5, 6, 7) {};
@@ -148,6 +154,10 @@ namespace LCD {
         template<typename T>
         String GetOptionAsNumber(T&& defaultNumber);
 
+        String GetOnOff();
+        void SetOnOff(AccessoryType accType);
+
+        void AddMenu(AccessoryType accType);
         void PrintInstructions();
 
     }; //LCDDisplay

@@ -18,7 +18,7 @@ void LCDDisplay::Init() {
 }
 void LCDDisplay::CreateMenus() {
 
-    const String mainMenuText = F("Menu: [>] Exit");
+    _mainMenuText = F("Menu: [>] Exit");
     const String settingsMenuText = F("Settings: [<] Back");
     const String feedMenuText = F("Feeder: [<] Back");
     const String doserMenuText = F("Doser: [<] Back");
@@ -27,15 +27,13 @@ void LCDDisplay::CreateMenus() {
     if(_menus.size() > 0)
         _menus.clear();
 
-    short menuIndex = 0;
+
 
     //menus
-    AddMenu(mainMenu, menuIndex++, clockMenu, mainMenu, mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
-    if(TheControllerType.Feeder)
-        AddMenu(mainMenu, menuIndex++, feedMenu, mainMenu, mainMenuText, F("Feeder"), LCDMenu::RangeType::Nav);
-    if(TheControllerType.Doser)
-        AddMenu(mainMenu, menuIndex++, doserMenu, mainMenu, mainMenuText, F("Doser"), LCDMenu::RangeType::Nav);
-    AddMenu(mainMenu, menuIndex++, settingsMenu, mainMenu, mainMenuText, F("Settings"), LCDMenu::RangeType::Nav);
+    AddMenu(mainMenu, _menuIndex++, clockMenu, mainMenu, _mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
+    AddMenu(AccessoryType::Feeder);
+    AddMenu(AccessoryType::DryDoser);
+    AddMenu(mainMenu, _menuIndex++, settingsMenu, mainMenu, _mainMenuText, F("Settings"), LCDMenu::RangeType::Nav);
 
 
     //feed menus
@@ -84,7 +82,10 @@ void LCDDisplay::CreateMenus() {
     AddMenu(clockAmPmMenu, 0, clockMenu, clockMinMenu, F("Clock AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::Clock);
 
     //settings
-
+    AddMenu(settingsMenu, 0, settingsMenu, mainMenu, settingsMenuText, F("??"), LCDMenu::RangeType::ControllerType, AccessoryType::Lcd);
+    AddMenu(settingsMenu, 1, settingsDoserMenu, settingsMenu, settingsMenuText, F("Change Settings"), LCDMenu::RangeType::Nav, AccessoryType::Lcd);
+    AddMenu(settingsDoserMenu, 0, settingsFeederMenu, settingsMenu, F("Doser Set: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::DryDoser);
+    AddMenu(settingsFeederMenu, 0, settingsMenu, settingsDoserMenu, F("Feeder Set: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::Feeder);
 
 }
 String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType) {
@@ -139,6 +140,12 @@ String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::Accesso
         LimitRange(0, 13);
 
         String txt = GetOptionAsNumber(F("0"));
+        return txt.c_str();
+    } else if(rangeType == LCDMenu::RangeType::OnOff) {
+
+        LimitRange(0, 1);
+
+        String txt = GetOnOff();
         return txt.c_str();
     }
     //else if (rangeType == LCDMenu::RangeType::OutPin)
@@ -201,6 +208,10 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
                accType == AccessoryType::DryDoser)) {
         SetShakesOrTurns(accType, _optionCount);
         //_lcdValCallBack(_optionCount);
+    } else if(rangeType == LCDMenu::RangeType::OnOff &&
+              (accType == AccessoryType::Feeder ||
+               accType == AccessoryType::DryDoser)) {
+        SetOnOff(accType);
     }
     //else if (rangeType == LCDMenu::RangeType::OutPin &&
     //	(accType == AccessoryType::Feeder ||
@@ -272,6 +283,30 @@ int LCDDisplay::GetShakesOrTurns(AccessoryType accType) {
     return shakes;
 }
 
+String LCDDisplay::GetOnOff() {
+
+    if(_optionCount == 0)
+        return F("Off");
+    else if(_optionCount == 1)
+        return F("On");
+}
+void LCDDisplay::SetOnOff(AccessoryType accType) {
+    if(accType == AccessoryType::DryDoser)
+        TheControllerType.Doser = (bool)_optionCount;
+    else if(accType == AccessoryType::Feeder)
+        TheControllerType.Feeder = (bool)_optionCount;
+
+    if(_optionCount == 0)
+        _menuIndex--;
+
+    AddMenu(accType);
+}
+void LCDDisplay::AddMenu(AccessoryType accType) {
+    if(TheControllerType.Feeder)
+        AddMenu(mainMenu, _menuIndex++, feedMenu, mainMenu, _mainMenuText, F("Feeder"), LCDMenu::RangeType::Nav);
+    if(TheControllerType.Doser)
+        AddMenu(mainMenu, _menuIndex++, doserMenu, mainMenu, _mainMenuText, F("Doser"), LCDMenu::RangeType::Nav);
+}
 //template<typename T = void>
 //void Clear()
 //{
@@ -590,3 +625,5 @@ int LCDDisplay::GetKey() {
     //_lastKey = key;
     return key;
 }
+
+

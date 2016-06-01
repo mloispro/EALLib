@@ -30,7 +30,11 @@ class LCDMenu {
         TimeShort,
         TimeFrequency,
         ShakesOrTurns,
-        SetShakesOrTurns
+        SetShakesOrTurns,
+        ControllerType,
+        OnOff
+        //DoserOnOff,
+        //FeederOnOff
     };
 
     short Id;
