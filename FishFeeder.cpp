@@ -17,12 +17,12 @@ FishFeeder::FishFeeder(Servo servo, int pin, int shakes, short relayPin, long ru
 vector<FishFeeder> FishFeeder::CreateFeeders(int numOfFeeders, int startingPin) {
     vector<FishFeeder> feeders;
 
-    if(startingPin > 13 || startingPin < 2) {
-        Serial.println(F("Error: Starting pin has to be less than 14 and greater than 1"));
-        return feeders;
-    }
+    //if(startingPin > 13 || startingPin < 2) {
+    ////Serial.println(F("Error: Starting pin has to be less than 14 and greater than 1"));
+    //return feeders;
+    //}
     if(numOfFeeders > 11) {
-        Serial.println(F("Error: Number of feeders has to be less than 12"));
+        //Serial.println(F("Error: Number of feeders has to be less than 12"));
         return feeders;
     }
 
@@ -31,15 +31,16 @@ vector<FishFeeder> FishFeeder::CreateFeeders(int numOfFeeders, int startingPin) 
 
         // twelve servo objects can be created on most boards
         //FishFeeder feeder(Servo(), 13, 2, 0, 14); //servo, pin, shakes, pos, speed
-        FishFeeder feeder = CreateFeeder(startingPin, 2);
+        FishFeeder feeder = CreateFeeder(startingPin, 2, 86400); //run every 24hours
         feeders.push_back(feeder);
         startingPin--;
     }
     return feeders;
 }
-FishFeeder FishFeeder::CreateFeeder(int pin, short shakes) {
+FishFeeder FishFeeder::CreateFeeder(int pin, short shakes, long runEvery) {
     Servo aServo;
-    FishFeeder feeder(aServo, pin, shakes, 86400); //run every 24hours
+    FishFeeder feeder(aServo, pin, shakes, runEvery); //run every 24hours
+
     //feeder.Init();
     return feeder;
 }

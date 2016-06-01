@@ -34,7 +34,7 @@ class FishFeeder : public ServoMotor {
     static vector<FishFeeder> CreateFeeders(int numOfFeeders, int startingPin);
     static void FeedAll(vector<FishFeeder> feeders, int potVal);
     static void RunDemo(vector<FishFeeder> feeders);
-    static FishFeeder CreateFeeder(int pin, short shakes);
+    static FishFeeder CreateFeeder(int pin, short shakes, long runEvery);
     static void FeedAll(vector<FishFeeder> feeders);
 };
 

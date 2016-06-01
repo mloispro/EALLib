@@ -41,7 +41,6 @@ class ServoMotor {
     bool ShouldRunMotor(bool printToSerial);
     void PrintSerialInstructions();
     void SetShakes(int shakes);
-    int GetShakes();
     bool ProcessSerialInput(int incomingNum);
 
     //3-6 = 6 shakes, returns true if could process successfully
@@ -73,9 +72,9 @@ class ServoMotor {
 
   private:
     void Init();
-    void TranslateSpeed();
+    int TranslateSpeed();
     bool ShouldSignalRelay();
-    void UpdateServoNextRun();
+    void UpdateServoNextRun(bool setRunEvery);
     bool IsSwitchOn(bool isTimeToRun);
     void RunServo();
 };

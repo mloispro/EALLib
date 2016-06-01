@@ -18,14 +18,23 @@ namespace Globals {
     class ControllerType {
       public:
         bool Feeder;
-        bool Doser;
+        bool Doser ;
         bool Timer;
 
         ControllerType(bool feeder, bool doser, bool timer): Feeder(feeder), Doser(doser), Timer(timer) {};
+        ControllerType(): Feeder(false), Doser(false), Timer(false) {};
     };
 
+    extern Globals::ControllerType TheControllerType;
+
+    template<typename T = void>
+    void InitController(bool feeder, bool doser, bool timer) {
+        TheControllerType.Feeder = feeder;
+        TheControllerType.Doser = doser;
+        TheControllerType.Timer = timer;
+    }
 }
-//extern Globals:: Globals::AccessoryType;
+
 
 
 namespace MegaPins {

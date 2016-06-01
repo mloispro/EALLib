@@ -29,6 +29,7 @@ using namespace Globals;
 #include "RTCExt.h"
 using namespace Utils;
 using namespace TimeHelpers;
+using namespace Globals;
 
 namespace LCD {
 
@@ -37,10 +38,6 @@ namespace LCD {
       public:
       protected:
       private:
-        //LiquidCrystal _lcd;
-        //vector<LCDMenu> _menus;
-        // DumbFucker _dumbFucker;
-
         static const short mainMenu = 0;
         static const short feedMenu = 1;
         static const short feedFreqMenu = 2;
@@ -65,6 +62,9 @@ namespace LCD {
         static const short feedSetShakesMenu = 21;
         static const short doserShakesMenu = 22;
         static const short doserSetShakesMenu = 23;
+        static const short settingsMenu = 24;
+
+        //ControllerType _controllerType;
 
         short _scrollIndex;
         int _scrollDelay = 3000;
@@ -97,8 +97,8 @@ namespace LCD {
         int _optionCount;
 
         LCDDisplay() : _lcd(8, 9, 4, 5, 6, 7) {};
-        //LCDMenuController();
-        // LCDMenuController(LiquidCrystal lcd): _lcd(lcd) {};
+        //LCDDisplay(ControllerType controllerType) : _lcd(8, 9, 4, 5, 6, 7), _controllerType(controllerType) {};
+
 
         void Init();
 

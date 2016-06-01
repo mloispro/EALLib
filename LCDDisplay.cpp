@@ -12,11 +12,14 @@ void LCDDisplay::Init() {
     _lcd.clear();
     _lcd.setCursor(0, 0);
     CreateMenus();
+    if(!RTCExt::IsRTCTimeSet())
+        SelectMainMenu();
 
 }
 void LCDDisplay::CreateMenus() {
 
     const String mainMenuText = F("Menu: [>] Exit");
+    const String settingsMenuText = F("Settings: [<] Back");
     const String feedMenuText = F("Feeder: [<] Back");
     const String doserMenuText = F("Doser: [<] Back");
     const String clockMenuText = F("Clock: [<] Back");
@@ -24,11 +27,16 @@ void LCDDisplay::CreateMenus() {
     if(_menus.size() > 0)
         _menus.clear();
 
-    /*_lcd.begin();*/
+    short menuIndex = 0;
+
     //menus
-    AddMenu(mainMenu, 0, feedMenu, mainMenu, mainMenuText, F("Feeder"), LCDMenu::RangeType::Nav);
-    AddMenu(mainMenu, 1, doserMenu, mainMenu, mainMenuText, F("Doser"), LCDMenu::RangeType::Nav);
-    AddMenu(mainMenu, 2, clockMenu, mainMenu, mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
+    AddMenu(mainMenu, menuIndex++, clockMenu, mainMenu, mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
+    if(TheControllerType.Feeder)
+        AddMenu(mainMenu, menuIndex++, feedMenu, mainMenu, mainMenuText, F("Feeder"), LCDMenu::RangeType::Nav);
+    if(TheControllerType.Doser)
+        AddMenu(mainMenu, menuIndex++, doserMenu, mainMenu, mainMenuText, F("Doser"), LCDMenu::RangeType::Nav);
+    AddMenu(mainMenu, menuIndex++, settingsMenu, mainMenu, mainMenuText, F("Settings"), LCDMenu::RangeType::Nav);
+
 
     //feed menus
     AddMenu(feedMenu, 0, feedTimeMenu, mainMenu, feedMenuText, F("Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
@@ -64,6 +72,7 @@ void LCDDisplay::CreateMenus() {
     AddMenu(doserShakesMenu, 1, doserSetShakesMenu, doserShakesMenu, F("Doser Shakes: [<] Back"), F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserSetShakesMenu, 0, doserShakesMenu, doserShakesMenu, F("Set Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::DryDoser);
 
+
     //clock menus
     AddMenu(clockMenu, 0, clockMenu, mainMenu, clockMenuText, F("Time"), LCDMenu::RangeType::TimeLong, AccessoryType::Clock);
     AddMenu(clockMenu, 1, clockYearMenu, clockMenu, clockMenuText, F("Set Clock Time"), LCDMenu::RangeType::Nav, AccessoryType::Clock);
@@ -74,7 +83,8 @@ void LCDDisplay::CreateMenus() {
     AddMenu(clockMinMenu, 0, clockAmPmMenu, clockHourMenu, F("Clock Min: [<] Back"), F(""), LCDMenu::RangeType::Minute, AccessoryType::Clock);
     AddMenu(clockAmPmMenu, 0, clockMenu, clockMinMenu, F("Clock AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::Clock);
 
-    //MemoryExt::PrintFreeMemory(F("cm5"));
+    //settings
+
 
 }
 String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType) {
@@ -431,14 +441,14 @@ void LCDDisplay::PrintLine(short lineNum, String text) {
     _lcd.print(text);
 }
 void LCDDisplay::PrintTime() {
-    _lcd.clear();
+
     auto rtcTime = RTCExt::GetRTCTime();
     //auto theMonth = month(time);
 
     auto dateTimeString = TimeHelpers::GetShortDateTimeString(rtcTime, false);
 
     //SerialExt::Debug("dtStringp", dateTimeString);
-
+    _lcd.clear();
     PrintLine(0, F("Clock:"));
     PrintLine(1, dateTimeString);
 
@@ -463,17 +473,20 @@ void LCDDisplay::PrintRunInfo(String label, AccessoryType accType) {
 
 
     for(int i = 0; i <= 3; i++) {
-        _lcd.clear();
+
         switch(i) {
             case 0:
+                _lcd.clear();
                 PrintLine(0, label + " Last Run:");
                 PrintLine(1, lastRun);
                 break;
             case 1:
+                _lcd.clear();
                 PrintLine(0, label + " Count Down:");
                 PrintLine(1, countDown);
                 break;
             case 2:
+                _lcd.clear();
                 PrintLine(0, label + " Next Run:");
                 PrintLine(1, nextRun);
                 break;
@@ -503,18 +516,20 @@ void LCDDisplay::Scroll() {
 
     while(scrolling) {
 
-        SerialExt::Debug("_scrollIndex", _scrollIndex);
-        SerialExt::Debug("scrolling_time_beg", RTCExt::GetRTCTimeString());
+        //SerialExt::Debug("_scrollIndex", _scrollIndex);
+        //SerialExt::Debug("scrolling_time_beg", RTCExt::GetRTCTimeString());
 
         switch(_scrollIndex) {
             case 0:
                 PrintInstructions();
                 break;
             case 1:
-                PrintRunInfo(F("Feed"), AccessoryType::Feeder);
+                if(Globals::TheControllerType.Feeder)
+                    PrintRunInfo(F("Feed"), AccessoryType::Feeder);
                 break;
             case 2:
-                PrintRunInfo(F("Dose"), AccessoryType::DryDoser);
+                if(Globals::TheControllerType.Doser)
+                    PrintRunInfo(F("Dose"), AccessoryType::DryDoser);
                 break;
             default:
                 PrintTime();

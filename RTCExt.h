@@ -222,13 +222,13 @@ namespace Utils {
         template<typename T = void>
         bool IsTimeToRun(AccessoryType accType) {
 
-            NextRunMemory& nextRunMem = FindNextRunInfo(accType);
+            NextRunMemory& mem = FindNextRunInfo(accType);
 
-            if(nextRunMem.RunEvery <= 0)return true;  //not using rtc
+            if(mem.RunEvery <= 0)return true;  //not using rtc
 
             time_t runTime = RTCExt::GetRTCTime();
             UpdateNextRun(accType);
-            time_t nextRun = nextRunMem.NextRun;
+            time_t nextRun = mem.NextRun;
             //int runTime = TimerExt::GetRuntimeInSeconds();
             if(nextRun <= runTime) {
                 return true;

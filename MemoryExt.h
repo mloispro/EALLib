@@ -30,7 +30,7 @@ namespace Models {
         long NextRun = 0;
         long CountDown = 0;
         long RunEvery = 0;
-        short ShakesOrTurns = 0;
+        short ShakesOrTurns = -1;
         long LastSave = 0;
     };
     struct MemAddress {
