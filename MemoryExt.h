@@ -24,7 +24,7 @@ using namespace Utils;
 namespace Models {
 
     struct NextRunMemory {
-        short Pin = -1;
+        //short Pin = -1;
         int AccType = 0; //id
         long LastRun = 0;
         long NextRun = 0;
@@ -32,9 +32,10 @@ namespace Models {
         long RunEvery = 0;
         short ShakesOrTurns = -1;
         long LastSave = 0;
+        bool Enabled = false;
     };
     struct MemAddress {
-        int Pin; //id
+        int AccType; //id
         int Index;
     };
 }
@@ -46,15 +47,15 @@ namespace Utils {
 
         template<typename T = String, typename M = NextRunMemory>
         void PrintNextRunMemory(T && label, M && mem) {
-            SerialExt::Debug(F("mem"), label);
-            SerialExt::Debug(F("Pin"), mem.Pin);
-            SerialExt::Debug(F("AccType"), mem.AccType);
-            SerialExt::Debug(F("CountDown"), mem.CountDown);
-            SerialExt::Debug(F("LastRun"), mem.LastRun);
-            SerialExt::Debug(F("LastSave"), mem.LastSave);
-            SerialExt::Debug(F("NextRun"), mem.NextRun);
-            SerialExt::Debug(F("RunEvery"), mem.RunEvery);
-            SerialExt::Debug(F("ShakesOrTurns"), mem.ShakesOrTurns);
+            //SerialExt::Debug(F("mem"), label);
+            //SerialExt::Debug(F("Pin"), mem.Pin);
+            //SerialExt::Debug(F("AccType"), mem.AccType);
+            //SerialExt::Debug(F("CountDown"), mem.CountDown);
+            //SerialExt::Debug(F("LastRun"), mem.LastRun);
+            //SerialExt::Debug(F("LastSave"), mem.LastSave);
+            //SerialExt::Debug(F("NextRun"), mem.NextRun);
+            //SerialExt::Debug(F("RunEvery"), mem.RunEvery);
+            //SerialExt::Debug(F("ShakesOrTurns"), mem.ShakesOrTurns);
         }
 
         template<typename T>
@@ -64,14 +65,14 @@ namespace Utils {
             int memSize = sizeof(NextRunMemory);
 
             if(_memAddresses.size() <= 0)
-                _memAddresses.push_back(MemAddress{ mem.Pin, memSize });
+                _memAddresses.push_back(MemAddress{ mem.AccType, memSize });
 
             //auto& memAddress = _memAddresses[0];
             bool foundMem = false;
             int agregateMemSize = 0;
             for(auto& memAddr : _memAddresses) {
                 agregateMemSize += memAddr.Index; //totals incase we have to add a new one
-                if(memAddr.Pin == mem.Pin) {
+                if(memAddr.AccType == mem.AccType) {
                     index = memAddr.Index - memSize;
                     foundMem = true;
                     break;
@@ -80,7 +81,7 @@ namespace Utils {
 
             if(!foundMem) { //if added, dont re-add
                 agregateMemSize += memSize;
-                _memAddresses.push_back(MemAddress{ mem.Pin, agregateMemSize });
+                _memAddresses.push_back(MemAddress{ mem.AccType, agregateMemSize });
                 index = agregateMemSize;
             }
 

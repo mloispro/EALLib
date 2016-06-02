@@ -6,15 +6,13 @@
 FishFeeder::FishFeeder() {
     ServoType = AccessoryType::Feeder;
 }
-FishFeeder::FishFeeder(Servo servo, int pin, int shakes, long runEverySeconds) :
-    ServoMotor(servo, pin, shakes, 0, 14, -1, runEverySeconds, AnalogSwitch()) {
-    ServoType = AccessoryType::Feeder;
+FishFeeder::FishFeeder(Servo servo, int pin, int shakes, long runEverySeconds, bool enabled) :
+    ServoMotor(servo, pin, shakes, 0, 14, -1, runEverySeconds, AnalogSwitch(), AccessoryType::Feeder, enabled) {
 }
-FishFeeder::FishFeeder(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds) :
-    ServoMotor(servo, pin, shakes, 0, 14, relayPin, runEverySeconds, AnalogSwitch()) {
-    ServoType = AccessoryType::DryDoser;
+FishFeeder::FishFeeder(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds, bool enabled) :
+    ServoMotor(servo, pin, shakes, 0, 14, relayPin, runEverySeconds, AnalogSwitch(), AccessoryType::Feeder, enabled) {
 }
-vector<FishFeeder> FishFeeder::CreateFeeders(int numOfFeeders, int startingPin) {
+vector<FishFeeder> FishFeeder::CreateFeeders(int numOfFeeders, int startingPin, bool enabled) {
     vector<FishFeeder> feeders;
 
     //if(startingPin > 13 || startingPin < 2) {
@@ -31,15 +29,15 @@ vector<FishFeeder> FishFeeder::CreateFeeders(int numOfFeeders, int startingPin) 
 
         // twelve servo objects can be created on most boards
         //FishFeeder feeder(Servo(), 13, 2, 0, 14); //servo, pin, shakes, pos, speed
-        FishFeeder feeder = CreateFeeder(startingPin, 2, 86400); //run every 24hours
+        FishFeeder feeder = CreateFeeder(startingPin, 2, 86400, enabled); //run every 24hours
         feeders.push_back(feeder);
         startingPin--;
     }
     return feeders;
 }
-FishFeeder FishFeeder::CreateFeeder(int pin, short shakes, long runEvery) {
+FishFeeder FishFeeder::CreateFeeder(int pin, short shakes, long runEvery, bool enabled) {
     Servo aServo;
-    FishFeeder feeder(aServo, pin, shakes, runEvery); //run every 24hours
+    FishFeeder feeder(aServo, pin, shakes, runEvery, enabled); //run every 24hours
 
     //feeder.Init();
     return feeder;

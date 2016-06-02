@@ -2,8 +2,14 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 #include <Arduino.h>
-//#include <StandardCplusplus.h>
+
+#include <StandardCplusplus.h>
+#include <string>
+#include <vector>
 using namespace std;
+
+#include "MemoryExt.h"
+
 namespace Globals {
     enum AccessoryType : int {
         None,
@@ -15,24 +21,7 @@ namespace Globals {
         Lcd
     };
 
-    class ControllerType {
-      public:
-        bool Feeder;
-        bool Doser ;
-        bool Pump;
-
-        ControllerType(bool feeder, bool doser, bool pump): Feeder(feeder), Doser(doser), Pump(pump) {};
-        ControllerType(): Feeder(false), Doser(false), Pump(false) {};
-    };
-
-    extern Globals::ControllerType TheControllerType;
-
-    template<typename T = void>
-    void InitController(bool feeder, bool doser, bool pump) {
-        TheControllerType.Feeder = feeder;
-        TheControllerType.Doser = doser;
-        TheControllerType.Pump = pump;
-    }
+    extern vector<Models::NextRunMemory> NextRunInfos;
 }
 
 

@@ -1,2 +1,3 @@
 #include "_globals.h"
-Globals::ControllerType Globals::TheControllerType;
+
+vector<Models::NextRunMemory> Globals::NextRunInfos;

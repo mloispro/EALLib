@@ -18,7 +18,7 @@
 
 //#include "EEPRomMem.h"
 //#include <EEPROM.h>
-
+#include "_globals.h"
 #include "MemoryExt.h"
 #include "SerialExt.h"
 #include "DigitalTime.h"
@@ -39,8 +39,8 @@ namespace Utils {
     ///**Better to use template functions.
     namespace RTCExt {
 
-        static NextRunMemory NextFeedInfo;
-        static NextRunMemory NextDoseInfo;
+        //static NextRunMemory NextFeedInfo;
+        //static NextRunMemory NextDoseInfo;
 
         //static only sticks local
         static tmElements_t _timeBuffer;
@@ -97,63 +97,38 @@ namespace Utils {
                 return false;
         }
         template<typename T = void>
-        void LoadNextRunInfos() {
-            int accTypeFeed = static_cast<int>(AccessoryType::Feeder);
-            int accTypeDoser = static_cast<int>(AccessoryType::DryDoser);
+        void LoadNextRunInfos(AccessoryType accType) {
+            //int accTypeFeed = static_cast<int>(AccessoryType::Feeder);
+            //int accTypeDoser = static_cast<int>(AccessoryType::DryDoser);
 
-            NextFeedInfo.AccType = accTypeFeed;
-            NextFeedInfo = MemoryExt::GetNextRunMem(NextFeedInfo);
-
-            NextDoseInfo.AccType = accTypeDoser;
-            NextDoseInfo = MemoryExt::GetNextRunMem(NextDoseInfo);
-
-        }
-        template<typename T = void>
-        void Init() {
-
-            //#if !DEBUG
-            setSyncProvider(RTC.get);   // the function to get the time from the RTC
-            //#endif
-
-            if(timeStatus() != timeSet)
-                SerialExt::Print(F("Unable to sync with the RTC, time not set."));
-            else {
-                String digitalTime = GetDigitalTimeString(GetRTCTime(), false);
-                SerialExt::Print(F("RTC Initialized: "), digitalTime);
-                //_initalized = true;
-            }
-            delay(200);//wait for rtc
-
-            LoadNextRunInfos();
-        }
-        template<typename T = AccessoryType>
-        NextRunMemory & FindNextRunInfo(T && accType) {
-            if(accType == AccessoryType::Feeder)
-                return NextFeedInfo;
-            else if(accType == AccessoryType::DryDoser)
-                return NextDoseInfo;
-            else
-                return NextFeedInfo;
-        }
-        template<typename T = AccessoryType>
-        void SaveNextRunInfo(T && accType) {
-            int accTypeInt = static_cast<int>(accType);
-            NextRunMemory& mem = FindNextRunInfo(accType);
-
-            mem.AccType = accTypeInt;
+            NextRunMemory mem;
+            //mem.Pin = pin;
+            mem.AccType = accType;
             mem = MemoryExt::SaveNextRunMem(mem);
+            Globals::NextRunInfos.push_back(mem);
 
         }
 
-
-
-
+        //use RefreshNextRunInfo not FindNextRunInfo to get NextRunInfo
         template<typename T = AccessoryType>
-        void UpdateNextRun(T && accType) {
+        NextRunMemory & _FindNextRunInfo(T && accType) {
+
+            for(NextRunMemory& mem : Globals::NextRunInfos) {
+                if(mem.AccType == accType)
+                    return mem;
+            }
+
+        }
+
+        template<typename T = AccessoryType, typename S = bool>
+        NextRunMemory & RefreshNextRunInfo(T && accType, S && forceSave) {
+
+            NextRunMemory& nextRunMem = _FindNextRunInfo(accType);
+
+            if(!nextRunMem.Enabled)
+                return nextRunMem;
 
             auto rtcTime = GetRTCTime();
-            NextRunMemory& nextRunMem = FindNextRunInfo(accType);
-
             long runEvery = nextRunMem.RunEvery;
             long countDown = nextRunMem.CountDown;
             long nextRun = nextRunMem.NextRun;
@@ -164,15 +139,9 @@ namespace Utils {
             //auto nr1 = GetShortDateTimeString(nextRun, true);
             //auto cd1 = GetTimeRemainingString(countDown, true);
             //auto re1 = GetTimeRemainingString(runEvery, true);
-            //
-            //SerialExt::Debug("accType", accType);
-            //SerialExt::Debug("rtc1", rtc1);
-            //SerialExt::Debug("nr1", nr1);
-            //SerialExt::Debug("cd1", cd1);
-            //SerialExt::Debug("re1", re1);
 
             if(!IsRTCTimeSet() || runEvery == 0)
-                return;// rtcTime;
+                return nextRunMem;// rtcTime;
 
             if(lastRun == 0)  //before first feeding
                 lastRun = rtcTime;
@@ -199,35 +168,58 @@ namespace Utils {
             //auto nr2 = GetShortDateTimeString(nextRun, true);
             //auto cd2 = GetTimeRemainingString(countDown, true);
             //auto re2 = GetTimeRemainingString(runEvery, true);
-            //
-            //SerialExt::Debug("nr2", nr2);
-            //SerialExt::Debug("cd2", cd2);
-            //SerialExt::Debug("re2", re2);
 
             nextRunMem.RunEvery = runEvery;
             nextRunMem.CountDown = countDown;
             nextRunMem.NextRun = nextRun;
             nextRunMem.LastRun = lastRun;
 
+            if(forceSave)
+                nextRunMem.LastSave = 0;
 
-            //save every 15 min. 900
+            //save every 15 min. 900 sec
             long saveTime = nextRunMem.LastSave + 900;
             if(saveTime <= rtcTime) {
-                //SerialExt::Debug("time to save nr", GetDigitalTimeString(rtcTime,false));
-                SaveNextRunInfo(accType);
+                //SaveNextRunInfo(accType);
+                int accTypeInt = static_cast<int>(accType);
+                nextRunMem.AccType = accTypeInt;
+                nextRunMem = MemoryExt::SaveNextRunMem(nextRunMem);
             }
 
+            return nextRunMem;
+        }
+        template<typename T = AccessoryType>
+        NextRunMemory & RefreshNextRunInfo(T && accType) {
+            RefreshNextRunInfo(accType, false);
+        }
+
+        template<typename T = void>
+        void Init() {
+
+            //#if !DEBUG
+            setSyncProvider(RTC.get);   // the function to get the time from the RTC
+            //#endif
+
+            if(timeStatus() != timeSet)
+                SerialExt::Print(F("Unable to sync with the RTC, time not set."));
+            else {
+                String digitalTime = GetDigitalTimeString(GetRTCTime(), false);
+                SerialExt::Print(F("RTC Initialized: "), digitalTime);
+                //_initalized = true;
+            }
+            delay(200);//wait for rtc
+
+            //LoadNextRunInfos();
         }
 
         template<typename T = void>
         bool IsTimeToRun(AccessoryType accType) {
-
-            NextRunMemory& mem = FindNextRunInfo(accType);
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
 
             if(mem.RunEvery <= 0)return true;  //not using rtc
 
             time_t runTime = RTCExt::GetRTCTime();
-            UpdateNextRun(accType);
+
             time_t nextRun = mem.NextRun;
             //int runTime = TimerExt::GetRuntimeInSeconds();
             if(nextRun <= runTime) {
@@ -235,7 +227,11 @@ namespace Utils {
             }
             return false;
         }
-
+        template<typename T = void>
+        bool IsAccEnabled(AccessoryType accType) {
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            return mem.Enabled;
+        }
         template<typename T = long, typename N = long>
         String GetTimeFrequencyString(T && runEvery, N && nextRun) {
             String freq = "";
@@ -262,19 +258,33 @@ namespace Utils {
         void SetRunEvery(T && hour, M && accType) {
             T t(hour);
             long sec = ConvHoursToSec(hour);
-            NextRunMemory& nextRunMem = FindNextRunInfo(accType);
-
-            SerialExt::Debug("sec", sec);
+            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
 
             nextRunMem.RunEvery = sec;
             nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
 
-            //long re = nextRunMem.RunEvery;
-            //SerialExt::Debug("nextRunMem.RunEvery", re);
-
-            UpdateNextRun(accType);
+            RefreshNextRunInfo(accType);
         }
+        template<typename T = AccessoryType>
+        int GetRunEvery(T && accType) {
 
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            int shakes = mem.RunEvery;
+            return shakes;
+        }
+        template<typename T = int, typename M = AccessoryType>
+        void SetShakesOrTurns(T && shakesOrTurns, M && accType) {
+
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            mem.ShakesOrTurns = shakesOrTurns;
+        }
+        template<typename T = AccessoryType>
+        int GetShakesOrTurns(T && accType) {
+
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            int shakes = mem.ShakesOrTurns;
+            return shakes;
+        }
         template<typename T = void>
         void SetRTCTimeFromTemp() {
             SetRTCTime(_timeBuffer.Hour, _timeBuffer.Minute, _timeBuffer.Second, _timeBuffer.Day, _timeBuffer.Month, _timeBuffer.Year);
@@ -332,7 +342,7 @@ namespace Utils {
                 _timeBuffer.Minute = val;
             else if(rangeType == LCDMenu::RangeType::AmPm) {
 
-                NextRunMemory& nextRunMem = FindNextRunInfo(accType);
+                NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
 
                 //next run in seconds.
                 long nrSecs = nextRunMem.NextRun;
@@ -349,23 +359,20 @@ namespace Utils {
                 //meridian is last step so update time
                 time_t newNrTime = makeTime(_timeBuffer);
 
-                SerialExt::Debug("nextRunBuffer_min2", _timeBuffer.Minute);
-                SerialExt::Debug("nextRunBuffer_hour2", _timeBuffer.Hour);
-
                 nextRunMem.NextRun = newNrTime;
 
-                UpdateNextRun(accType);
+                RefreshNextRunInfo(accType);
             } else
                 return;
 
 
         }
-        template<typename P = AccessoryType>
-        void SetLastRun(P && accType) {
-            NextRunMemory& nextRunMem = FindNextRunInfo(accType);
-            nextRunMem.LastRun = GetRTCTime();
-            UpdateNextRun(accType);
-        }
+        //template<typename P = AccessoryType>
+        //void SetLastRun(P && accType) {
+        //NextRunMemory& nextRunMem = FindNextRunInfo(accType);
+        //nextRunMem.LastRun = GetRTCTime();
+        //UpdateNextRun(accType);
+        //}
         template<typename T = void>
         String GetRTCTimeString() {
             auto rtcTime = GetRTCTime();
@@ -380,10 +387,12 @@ namespace Utils {
             return timeString;
         }
 
+
     }
 }
-extern Models::NextRunMemory Utils::RTCExt::NextDoseInfo;
-extern Models::NextRunMemory Utils::RTCExt::NextFeedInfo;
+//extern Models::NextRunMemory Utils::RTCExt::NextDoseInfo;
+//extern Models::NextRunMemory Utils::RTCExt::NextFeedInfo;
+
 
 #endif
 

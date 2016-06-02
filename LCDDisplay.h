@@ -115,15 +115,12 @@ namespace LCD {
         void SelectMainMenu();
         void ExitMainMenu();
 
-        void PrintRunInfo(String lablel, AccessoryType accType);
+        void PrintRunInfo(NextRunMemory& nextRunMem);
         void PrintTime();
         void Scroll();
 
         String GetTimeFrequency(AccessoryType accType);
         String GetTimeLong(AccessoryType accType);
-
-        void SetShakesOrTurns(AccessoryType accType, short shakesOrTurns);
-        int GetShakesOrTurns(AccessoryType accType);
 
       protected:
       private:

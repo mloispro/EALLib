@@ -27,8 +27,6 @@ void LCDDisplay::CreateMenus() {
     if(_menus.size() > 0)
         _menus.clear();
 
-
-
     //menus
     AddMenu(mainMenu, _menuIndex++, clockMenu, mainMenu, _mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
     AddMenu(AccessoryType::Feeder);
@@ -134,7 +132,7 @@ String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::Accesso
         String txt = GetOptionAsNumber(F("01"), true);
         return txt.c_str();
     } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns) {
-        int shakes = GetShakesOrTurns(accType);
+        int shakes = RTCExt::GetShakesOrTurns(accType);
         return String(shakes).c_str();
     } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns) {
         LimitRange(0, 13);
@@ -206,7 +204,7 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
     } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns &&
               (accType == AccessoryType::Feeder ||
                accType == AccessoryType::DryDoser)) {
-        SetShakesOrTurns(accType, _optionCount);
+        RTCExt::SetShakesOrTurns(accType, _optionCount);
         //_lcdValCallBack(_optionCount);
     } else if(rangeType == LCDMenu::RangeType::OnOff &&
               (accType == AccessoryType::Feeder ||
@@ -271,17 +269,6 @@ void LCDDisplay::SetSelectedMenu(LCDMenu menu) {
     _selectedOptionId = menu.OptionId;
 
 }
-void LCDDisplay::SetShakesOrTurns(AccessoryType accType, short shakesOrTurns) {
-
-    NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
-    mem.ShakesOrTurns = shakesOrTurns;
-}
-int LCDDisplay::GetShakesOrTurns(AccessoryType accType) {
-
-    NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
-    int shakes = mem.ShakesOrTurns;
-    return shakes;
-}
 
 String LCDDisplay::GetOnOff() {
 
@@ -291,10 +278,13 @@ String LCDDisplay::GetOnOff() {
         return F("On");
 }
 void LCDDisplay::SetOnOff(AccessoryType accType) {
-    if(accType == AccessoryType::DryDoser)
-        TheControllerType.Doser = (bool)_optionCount;
-    else if(accType == AccessoryType::Feeder)
-        TheControllerType.Feeder = (bool)_optionCount;
+    NextRunMemory& mem = RTCExt::RefreshNextRunInfo(accType);
+
+    if(mem.Enabled == (bool)_optionCount)
+        return;
+
+    mem.Enabled = (bool)_optionCount;
+    RTCExt::RefreshNextRunInfo(accType, true);
 
     if(_optionCount == 0)
         _menuIndex--;
@@ -302,9 +292,9 @@ void LCDDisplay::SetOnOff(AccessoryType accType) {
     AddMenu(accType);
 }
 void LCDDisplay::AddMenu(AccessoryType accType) {
-    if(TheControllerType.Feeder)
+    if(accType == AccessoryType::Feeder)
         AddMenu(mainMenu, _menuIndex++, feedMenu, mainMenu, _mainMenuText, F("Feeder"), LCDMenu::RangeType::Nav);
-    if(TheControllerType.Doser)
+    if(accType == AccessoryType::DryDoser)
         AddMenu(mainMenu, _menuIndex++, doserMenu, mainMenu, _mainMenuText, F("Doser"), LCDMenu::RangeType::Nav);
 }
 //template<typename T = void>
@@ -490,9 +480,13 @@ void LCDDisplay::PrintTime() {
     delay(_scrollDelay);
 }
 
-void LCDDisplay::PrintRunInfo(String label, AccessoryType accType) {
-    RTCExt::UpdateNextRun(accType);
-    NextRunMemory& nextRunMem = RTCExt::FindNextRunInfo(accType);
+void LCDDisplay::PrintRunInfo(NextRunMemory& nextRunMem) {
+
+    String label;
+    if(nextRunMem.AccType == AccessoryType::Feeder)
+        label = F("Feed");
+    else if(nextRunMem.AccType == AccessoryType::DryDoser)
+        label = F("Doser");
 
     if(nextRunMem.RunEvery <= 0) {
         _lcd.clear();
@@ -549,6 +543,9 @@ void LCDDisplay::Scroll() {
 
     scrolling = true;
 
+    NextRunMemory& feederNextRunMem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+    NextRunMemory& doserNextRunMem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+
     while(scrolling) {
 
         //SerialExt::Debug("_scrollIndex", _scrollIndex);
@@ -559,12 +556,12 @@ void LCDDisplay::Scroll() {
                 PrintInstructions();
                 break;
             case 1:
-                if(Globals::TheControllerType.Feeder)
-                    PrintRunInfo(F("Feed"), AccessoryType::Feeder);
+                if(feederNextRunMem.Enabled)
+                    PrintRunInfo(feederNextRunMem);
                 break;
             case 2:
-                if(Globals::TheControllerType.Doser)
-                    PrintRunInfo(F("Dose"), AccessoryType::DryDoser);
+                if(doserNextRunMem.Enabled)
+                    PrintRunInfo(doserNextRunMem);
                 break;
             default:
                 PrintTime();
@@ -592,7 +589,7 @@ String LCDDisplay::GetTimeFrequency(AccessoryType accType) {
     long runEvery;
     long nextRun;
 
-    NextRunMemory& nextRunMem = RTCExt::FindNextRunInfo(accType);
+    NextRunMemory& nextRunMem = RTCExt::RefreshNextRunInfo(accType);
 
     runEvery = nextRunMem.RunEvery;
     nextRun = nextRunMem.NextRun;

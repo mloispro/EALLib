@@ -29,12 +29,12 @@ class FishFeeder : public ServoMotor {
 
   public:
     FishFeeder();
-    FishFeeder(Servo servo, int pin, int shakes, long runEverySeconds);
-    FishFeeder(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds);
-    static vector<FishFeeder> CreateFeeders(int numOfFeeders, int startingPin);
+    FishFeeder(Servo servo, int pin, int shakes, long runEverySeconds, bool enabled);
+    FishFeeder(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds, bool enabled);
+    static vector<FishFeeder> CreateFeeders(int numOfFeeders, int startingPin, bool enabled);
     static void FeedAll(vector<FishFeeder> feeders, int potVal);
     static void RunDemo(vector<FishFeeder> feeders);
-    static FishFeeder CreateFeeder(int pin, short shakes, long runEvery);
+    static FishFeeder CreateFeeder(int pin, short shakes, long runEvery, bool enabled);
     static void FeedAll(vector<FishFeeder> feeders);
 };
 
