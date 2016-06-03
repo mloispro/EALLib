@@ -120,7 +120,7 @@ namespace Utils {
             NextRunMemory mem;
             //mem.Pin = pin;
             mem.AccType = accType;
-            NextRunMemory& newMem = MemoryExt::SaveNextRunMem(mem);
+            NextRunMemory newMem = MemoryExt::SaveNextRunMem(mem);
             if(!_memoryContainer.NextRunInfoExists(accType))
                 _memoryContainer.AddNextRunInfo(newMem);
 

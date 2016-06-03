@@ -108,7 +108,7 @@ namespace Utils {
         }
 
         template<typename T>
-        T& SaveNextRunMem(T&& mem) {
+        NextRunMemory SaveNextRunMem(T&& mem) {
             SerialExt::Debug("--SaveNextRunMem--");
 
             int index = GetUpdateIndex(mem);
