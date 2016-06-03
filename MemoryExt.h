@@ -5,8 +5,8 @@
 
 #include <Arduino.h>
 
-//#include <StandardCplusplus.h>
-//#include <string>
+#include <StandardCplusplus.h>
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -17,9 +17,12 @@ using namespace std;
 //#include <EEPROMex.h>
 #include <MemoryFree.h>
 
+#include "_globals.h"
 #include "SerialExt.h"
 //#include "RTCExt.h"
 using namespace Utils;
+//using namespace Models;
+using namespace Globals;
 
 namespace Models {
 
@@ -41,6 +44,21 @@ namespace Models {
 }
 namespace Utils {
     using namespace Models;
+
+    class MemoryContainer {
+      private:
+
+      public:
+        //extern vector<Models::NextRunMemory> _nextRunInfos;
+        MemoryContainer() {};
+
+        bool NextRunInfoExists(AccessoryType accType);
+        //template<typename T = Globals::AccessoryType>
+        NextRunMemory& FindNextRunInfo(AccessoryType accType);
+        NextRunMemory& AddNextRunInfo(NextRunMemory& mem);
+    };
+    extern vector<Models::NextRunMemory> NextRunInfos;
+
 
     namespace MemoryExt {
         static vector<MemAddress> _memAddresses;
@@ -105,7 +123,7 @@ namespace Utils {
             return mem;
         }
         template<typename T>
-        T& GetNextRunMem(T&& mem) {
+        NextRunMemory GetNextRunMem(T&& mem) {
             T t(mem);
 
             SerialExt::Debug("--GetNextRunMem--");
@@ -119,7 +137,12 @@ namespace Utils {
 
             return eEEPROMmem;
         }
-
+        template<typename T = void>
+        void Erase() {
+            for(int i = 0 ; i < EEPROM.length() ; i++) {
+                EEPROM.write(i, 0);
+            }
+        }
 
 
         //retuns first if none have been saved.

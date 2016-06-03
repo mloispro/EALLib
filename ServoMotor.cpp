@@ -41,9 +41,10 @@ void ServoMotor::Init(int shakes, long runEverySeconds, bool enabled) {
     else if(_pos >= 174)
         _pos = 174;
 
+    RTCExt::LoadNextRunInfos(ServoType);
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(ServoType);
     if(mem.LastSave <= 0) {
-        RTCExt::LoadNextRunInfos(ServoType);
+        RTCExt::SaveNextRunInfos(ServoType);
 
         mem.Enabled = enabled;
         //mem.Pin = _pin;

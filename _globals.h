@@ -3,12 +3,6 @@
 #define _GLOBALS_H_
 #include <Arduino.h>
 
-#include <StandardCplusplus.h>
-#include <string>
-#include <vector>
-using namespace std;
-
-#include "MemoryExt.h"
 
 namespace Globals {
     enum AccessoryType : int {
@@ -21,7 +15,6 @@ namespace Globals {
         Lcd
     };
 
-    extern vector<Models::NextRunMemory> NextRunInfos;
 }
 
 

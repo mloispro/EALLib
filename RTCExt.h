@@ -41,10 +41,12 @@ namespace Utils {
 
         //static NextRunMemory NextFeedInfo;
         //static NextRunMemory NextDoseInfo;
+        static MemoryContainer _memoryContainer;
 
         //static only sticks local
         static tmElements_t _timeBuffer;
         //static tmElements_t _nextRunBuffer;
+
 
         template<typename T = void>
         long GetRTCTime() {
@@ -96,34 +98,43 @@ namespace Utils {
             else
                 return false;
         }
+        //loads collection from eeprom
         template<typename T = void>
         void LoadNextRunInfos(AccessoryType accType) {
             //int accTypeFeed = static_cast<int>(AccessoryType::Feeder);
             //int accTypeDoser = static_cast<int>(AccessoryType::DryDoser);
 
             NextRunMemory mem;
-            //mem.Pin = pin;
             mem.AccType = accType;
-            mem = MemoryExt::SaveNextRunMem(mem);
-            Globals::NextRunInfos.push_back(mem);
+            NextRunMemory newMem = MemoryExt::GetNextRunMem(mem);
+            //mem = MemoryExt::GetNextRunMem(mem);
+            if(!_memoryContainer.NextRunInfoExists(accType))
+                _memoryContainer.AddNextRunInfo(newMem);
 
         }
+        template<typename T = void>
+        void SaveNextRunInfos(AccessoryType accType) {
+            //int accTypeFeed = static_cast<int>(AccessoryType::Feeder);
+            //int accTypeDoser = static_cast<int>(AccessoryType::DryDoser);
 
-        //use RefreshNextRunInfo not FindNextRunInfo to get NextRunInfo
+            NextRunMemory mem;
+            //mem.Pin = pin;
+            mem.AccType = accType;
+            NextRunMemory& newMem = MemoryExt::SaveNextRunMem(mem);
+            if(!_memoryContainer.NextRunInfoExists(accType))
+                _memoryContainer.AddNextRunInfo(newMem);
+
+        }
         template<typename T = AccessoryType>
-        NextRunMemory & _FindNextRunInfo(T && accType) {
-
-            for(NextRunMemory& mem : Globals::NextRunInfos) {
-                if(mem.AccType == accType)
-                    return mem;
-            }
-
+        NextRunMemory & FindNextRunInfo(T && accType) {
+            NextRunMemory& mem = _memoryContainer.FindNextRunInfo(accType);
+            return mem;
         }
 
         template<typename T = AccessoryType, typename S = bool>
         NextRunMemory & RefreshNextRunInfo(T && accType, S && forceSave) {
 
-            NextRunMemory& nextRunMem = _FindNextRunInfo(accType);
+            NextRunMemory& nextRunMem = _memoryContainer.FindNextRunInfo((AccessoryType)accType);
 
             if(!nextRunMem.Enabled)
                 return nextRunMem;
@@ -389,6 +400,7 @@ namespace Utils {
 
 
     }
+    //extern MemoryContainer RTCExt::_memoryContainer;
 }
 //extern Models::NextRunMemory Utils::RTCExt::NextDoseInfo;
 //extern Models::NextRunMemory Utils::RTCExt::NextFeedInfo;
