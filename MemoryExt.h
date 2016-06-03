@@ -173,7 +173,16 @@ namespace Utils {
             Serial.println(mem);
 
         }
+        template<typename T = void>
+        extern String GetFreeMemory() {
+            int totalMem = 256; //mega has 256kb or 256000b
+            int mem = freeMemory();
+            int memKB = mem / 1000;
+            String total = String(memKB) + "kb out of " + String(totalMem) + "kb";
 
+            return total;
+
+        }
 
     }
 
