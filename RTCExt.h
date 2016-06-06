@@ -161,7 +161,7 @@ namespace Utils {
 
             NextRunMemory& nextRunMem = _memoryContainer.FindNextRunInfo((AccessoryType)accType);
 
-            if(!nextRunMem.Enabled)
+            if(!forceSave && !nextRunMem.Enabled)
                 return nextRunMem;
 
             auto rtcTime = GetRTCTime();

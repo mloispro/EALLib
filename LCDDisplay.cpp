@@ -28,25 +28,26 @@ void LCDDisplay::CreateMenus() {
     const String clockMenuText = F("Clock: [<] Back");
     const String settingsMenuText = F("Settings: [<] Back");
 
+
     if(_menus.size() > 0)
         _menus.clear();
 
     //menus
     AddMenu(mainMenu, _menuIndex++, clockMenu, mainMenu, _mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
-    AddMenu(mainMenu, _menuIndex++, feedMenu, mainMenu, _mainMenuText, F("Feeder"), LCDMenu::RangeType::Nav);
-    AddMenu(mainMenu, _menuIndex++, doserMenu, mainMenu, _mainMenuText, F("Doser"), LCDMenu::RangeType::Nav);
+    AddMenu(mainMenu, _menuIndex++, feedMenu, mainMenu, _mainMenuText, F("Feeders"), LCDMenu::RangeType::Nav);
+    AddMenu(mainMenu, _menuIndex++, doserMenu, mainMenu, _mainMenuText, F("Dosers"), LCDMenu::RangeType::Nav);
     AddMenu(mainMenu, _menuIndex++, settingsMenu, mainMenu, _mainMenuText, F("Settings"), LCDMenu::RangeType::Nav);
 
     int subMenuIndex = 0;
 
     //feed menus
-    AddMenu(feedMenu, subMenuIndex++, feedEnableMenu, mainMenu, feedMenuText, F("Feeder Enable"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
+    AddMenu(feedMenu, subMenuIndex++, feedEnableMenu, mainMenu, feedMenuText, F("Feeders"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedTimeMenu, mainMenu, feedMenuText, F("Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedFreqMenu, mainMenu, feedMenuText, F("Set Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedShakesMenu, mainMenu, feedMenuText, F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
 
     //feed on/off
-    AddMenu(feedEnableMenu, 0, feedEnableMenu, feedMenu, F("Feeder Set: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::Feeder);
+    AddMenu(feedEnableMenu, 0, feedMenu, feedMenu, F("Feeder On/Off: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::Feeder);
 
     //feed time
     AddMenu(feedTimeMenu, 0, feedTimeMenu, feedMenu, F("Feed Time: [<] Back"), F(""), LCDMenu::RangeType::TimeFrequency, AccessoryType::Feeder);
@@ -60,14 +61,16 @@ void LCDDisplay::CreateMenus() {
     AddMenu(feedShakesMenu, 1, feedSetShakesMenu, feedShakesMenu, F("Feed Shakes: [<] Back"), F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedSetShakesMenu, 0, feedShakesMenu, feedShakesMenu, F("Set Feed Shakes: [<] Back"), F("Not Set"), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::Feeder);
 
+    subMenuIndex = 0;
+
     //doser menus
-    AddMenu(doserMenu, subMenuIndex++, doserEnableMenu, mainMenu, doserMenuText, F("Doser Enable"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
+    AddMenu(doserMenu, subMenuIndex++, doserEnableMenu, mainMenu, doserMenuText, F("Dosers"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserTimeMenu, mainMenu, doserMenuText, F("Doser Time"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserFreqMenu, mainMenu, doserMenuText, F("Set Doser Time"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserShakesMenu, mainMenu, doserMenuText, F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
 
     //doser on/off
-    AddMenu(doserEnableMenu, 0, doserEnableMenu, doserMenu, F("Doser Set: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::DryDoser);
+    AddMenu(doserEnableMenu, 0, doserMenu, doserMenu, F("Doser On/Off: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::DryDoser);
 
     //dose time
     AddMenu(doserTimeMenu, 0, doserTimeMenu, doserMenu, F("Doser Time: [<] Back"), F(""), LCDMenu::RangeType::TimeFrequency, AccessoryType::DryDoser);
@@ -81,6 +84,8 @@ void LCDDisplay::CreateMenus() {
     AddMenu(doserShakesMenu, 1, doserSetShakesMenu, doserShakesMenu, F("Doser Shakes: [<] Back"), F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserSetShakesMenu, 0, doserShakesMenu, doserShakesMenu, F("Set Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::DryDoser);
 
+    subMenuIndex = 0;
+
     //clock menus
     AddMenu(clockMenu, 0, clockMenu, mainMenu, clockMenuText, F("Time"), LCDMenu::RangeType::TimeLong, AccessoryType::Clock);
     AddMenu(clockMenu, 1, clockYearMenu, clockMenu, clockMenuText, F("Set Clock Time"), LCDMenu::RangeType::Nav, AccessoryType::Clock);
@@ -90,6 +95,8 @@ void LCDDisplay::CreateMenus() {
     AddMenu(clockHourMenu, 0, clockMinMenu, clockDayMenu, F("Clock Hour: [<] Back"), F(""), LCDMenu::RangeType::Hour, AccessoryType::Clock);
     AddMenu(clockMinMenu, 0, clockAmPmMenu, clockHourMenu, F("Clock Min: [<] Back"), F(""), LCDMenu::RangeType::Minute, AccessoryType::Clock);
     AddMenu(clockAmPmMenu, 0, clockMenu, clockMinMenu, F("Clock AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::Clock);
+
+    subMenuIndex = 0;
 
     //settings
     AddMenu(settingsMenu, subMenuIndex++, settingsMenu, mainMenu, settingsMenuText, F("??"), LCDMenu::RangeType::ControllerType, AccessoryType::Lcd);
@@ -257,6 +264,28 @@ String LCDDisplay::GetOptionAsNumber(T&& defaultNumber) {
     return optnum;
 }
 
+String LCDDisplay::GetAccMenuOptionText(LCDMenu& menu) {
+
+    String accMenuOptionText = menu.OptionText;
+
+    bool isFeederMainMenuOption = ((menu.Id == mainMenu && menu.NextMenuId == feedMenu) || menu.NextMenuId == feedEnableMenu);
+    bool isDoserMainMenuOption = ((menu.Id == mainMenu && menu.NextMenuId == doserMenu) || menu.NextMenuId == doserEnableMenu);
+
+    if(isFeederMainMenuOption) {
+        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+        if(!mem.Enabled)
+            accMenuOptionText += F(" (Off)");
+    } else if(isDoserMainMenuOption) {
+        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+        if(!mem.Enabled)
+            accMenuOptionText += F(" (Off)");
+    }
+
+    return accMenuOptionText;
+}
+
+
+
 //get by ref example
 //auto& menu = GetMenu(5);
 LCDMenu LCDDisplay::GetMenu(short id, short optionId) {
@@ -292,9 +321,6 @@ String LCDDisplay::GetOnOff(AccessoryType accType) {
 }
 void LCDDisplay::SetOnOff(AccessoryType accType) {
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(accType);
-
-    if(mem.Enabled == (bool)_optionCount)
-        return;
 
     mem.Enabled = (bool)_optionCount;
     RTCExt::RefreshNextRunInfo(accType, true);
@@ -459,7 +485,7 @@ void LCDDisplay::PrintMenu(LCDMenu menu) {
     SerialExt::Debug("option", menu.OptionText);
     */
 
-    _optionText = menu.OptionText;
+    _optionText = GetAccMenuOptionText(menu).c_str();
     _menuText = menu.Text;
 
     String rangeOptionText = GetRangeOption(menu.TheRangeType, menu.AccType);
@@ -538,14 +564,22 @@ void LCDDisplay::PrintRunInfo(NextRunMemory& nextRunMem) {
 
     String label;
     if(nextRunMem.AccType == AccessoryType::Feeder)
-        label = F("Feed");
+        label = F("Feeders");
     else if(nextRunMem.AccType == AccessoryType::DryDoser)
-        label = F("Doser");
+        label = F("Dosers");
+
+    if(!nextRunMem.Enabled) {
+        _lcd.clear();
+        PrintLine(0, label);
+        PrintLine(1, F("(Disabled)"));
+        delay(_scrollDelay);
+        return;
+    }
 
     if(nextRunMem.RunEvery <= 0) {
         _lcd.clear();
         PrintLine(0, label);
-        PrintLine(1, F("Not Set"));
+        PrintLine(1, F("(Not Set)"));
         delay(_scrollDelay);
         return;
     }
@@ -614,12 +648,12 @@ void LCDDisplay::Scroll() {
                 PrintInstructions();
                 break;
             case 1:
-                if(feederNextRunMem.Enabled)
-                    PrintRunInfo(feederNextRunMem);
+
+                PrintRunInfo(feederNextRunMem);
                 break;
             case 2:
-                if(doserNextRunMem.Enabled)
-                    PrintRunInfo(doserNextRunMem);
+
+                PrintRunInfo(doserNextRunMem);
                 break;
             default:
                 PrintTime();

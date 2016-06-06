@@ -159,6 +159,7 @@ namespace LCD {
         void PrintInstructions();
         void IsKeyPressed();
         void HandleScrollText(short lineNum, String text);
+        String GetAccMenuOptionText(LCDMenu& menu);
 
     }; //LCDDisplay
 
