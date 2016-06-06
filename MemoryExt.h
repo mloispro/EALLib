@@ -39,7 +39,7 @@ namespace Models {
     };
     struct MemAddress {
         int AccType; //id
-        int Index;
+        int EndIndex;
     };
 }
 namespace Utils {
@@ -56,6 +56,7 @@ namespace Utils {
         //template<typename T = Globals::AccessoryType>
         NextRunMemory& FindNextRunInfo(AccessoryType accType);
         NextRunMemory& AddNextRunInfo(NextRunMemory& mem);
+        void ClearNextRunInfos();
     };
     extern vector<Models::NextRunMemory> NextRunInfos;
 
@@ -76,8 +77,8 @@ namespace Utils {
             //SerialExt::Debug(F("ShakesOrTurns"), mem.ShakesOrTurns);
         }
 
-        template<typename T>
-        int GetUpdateIndex(T&& mem) {
+        template<typename T = void>
+        int GetUpdateIndex(NextRunMemory mem) {
 
             int index = 0;
             int memSize = sizeof(NextRunMemory);
@@ -89,9 +90,9 @@ namespace Utils {
             bool foundMem = false;
             int agregateMemSize = 0;
             for(auto& memAddr : _memAddresses) {
-                agregateMemSize += memAddr.Index; //totals incase we have to add a new one
+                agregateMemSize += memAddr.EndIndex; //totals incase we have to add a new one
                 if(memAddr.AccType == mem.AccType) {
-                    index = memAddr.Index - memSize;
+                    index = memAddr.EndIndex - memSize;
                     foundMem = true;
                     break;
                 }
@@ -100,15 +101,15 @@ namespace Utils {
             if(!foundMem) { //if added, dont re-add
                 agregateMemSize += memSize;
                 _memAddresses.push_back(MemAddress{ mem.AccType, agregateMemSize });
-                index = agregateMemSize;
+                index = agregateMemSize - memSize;
             }
 
             return index;
 
         }
 
-        template<typename T>
-        NextRunMemory SaveNextRunMem(T&& mem) {
+        template<typename T = void>
+        NextRunMemory SaveNextRunMem(NextRunMemory mem) {
             SerialExt::Debug("--SaveNextRunMem--");
 
             int index = GetUpdateIndex(mem);
@@ -122,9 +123,9 @@ namespace Utils {
 
             return mem;
         }
-        template<typename T>
-        NextRunMemory GetNextRunMem(T&& mem) {
-            T t(mem);
+        template<typename T = void>
+        NextRunMemory GetNextRunMem(NextRunMemory mem) {
+            //T t(mem);
 
             SerialExt::Debug("--GetNextRunMem--");
 
@@ -132,6 +133,7 @@ namespace Utils {
 
             NextRunMemory eEEPROMmem; //Variable to store custom object read from EEPROM.
             EEPROM.get(index, eEEPROMmem);
+            eEEPROMmem.AccType = mem.AccType;
 
             PrintNextRunMemory("eEEPROMmem_Get", eEEPROMmem);
 

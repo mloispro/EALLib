@@ -5,19 +5,19 @@
 
 #include <Arduino.h>
 
-//#include <StandardCplusplus.h>
-//#include <string>
-//#include <vector>
+#include <StandardCplusplus.h>
+#include <string>
+#include <vector>
 
 
 #include <Wire.h>
 #include <TimeLib.h>
 #include <Time.h>
 #include <DS3232RTC.h>
-
+#include <EEPROM.h>
 
 //#include "EEPRomMem.h"
-//#include <EEPROM.h>
+
 #include "_globals.h"
 #include "MemoryExt.h"
 #include "SerialExt.h"
@@ -59,6 +59,8 @@ namespace Utils {
             setTime(theHour, theMinute, theSecond, theDay, theMonth, theYear);
             //#if !DEBUG
             RTC.set(now());
+
+            //RTCExt::Init();
             //#endif
             //tmElements_t tm;
             //tm.Hour = theHour;
@@ -69,6 +71,24 @@ namespace Utils {
             //time_t t = makeTime(tm);
             //RTC.set(t);
         }
+        template<typename T = void>
+        void Init() {
+            //#if !DEBUG
+            setSyncProvider(RTC.get);   // the function to get the time from the RTC
+            //#endif
+
+            if(timeStatus() != timeSet)
+                SerialExt::Print(F("Unable to sync with the RTC, time not set."));
+            else {
+                String digitalTime = GetDigitalTimeString(GetRTCTime(), false);
+                SerialExt::Print(F("RTC Initialized: "), digitalTime);
+                //_initalized = true;
+            }
+            delay(200);//wait for rtc
+
+            //LoadNextRunInfos();
+        }
+
         /*template<typename T = void>
         void SetDefaultRTCTime()
         {
@@ -113,7 +133,11 @@ namespace Utils {
 
         }
         template<typename T = void>
-        void SaveNextRunInfos(AccessoryType accType) {
+        void ClearNextRunInfos() {
+            _memoryContainer.ClearNextRunInfos();
+        }
+        template<typename T = void>
+        NextRunMemory & SaveNextRunInfos(AccessoryType accType) {
             //int accTypeFeed = static_cast<int>(AccessoryType::Feeder);
             //int accTypeDoser = static_cast<int>(AccessoryType::DryDoser);
 
@@ -124,6 +148,7 @@ namespace Utils {
             if(!_memoryContainer.NextRunInfoExists(accType))
                 _memoryContainer.AddNextRunInfo(newMem);
 
+            return newMem;
         }
         template<typename T = AccessoryType>
         NextRunMemory & FindNextRunInfo(T && accType) {
@@ -204,24 +229,7 @@ namespace Utils {
             RefreshNextRunInfo(accType, false);
         }
 
-        template<typename T = void>
-        void Init() {
 
-            //#if !DEBUG
-            setSyncProvider(RTC.get);   // the function to get the time from the RTC
-            //#endif
-
-            if(timeStatus() != timeSet)
-                SerialExt::Print(F("Unable to sync with the RTC, time not set."));
-            else {
-                String digitalTime = GetDigitalTimeString(GetRTCTime(), false);
-                SerialExt::Print(F("RTC Initialized: "), digitalTime);
-                //_initalized = true;
-            }
-            delay(200);//wait for rtc
-
-            //LoadNextRunInfos();
-        }
 
         template<typename T = void>
         bool IsTimeToRun(AccessoryType accType) {
@@ -372,7 +380,7 @@ namespace Utils {
 
                 nextRunMem.NextRun = newNrTime;
 
-                RefreshNextRunInfo(accType);
+                RefreshNextRunInfo(accType, true);
             } else
                 return;
 

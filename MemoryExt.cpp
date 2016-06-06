@@ -28,6 +28,10 @@ NextRunMemory& Utils::MemoryContainer::AddNextRunInfo(NextRunMemory& mem) {
     return mem;
 }
 
+void Utils::MemoryContainer::ClearNextRunInfos() {
+    NextRunInfos.clear();
+}
+
 //extern Models::NextRunMemory Globals::FindNextRunInfo(Globals::AccessoryType accType) {
 //int sizev = Globals::NextRunInfos.size();
 //for(NextRunMemory& mem : Globals::NextRunInfos) {

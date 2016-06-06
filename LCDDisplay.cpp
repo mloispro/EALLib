@@ -4,6 +4,10 @@
 
 using namespace LCD;
 
+//static vars
+extern int  LCDDisplay::_keyValues[5] = { 50, 200, 400, 600, 800 };
+extern short LCDDisplay::_numOfKeys = 5;
+
 void LCDDisplay::Init() {
 
     pinMode(10, INPUT); //keep lcd from shorting out.
@@ -253,11 +257,8 @@ String LCDDisplay::GetOptionAsNumber(T&& defaultNumber) {
     return optnum;
 }
 
-
-
 //get by ref example
 //auto& menu = GetMenu(5);
-//LCDMenu& operator=(const LCDMenu& c);
 LCDMenu LCDDisplay::GetMenu(short id, short optionId) {
     auto selectedMenu = _menus[0];
     for(auto menu : _menus) {
@@ -279,10 +280,10 @@ void LCDDisplay::SetSelectedMenu(LCDMenu menu) {
 
 String LCDDisplay::GetOnOff(AccessoryType accType) {
 
-    if(!_optionChanged) {
-        NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
-        _optionCount = mem.Enabled;
-    }
+    //if(!_optionChanged) {
+    //NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
+    //_optionCount = mem.Enabled;
+    //}
 
     if(_optionCount == 0)
         return F("Off");
@@ -345,6 +346,7 @@ void LCDDisplay::SelectMainMenu() {
 }
 
 void LCDDisplay::ExitMainMenu() {
+    // _scrollRightTimer.deleteTimer(_scrollRightTimerId);
     _selectedMenuId = -1;
     _selectedOptionId = -1;
 }
@@ -367,7 +369,7 @@ void LCDDisplay::NextOption() {
         if(nextMenu.Id == _selectedMenuId && nextMenu.OptionId == nextOptionId)
             _selectedOptionId = nextOptionId;
 
-        _optionChanged = true;
+        // _optionChanged = true;
     }
 
     auto selectedMenu = GetSelectedMenu();
@@ -384,7 +386,7 @@ void LCDDisplay::PreviousOption() {
         if(prevMenu.Id == _selectedMenuId && prevMenu.OptionId == prevOptionId)
             _selectedOptionId = prevOptionId;
 
-        _optionChanged = true;
+        //_optionChanged = true;
     }
 
     auto selectedMenu = GetSelectedMenu();
@@ -411,14 +413,23 @@ void LCDDisplay::SelectButton() {
     auto nextMenu = GetMenu(selectedMenu.NextMenuId, 0);
     SetSelectedMenu(nextMenu);
     PrintMenu(nextMenu);
-    _optionChanged = false;
+    // _optionChanged = false;
     delay(_selectDelay);
 
+}
+
+void LCDDisplay::IsKeyPressed() {
+    int key = GetKey();
+    if(key == 0 || key == 1 || key == 2 || key == 3 || key == 4)
+        _optionChanged = true;
 }
 
 void LCDDisplay::DetectKeyPress() {
     int key = GetKey();
     //SerialExt::Debug("key_dkp:", key);
+
+    if(key == 0 || key == 1 || key == 2 || key == 3 || key == 4)
+        _optionChanged = true;
 
     switch(key) {
         case 0: //right
@@ -448,30 +459,66 @@ void LCDDisplay::PrintMenu(LCDMenu menu) {
     SerialExt::Debug("option", menu.OptionText);
     */
 
-    String optionText = menu.OptionText;
+    _optionText = menu.OptionText;
+    _menuText = menu.Text;
 
     String rangeOptionText = GetRangeOption(menu.TheRangeType, menu.AccType);
 
     if(rangeOptionText != "") {
-        optionText = rangeOptionText;
+        _optionText = rangeOptionText;
         //optionText = StaticUtils::ParseString(rangeOptionText);
     }
 
     _lcd.clear();
 
-    //_lcd.setCursor(0, 0);
-    PrintLine(0, menu.Text);
-    PrintLine(1, optionText);
-    _lcd.noAutoscroll();
-    if(menu.Text.length() > 16) {
-        _lcd.autoscroll();
+    //_lcd.home();
+    //_lcd.noAutoscroll();
+    //if(_menuText.length() > 16) {
+    //_lcd.autoscroll();
+    //}
+    _optionChanged = false;
+
+    PrintLine(0, _menuText);
+    PrintLine(1, _optionText);
+
+    if(_prevMenuId != _selectedMenuId) {
+        HandleScrollText(0, _menuText);
+        HandleScrollText(1, _optionText);
+    }
+
+    _prevMenuId = _selectedMenuId;
+
+}
+void LCDDisplay::HandleScrollText(short lineNum, String text) {
+    delay(200);
+    if(text.length() > 16) {
+        int pos = (text.length() * -1) - 12;
+        for(int i = 0; i < text.length() - 12; i++) {
+            pos += 1;
+            _lcd.setCursor(0, lineNum);
+            _lcd.print("                 ");
+            _lcd.setCursor(pos, lineNum);
+            _lcd.print(text);
+            IsKeyPressed();
+            if(_optionChanged) {
+                PrintLine(0, _menuText);
+                PrintLine(1, _optionText);
+                return;
+            }
+
+            delay(300);
+        }
+        _lcd.setCursor(0, lineNum);
+        _lcd.print(text);
+        //delay(500);
     }
 }
-
 void LCDDisplay::PrintLine(short lineNum, String text) {
     _lcd.setCursor(0, lineNum);
     _lcd.print(text);
 }
+
+
 void LCDDisplay::PrintTime() {
 
     auto rtcTime = RTCExt::GetRTCTime();
@@ -555,8 +602,12 @@ void LCDDisplay::Scroll() {
 
     while(scrolling) {
 
-        //SerialExt::Debug("_scrollIndex", _scrollIndex);
-        //SerialExt::Debug("scrolling_time_beg", RTCExt::GetRTCTimeString());
+        int key = GetKey();
+        if(key == 4) {
+            _scrollIndex = 0;
+            scrolling = false;
+            return;
+        }
 
         switch(_scrollIndex) {
             case 0:

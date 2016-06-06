@@ -20,6 +20,7 @@ using namespace std;
 #include <Time.h>
 #include <DS3232RTC.h>
 #include <LiquidCrystal.h>
+#include <SimpleTimer.h>
 
 #include "_globals.h"
 using namespace Globals;
@@ -34,7 +35,7 @@ using namespace Globals;
 namespace LCD {
 
     class LCDDisplay {
-        //variables
+
       public:
       protected:
       private:
@@ -80,34 +81,38 @@ namespace LCD {
         //String _selectedText;
         short _selectedMenuId = -1;
         short _selectedOptionId = -1;
+        int _optionCount;
+        short _prevMenuId;
 
         int _lowerLimit;
         int _upperLimit;
 
         //--key press
-        int _keyValues[5] = { 50, 200, 400, 600, 800 };
-        short _numOfKeys = 5;
+        // int _keyValues[5] = { 50, 200, 400, 600, 800 };
+        static int  _keyValues[5];
+        static short _numOfKeys;
 
+        bool _optionChanged;
+        //static String _menuText;
+        String _optionText;
+        String _menuText;
+        //char const n[3]{'a', 'b', 'c'};
+        //LiquidCrystal _lcd;
+        //bool _optionChanged = false;
+
+        //SimpleTimer _scrollRightTimer;
+        //int _scrollRightTimerId = 0;
         LiquidCrystal _lcd;
-        //LiquidCrystal* _lcd = new LiquidCrystal(8, 9, 4, 5, 6, 7);
-
-        bool _optionChanged = false;
-        //void AddDoserMenu();
-        //functions
       public:
 
-        int _optionCount;
-
-        LCDDisplay() : _lcd(8, 9, 4, 5, 6, 7) {};
-        //LCDDisplay(ControllerType controllerType) : _lcd(8, 9, 4, 5, 6, 7), _controllerType(controllerType) {};
-
+        LCDDisplay(): _lcd(8, 9, 4, 5, 6, 7) {};
 
         void Init();
 
         String GetRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
         void SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
 
-        int GetKey();
+        static int GetKey();
         void SelectMainMenu();
         void ExitMainMenu();
 
@@ -123,7 +128,7 @@ namespace LCD {
         LCDDisplay(const LCDDisplay& c);
         LCDDisplay& operator=(const LCDDisplay& c);
 
-        int GetKeyFromVal(unsigned int input);
+        static int GetKeyFromVal(unsigned int input);
         void NextOption();
         void PreviousOption();
         void LeftButton();
@@ -152,7 +157,10 @@ namespace LCD {
 
         void AddMenu(AccessoryType accType);
         void PrintInstructions();
+        void IsKeyPressed();
+        void HandleScrollText(short lineNum, String text);
 
     }; //LCDDisplay
+
 }
 #endif
