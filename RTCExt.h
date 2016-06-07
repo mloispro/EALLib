@@ -282,7 +282,7 @@ namespace Utils {
             nextRunMem.RunEvery = sec;
             nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
 
-            RefreshNextRunInfo(accType);
+            RefreshNextRunInfo(accType, true);
         }
         template<typename T = AccessoryType>
         int GetRunEvery(T && accType) {
@@ -296,6 +296,7 @@ namespace Utils {
 
             NextRunMemory& mem = RefreshNextRunInfo(accType);
             mem.ShakesOrTurns = shakesOrTurns;
+            RefreshNextRunInfo(accType, true);
         }
         template<typename T = AccessoryType>
         int GetShakesOrTurns(T && accType) {
@@ -379,7 +380,12 @@ namespace Utils {
                 time_t newNrTime = makeTime(_timeBuffer);
 
                 nextRunMem.NextRun = newNrTime;
-
+                nextRunMem.LastRun = -1; //force recalculate
+                RefreshNextRunInfo(accType, true);
+            } else if(rangeType == LCDMenu::RangeType::RunNow) {
+                NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+                nextRunMem.NextRun = RTCExt::GetRTCTime();
+                nextRunMem.LastRun = -1; //force recalculate
                 RefreshNextRunInfo(accType, true);
             } else
                 return;

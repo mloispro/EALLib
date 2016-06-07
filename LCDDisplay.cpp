@@ -42,12 +42,16 @@ void LCDDisplay::CreateMenus() {
 
     //feed menus
     AddMenu(feedMenu, subMenuIndex++, feedEnableMenu, mainMenu, feedMenuText, F("Feeders"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
+    AddMenu(feedMenu, subMenuIndex++, feedNowMenu, mainMenu, feedMenuText, F("Feed Now"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedTimeMenu, mainMenu, feedMenuText, F("Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedFreqMenu, mainMenu, feedMenuText, F("Set Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedShakesMenu, mainMenu, feedMenuText, F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
 
     //feed on/off
     AddMenu(feedEnableMenu, 0, feedMenu, feedMenu, F("Feeder On/Off: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::Feeder);
+
+    //feed now
+    AddMenu(feedNowMenu, 0, feedMenu, feedMenu, F("Feed Now: [<] Back"), F("Press [Select]"), LCDMenu::RangeType::RunNow, AccessoryType::Feeder);
 
     //feed time
     AddMenu(feedTimeMenu, 0, feedTimeMenu, feedMenu, F("Feed Time: [<] Back"), F(""), LCDMenu::RangeType::TimeFrequency, AccessoryType::Feeder);
@@ -57,20 +61,24 @@ void LCDDisplay::CreateMenus() {
     AddMenu(feedAmPmMenu, 0, feedTimeMenu, feedMinMenu, F("Feed AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::Feeder);
 
     //feed shakes
-    AddMenu(feedShakesMenu, 0, feedShakesMenu, feedMenu, F("Feed Shakes: [<] Back"), F("Not Set"), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::Feeder);
+    AddMenu(feedShakesMenu, 0, feedShakesMenu, feedMenu, F("Feed Shakes: [<] Back"), F("0"), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::Feeder);
     AddMenu(feedShakesMenu, 1, feedSetShakesMenu, feedShakesMenu, F("Feed Shakes: [<] Back"), F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
-    AddMenu(feedSetShakesMenu, 0, feedShakesMenu, feedShakesMenu, F("Set Feed Shakes: [<] Back"), F("Not Set"), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::Feeder);
+    AddMenu(feedSetShakesMenu, 0, feedMenu, feedShakesMenu, F("Set Feed Shakes: [<] Back"), F("Not Set"), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::Feeder);
 
     subMenuIndex = 0;
 
     //doser menus
     AddMenu(doserMenu, subMenuIndex++, doserEnableMenu, mainMenu, doserMenuText, F("Dosers"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
+    AddMenu(doserMenu, subMenuIndex++, doseNowMenu, mainMenu, doserMenuText, F("Dose Now"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserTimeMenu, mainMenu, doserMenuText, F("Doser Time"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserFreqMenu, mainMenu, doserMenuText, F("Set Doser Time"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserShakesMenu, mainMenu, doserMenuText, F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
 
     //doser on/off
     AddMenu(doserEnableMenu, 0, doserMenu, doserMenu, F("Doser On/Off: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::DryDoser);
+
+    //dose now
+    AddMenu(doseNowMenu, 0, doserMenu, doserMenu, F("Dose Now: [<] Back"), F("Press [Select]"), LCDMenu::RangeType::RunNow, AccessoryType::DryDoser);
 
     //dose time
     AddMenu(doserTimeMenu, 0, doserTimeMenu, doserMenu, F("Doser Time: [<] Back"), F(""), LCDMenu::RangeType::TimeFrequency, AccessoryType::DryDoser);
@@ -82,7 +90,7 @@ void LCDDisplay::CreateMenus() {
     //doser shakes
     AddMenu(doserShakesMenu, 0, doserShakesMenu, doserMenu, F("Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::DryDoser);
     AddMenu(doserShakesMenu, 1, doserSetShakesMenu, doserShakesMenu, F("Doser Shakes: [<] Back"), F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
-    AddMenu(doserSetShakesMenu, 0, doserShakesMenu, doserShakesMenu, F("Set Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::DryDoser);
+    AddMenu(doserSetShakesMenu, 0, doserMenu, doserShakesMenu, F("Set Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::DryDoser);
 
     subMenuIndex = 0;
 
@@ -149,9 +157,6 @@ String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::Accesso
         LimitRange(1, 31);
         String txt = GetOptionAsNumber(F("01"), true);
         return txt.c_str();
-    } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns) {
-        int shakes = RTCExt::GetShakesOrTurns(accType);
-        return String(shakes).c_str();
     } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns) {
         LimitRange(0, 13);
 
@@ -202,10 +207,13 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
             RTCExt::SetRunEvery(48, accType);
     } else if((rangeType == LCDMenu::RangeType::Hour ||
                rangeType == LCDMenu::RangeType::Minute ||
-               rangeType == LCDMenu::RangeType::AmPm) &&
+               rangeType == LCDMenu::RangeType::AmPm ||
+               rangeType == LCDMenu::RangeType::RunNow) &&
               (accType == AccessoryType::Feeder ||
                accType == AccessoryType::DryDoser)) {
         RTCExt::SetNextRun(_optionCount, rangeType, accType);
+        if(rangeType == LCDMenu::RangeType::RunNow)
+            ExitMainMenu(); //exit after run now, so run can execute.
     } else if(rangeType == LCDMenu::RangeType::TimeFrequency) {
         //Daily, 08:30AM
     } else if((rangeType == LCDMenu::RangeType::Year ||
@@ -222,7 +230,7 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
     } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns &&
               (accType == AccessoryType::Feeder ||
                accType == AccessoryType::DryDoser)) {
-        RTCExt::SetShakesOrTurns(accType, _optionCount);
+        RTCExt::SetShakesOrTurns(_optionCount, accType);
         //_lcdValCallBack(_optionCount);
     } else if(rangeType == LCDMenu::RangeType::OnOff &&
               (accType == AccessoryType::Feeder ||
@@ -275,10 +283,15 @@ String LCDDisplay::GetAccMenuOptionText(LCDMenu& menu) {
         NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
         if(!mem.Enabled)
             accMenuOptionText += F(" (Off)");
+        else if(menu.NextMenuId == feedEnableMenu)
+            accMenuOptionText += F(" On/Off");
+
     } else if(isDoserMainMenuOption) {
         NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
         if(!mem.Enabled)
             accMenuOptionText += F(" (Off)");
+        else if(menu.NextMenuId == doserEnableMenu)
+            accMenuOptionText += F(" On/Off");
     }
 
     return accMenuOptionText;
@@ -361,9 +374,9 @@ void LCDDisplay::SelectMainMenu() {
     delay(_selectDelay);
 
     //timeout menu after 15min, 900
-    long menuTimeout = RTCExt::GetRTCTime() + 900;
+    _menuTimeout = RTCExt::GetRTCTime() + 900;
     while(_selectedMenuId > -1) {
-        if(RTCExt::GetRTCTime() > menuTimeout)
+        if(RTCExt::GetRTCTime() > _menuTimeout)
             ExitMainMenu();
 
         DetectKeyPress();
@@ -373,6 +386,7 @@ void LCDDisplay::SelectMainMenu() {
 
 void LCDDisplay::ExitMainMenu() {
     // _scrollRightTimer.deleteTimer(_scrollRightTimerId);
+    _menuTimeout = 0;
     _selectedMenuId = -1;
     _selectedOptionId = -1;
 }
@@ -526,7 +540,7 @@ void LCDDisplay::HandleScrollText(short lineNum, String text) {
             _lcd.setCursor(pos, lineNum);
             _lcd.print(text);
             IsKeyPressed();
-            if(_optionChanged) {
+            if(_optionChanged && _selectedMenuId > -1) {
                 PrintLine(0, _menuText);
                 PrintLine(1, _optionText);
                 return;
@@ -588,24 +602,30 @@ void LCDDisplay::PrintRunInfo(NextRunMemory& nextRunMem) {
     String countDown = TimeHelpers::GetTimeRemainingString(nextRunMem.CountDown, false);
     String nextRun = TimeHelpers::GetShortDateTimeString(nextRunMem.NextRun, false);
 
+    String nextRunText = label + " Last Run:";
+    String countDownText = label + " Count Down:";
+    String runEveryText = label + " Next Run:";
 
     for(int i = 0; i <= 3; i++) {
 
         switch(i) {
             case 0:
                 _lcd.clear();
-                PrintLine(0, label + " Last Run:");
+                PrintLine(0, nextRunText);
                 PrintLine(1, lastRun);
+                HandleScrollText(0, nextRunText);
                 break;
             case 1:
                 _lcd.clear();
-                PrintLine(0, label + " Count Down:");
+                PrintLine(0, countDownText);
                 PrintLine(1, countDown);
+                HandleScrollText(0, countDownText);
                 break;
             case 2:
                 _lcd.clear();
-                PrintLine(0, label + " Next Run:");
+                PrintLine(0, runEveryText);
                 PrintLine(1, nextRun);
+                HandleScrollText(0, runEveryText);
                 break;
             default:
                 break;

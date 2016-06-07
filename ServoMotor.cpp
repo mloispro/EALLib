@@ -22,6 +22,8 @@
 //ServoMotor::ServoMotor(Servo servo, int pin, int shakes, short relayPin) :
 //	ServoMotor(servo, pin, shakes, 0, 14, relayPin){};
 
+
+
 ServoMotor::ServoMotor(Servo servo, int pin, int shakes, int pos, int theSpeed, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, AccessoryType servoType, bool enabled) :
     TheServo(servo), TheSwitch(theSwitch), RelayPin(relayPin), _theSpeed(theSpeed), _pin(pin), _pos(pos), ServoType(servoType) {
     //TranslateSpeed();
@@ -262,6 +264,8 @@ int ServoMotor::TranslateSpeed() {
     }
     return speed;
 }
+//vector<ServoMotor> Motors;
+
 
 #pragma region SERIAL_INPUT
 

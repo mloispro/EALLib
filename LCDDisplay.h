@@ -66,8 +66,10 @@ namespace LCD {
         static const short settingsMenu = 24;
         static const short feedEnableMenu = 25;
         static const short doserEnableMenu = 26;
-        static const short pumpMenu = 27;
-        static const short pumpEnableMenu = 28;
+        static const short feedNowMenu = 27;
+        static const short doseNowMenu = 29;
+        static const short pumpMenu = 30;
+        static const short pumpEnableMenu = 31;
 
         short _menuIndex = 0;
         String _mainMenuText = "";
@@ -96,6 +98,7 @@ namespace LCD {
         //static String _menuText;
         String _optionText;
         String _menuText;
+        long _menuTimeout = 0;
         //char const n[3]{'a', 'b', 'c'};
         //LiquidCrystal _lcd;
         //bool _optionChanged = false;

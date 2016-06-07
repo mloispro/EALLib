@@ -1,7 +1,11 @@
 
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
+
 #include <Arduino.h>
+#include <StandardCplusplus.h>
+#include <vector>
+using namespace std;
 
 
 namespace Globals {

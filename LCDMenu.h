@@ -32,7 +32,8 @@ class LCDMenu {
         ShakesOrTurns,
         SetShakesOrTurns,
         ControllerType,
-        OnOff
+        OnOff,
+        RunNow
         //DoserOnOff,
         //FeederOnOff
     };
