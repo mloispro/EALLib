@@ -30,6 +30,7 @@ using namespace Utils;
 
 using namespace Models;
 using namespace TimeHelpers;
+using namespace LCD;
 
 
 namespace Utils {
@@ -292,7 +293,7 @@ namespace Utils {
             return shakes;
         }
         template<typename T = int, typename M = AccessoryType>
-        void SetShakesOrTurns(T && shakesOrTurns, M && accType) {
+        void SetMotorShakesOrTurns(T && shakesOrTurns, M && accType) {
 
             NextRunMemory& mem = RefreshNextRunInfo(accType);
             mem.ShakesOrTurns = shakesOrTurns;

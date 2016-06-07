@@ -112,7 +112,9 @@ namespace LCD {
 
         void Init();
 
-        String GetRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
+        String GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType);
+        //template<typename R = LCDMenu::RangeType, typename A = Globals::AccessoryType>
+        //String GetRangeOption(R& rangeType, A& accType);
         void SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
 
         static int GetKey();
@@ -162,7 +164,8 @@ namespace LCD {
         void PrintInstructions();
         void IsKeyPressed();
         void HandleScrollText(short lineNum, String text);
-        String GetAccMenuOptionText(LCDMenu& menu);
+        String GetAccMenuOptionText(LCDMenu menu);
+        String GetShakesTurnsOptionText(LCDMenu menu);
 
     }; //LCDDisplay
 

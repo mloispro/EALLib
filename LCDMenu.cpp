@@ -1,7 +1,7 @@
 
 #include "LCDMenu.h"
 
-
+//extern enum LCDMenu::RangeType;
 
 
 

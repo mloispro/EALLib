@@ -45,7 +45,7 @@ void LCDDisplay::CreateMenus() {
     AddMenu(feedMenu, subMenuIndex++, feedNowMenu, mainMenu, feedMenuText, F("Feed Now"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedTimeMenu, mainMenu, feedMenuText, F("Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedFreqMenu, mainMenu, feedMenuText, F("Set Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
-    AddMenu(feedMenu, subMenuIndex++, feedShakesMenu, mainMenu, feedMenuText, F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
+    AddMenu(feedMenu, subMenuIndex++, feedShakesMenu, mainMenu, feedMenuText, F("Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
 
     //feed on/off
     AddMenu(feedEnableMenu, 0, feedMenu, feedMenu, F("Feeder On/Off: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::Feeder);
@@ -61,9 +61,9 @@ void LCDDisplay::CreateMenus() {
     AddMenu(feedAmPmMenu, 0, feedTimeMenu, feedMinMenu, F("Feed AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::Feeder);
 
     //feed shakes
-    AddMenu(feedShakesMenu, 0, feedShakesMenu, feedMenu, F("Feed Shakes: [<] Back"), F("0"), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::Feeder);
-    AddMenu(feedShakesMenu, 1, feedSetShakesMenu, feedShakesMenu, F("Feed Shakes: [<] Back"), F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
-    AddMenu(feedSetShakesMenu, 0, feedMenu, feedShakesMenu, F("Set Feed Shakes: [<] Back"), F("Not Set"), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::Feeder);
+    AddMenu(feedShakesMenu, 0, feedMenu, feedMenu, F("Feed Shakes: [<] Back"), F("0"), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::Feeder);
+    //AddMenu(feedShakesMenu, 1, feedSetShakesMenu, feedShakesMenu, F("Feed Shakes: [<] Back"), F("Set Feed Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
+    //AddMenu(feedSetShakesMenu, 0, feedMenu, feedShakesMenu, F("Feed Shakes: [<] Back"), F("Not Set"), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::Feeder);
 
     subMenuIndex = 0;
 
@@ -88,9 +88,7 @@ void LCDDisplay::CreateMenus() {
     AddMenu(doserAmPmMenu, 0, doserTimeMenu, doserMinMenu, F("Doser AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::DryDoser);
 
     //doser shakes
-    AddMenu(doserShakesMenu, 0, doserShakesMenu, doserMenu, F("Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::DryDoser);
-    AddMenu(doserShakesMenu, 1, doserSetShakesMenu, doserShakesMenu, F("Doser Shakes: [<] Back"), F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
-    AddMenu(doserSetShakesMenu, 0, doserMenu, doserShakesMenu, F("Set Doser Shakes: [<] Back"), F(""), LCDMenu::RangeType::SetShakesOrTurns, AccessoryType::DryDoser);
+    AddMenu(doserShakesMenu, 0, doserMenu, doserMenu, F("Doser Shakes: [<] Back"), F("0"), LCDMenu::RangeType::ShakesOrTurns, AccessoryType::DryDoser);
 
     subMenuIndex = 0;
 
@@ -112,6 +110,7 @@ void LCDDisplay::CreateMenus() {
 
 
 }
+
 String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType) {
 
     if(rangeType == LCDMenu::RangeType::Frequency) {
@@ -157,7 +156,7 @@ String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::Accesso
         LimitRange(1, 31);
         String txt = GetOptionAsNumber(F("01"), true);
         return txt.c_str();
-    } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns) {
+    } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns) {
         LimitRange(0, 13);
 
         String txt = GetOptionAsNumber(F("0"));
@@ -227,10 +226,10 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
               accType == AccessoryType::Clock) {
         RTCExt::SetTimeTemp(_optionCount, rangeType);
         RTCExt::SetRTCTimeFromTemp();
-    } else if(rangeType == LCDMenu::RangeType::SetShakesOrTurns &&
+    } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns &&
               (accType == AccessoryType::Feeder ||
                accType == AccessoryType::DryDoser)) {
-        RTCExt::SetShakesOrTurns(_optionCount, accType);
+        RTCExt::SetMotorShakesOrTurns(_optionCount, accType);
         //_lcdValCallBack(_optionCount);
     } else if(rangeType == LCDMenu::RangeType::OnOff &&
               (accType == AccessoryType::Feeder ||
@@ -272,14 +271,54 @@ String LCDDisplay::GetOptionAsNumber(T&& defaultNumber) {
     return optnum;
 }
 
-String LCDDisplay::GetAccMenuOptionText(LCDMenu& menu) {
+String LCDDisplay::GetShakesTurnsOptionText(LCDMenu menu) {
 
+    bool foundOption = false;
+    String accMenuOptionText = menu.OptionText;
+
+    int feedNextMenu = feedShakesMenu;
+    int doseNextMenu = doserShakesMenu;
+
+    bool isFeederMainMenuOption = ((menu.Id == feedMenu && menu.NextMenuId == feedNextMenu) || menu.Id == feedNextMenu);
+    bool isDoserMainMenuOption = ((menu.Id == doserMenu && menu.NextMenuId == doseNextMenu) || menu.Id == doseNextMenu);
+
+    if(isFeederMainMenuOption) {
+        foundOption = true;
+        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+        String shakes = String(mem.ShakesOrTurns);
+        accMenuOptionText += " (" + shakes + ")";
+        //alert: example: load range val from mem
+        if(menu.Id == feedNextMenu && _prevMenuId != feedNextMenu) {
+            accMenuOptionText = shakes;
+            _optionCount = mem.ShakesOrTurns;
+        }
+    } else if(isDoserMainMenuOption) {
+        foundOption = true;
+        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+        String shakes = String(mem.ShakesOrTurns);
+        accMenuOptionText += " (" + shakes + ")";
+        if(menu.Id == doseNextMenu && _prevMenuId != doseNextMenu) {
+            accMenuOptionText = shakes;
+            _optionCount = mem.ShakesOrTurns;
+        }
+    }
+
+    //if(!foundOption)
+    //accMenuOptionText = nextMethod...(menu);
+
+    return accMenuOptionText;
+}
+
+String LCDDisplay::GetAccMenuOptionText(LCDMenu menu) {
+
+    bool foundOption = false;
     String accMenuOptionText = menu.OptionText;
 
     bool isFeederMainMenuOption = ((menu.Id == mainMenu && menu.NextMenuId == feedMenu) || menu.NextMenuId == feedEnableMenu);
     bool isDoserMainMenuOption = ((menu.Id == mainMenu && menu.NextMenuId == doserMenu) || menu.NextMenuId == doserEnableMenu);
 
     if(isFeederMainMenuOption) {
+        foundOption = true;
         NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
         if(!mem.Enabled)
             accMenuOptionText += F(" (Off)");
@@ -287,12 +326,16 @@ String LCDDisplay::GetAccMenuOptionText(LCDMenu& menu) {
             accMenuOptionText += F(" On/Off");
 
     } else if(isDoserMainMenuOption) {
+        foundOption = true;
         NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
         if(!mem.Enabled)
             accMenuOptionText += F(" (Off)");
         else if(menu.NextMenuId == doserEnableMenu)
             accMenuOptionText += F(" On/Off");
     }
+
+    if(!foundOption)
+        accMenuOptionText = GetShakesTurnsOptionText(menu).c_str();
 
     return accMenuOptionText;
 }
