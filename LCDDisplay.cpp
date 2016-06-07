@@ -41,8 +41,8 @@ void LCDDisplay::CreateMenus() {
     int subMenuIndex = 0;
 
     //feed menus
-    AddMenu(feedMenu, subMenuIndex++, feedEnableMenu, mainMenu, feedMenuText, F("Feeders"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedNowMenu, mainMenu, feedMenuText, F("Feed Now"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
+    AddMenu(feedMenu, subMenuIndex++, feedEnableMenu, mainMenu, feedMenuText, F("Feeders"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedTimeMenu, mainMenu, feedMenuText, F("Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedFreqMenu, mainMenu, feedMenuText, F("Set Feed Time"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
     AddMenu(feedMenu, subMenuIndex++, feedShakesMenu, mainMenu, feedMenuText, F("Shakes"), LCDMenu::RangeType::Nav, AccessoryType::Feeder);
@@ -68,8 +68,8 @@ void LCDDisplay::CreateMenus() {
     subMenuIndex = 0;
 
     //doser menus
-    AddMenu(doserMenu, subMenuIndex++, doserEnableMenu, mainMenu, doserMenuText, F("Dosers"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doseNowMenu, mainMenu, doserMenuText, F("Dose Now"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
+    AddMenu(doserMenu, subMenuIndex++, doserEnableMenu, mainMenu, doserMenuText, F("Dosers"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserTimeMenu, mainMenu, doserMenuText, F("Doser Time"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserFreqMenu, mainMenu, doserMenuText, F("Set Doser Time"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
     AddMenu(doserMenu, subMenuIndex++, doserShakesMenu, mainMenu, doserMenuText, F("Set Doser Shakes"), LCDMenu::RangeType::Nav, AccessoryType::DryDoser);
@@ -271,71 +271,97 @@ String LCDDisplay::GetOptionAsNumber(T&& defaultNumber) {
     return optnum;
 }
 
-String LCDDisplay::GetShakesTurnsOptionText(LCDMenu menu) {
 
-    bool foundOption = false;
+String LCDDisplay::LoadShakesTurnsOption(LCDMenu& menu) {
+
+    int nextMenuId = feedShakesMenu;
     String accMenuOptionText = menu.OptionText;
 
-    int feedNextMenu = feedShakesMenu;
-    int doseNextMenu = doserShakesMenu;
+    NextRunMemory mem;
 
-    bool isFeederMainMenuOption = ((menu.Id == feedMenu && menu.NextMenuId == feedNextMenu) || menu.Id == feedNextMenu);
-    bool isDoserMainMenuOption = ((menu.Id == doserMenu && menu.NextMenuId == doseNextMenu) || menu.Id == doseNextMenu);
+    bool isFeederOption = ((menu.Id == feedMenu && menu.NextMenuId == feedShakesMenu) || menu.Id == feedShakesMenu || menu.Id == feedShakesMenu);
+    bool isDoserOption = ((menu.Id == doserMenu && menu.NextMenuId == doserShakesMenu) || menu.Id == doserShakesMenu || menu.Id == doserShakesMenu);
 
-    if(isFeederMainMenuOption) {
-        foundOption = true;
-        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
-        String shakes = String(mem.ShakesOrTurns);
-        accMenuOptionText += " (" + shakes + ")";
-        //alert: example: load range val from mem
-        if(menu.Id == feedNextMenu && _prevMenuId != feedNextMenu) {
-            accMenuOptionText = shakes;
-            _optionCount = mem.ShakesOrTurns;
-        }
-    } else if(isDoserMainMenuOption) {
-        foundOption = true;
-        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
-        String shakes = String(mem.ShakesOrTurns);
-        accMenuOptionText += " (" + shakes + ")";
-        if(menu.Id == doseNextMenu && _prevMenuId != doseNextMenu) {
-            accMenuOptionText = shakes;
-            _optionCount = mem.ShakesOrTurns;
-        }
+    if(isFeederOption) {
+        nextMenuId = feedShakesMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+    } else if(isDoserOption) {
+        nextMenuId = doserShakesMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+    } else {
+        //got to next options
+        //accMenuOptionText = LoadShakesTurnsOption(menu).c_str();
+        return accMenuOptionText;
     }
 
-    //if(!foundOption)
-    //accMenuOptionText = nextMethod...(menu);
-
+    String shakes = String(mem.ShakesOrTurns);
+    //if(!mem.Enabled)
+    //accMenuOptionText += F(" (Off)");
+    if(menu.NextMenuId == nextMenuId)
+        accMenuOptionText += " (" + shakes + ")";
+    if(menu.Id == nextMenuId && menu.Id != _prevMenuId) { //load from memoroy
+        accMenuOptionText = shakes;
+        _optionCount = mem.ShakesOrTurns;
+    }
     return accMenuOptionText;
+
+
+    //if(isFeederMainMenuOption) {
+    //foundOption = true;
+    //NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+    //String shakes = String(mem.ShakesOrTurns);
+    //accMenuOptionText += " (" + shakes + ")";
+    ////alert: example: load range val from mem
+    //if(menu.Id == feedNextMenu && _prevMenuId != feedNextMenu) {
+    //accMenuOptionText = shakes;
+    //_optionCount = mem.ShakesOrTurns;
+    //}
+    //} else if(isDoserMainMenuOption) {
+    //foundOption = true;
+    //NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+    //String shakes = String(mem.ShakesOrTurns);
+    //accMenuOptionText += " (" + shakes + ")";
+    //if(menu.Id == doseNextMenu && _prevMenuId != doseNextMenu) {
+    //accMenuOptionText = shakes;
+    //_optionCount = mem.ShakesOrTurns;
+    //}
+    //}
+    //
+    ////if(!foundOption)
+    ////accMenuOptionText = nextMethod...(menu);
+
+
 }
 
-String LCDDisplay::GetAccMenuOptionText(LCDMenu menu) {
-
-    bool foundOption = false;
+String LCDDisplay::LoadAccOption(LCDMenu& menu) {
+    int nextMenuId = feedEnableMenu;
     String accMenuOptionText = menu.OptionText;
 
-    bool isFeederMainMenuOption = ((menu.Id == mainMenu && menu.NextMenuId == feedMenu) || menu.NextMenuId == feedEnableMenu);
-    bool isDoserMainMenuOption = ((menu.Id == mainMenu && menu.NextMenuId == doserMenu) || menu.NextMenuId == doserEnableMenu);
+    NextRunMemory mem;
 
-    if(isFeederMainMenuOption) {
-        foundOption = true;
-        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
-        if(!mem.Enabled)
-            accMenuOptionText += F(" (Off)");
-        else if(menu.NextMenuId == feedEnableMenu)
-            accMenuOptionText += F(" On/Off");
+    bool isFeederOption = ((menu.Id == mainMenu && menu.NextMenuId == feedMenu) || menu.NextMenuId == feedEnableMenu || menu.Id == feedEnableMenu);
+    bool isDoserOption = ((menu.Id == mainMenu && menu.NextMenuId == doserMenu) || menu.NextMenuId == doserEnableMenu || menu.Id == feedEnableMenu);
 
-    } else if(isDoserMainMenuOption) {
-        foundOption = true;
-        NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
-        if(!mem.Enabled)
-            accMenuOptionText += F(" (Off)");
-        else if(menu.NextMenuId == doserEnableMenu)
-            accMenuOptionText += F(" On/Off");
+    if(isFeederOption) {
+        nextMenuId = feedEnableMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+    } else if(isDoserOption) {
+        nextMenuId = doserEnableMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+    } else {
+        //got to next options
+        accMenuOptionText = LoadShakesTurnsOption(menu).c_str();
+        return accMenuOptionText;
     }
 
-    if(!foundOption)
-        accMenuOptionText = GetShakesTurnsOptionText(menu).c_str();
+    if(!mem.Enabled)
+        accMenuOptionText += F(" (Off)");
+    else if(menu.NextMenuId == nextMenuId)
+        accMenuOptionText += F(" On/Off");
+    if(menu.Id == nextMenuId && menu.Id != _prevMenuId) { //load from memoroy
+        accMenuOptionText = String(mem.Enabled).c_str();
+        _optionCount = mem.Enabled;
+    }
 
     return accMenuOptionText;
 }
@@ -537,12 +563,12 @@ void LCDDisplay::DetectKeyPress() {
 
 }
 
-void LCDDisplay::PrintMenu(LCDMenu menu) {
+void LCDDisplay::PrintMenu(LCDMenu& menu) {
     /*SerialExt::Debug("menu", menu.Text);
     SerialExt::Debug("option", menu.OptionText);
     */
 
-    _optionText = GetAccMenuOptionText(menu).c_str();
+    _optionText = LoadAccOption(menu).c_str();
     _menuText = menu.Text;
 
     String rangeOptionText = GetRangeOption(menu.TheRangeType, menu.AccType);

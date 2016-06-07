@@ -142,7 +142,7 @@ namespace LCD {
         void DetectKeyPress();
 
         LCDMenu GetMenu(short id, short optionId);
-        void PrintMenu(LCDMenu menu);
+        void PrintMenu(LCDMenu& menu);
         void PrintLine(short lineNum, String text);
         void SetSelectedMenu(LCDMenu menu);
         //
@@ -164,8 +164,8 @@ namespace LCD {
         void PrintInstructions();
         void IsKeyPressed();
         void HandleScrollText(short lineNum, String text);
-        String GetAccMenuOptionText(LCDMenu menu);
-        String GetShakesTurnsOptionText(LCDMenu menu);
+        String LoadAccOption(LCDMenu& menu);
+        String LoadShakesTurnsOption(LCDMenu& menu);
 
     }; //LCDDisplay
 
