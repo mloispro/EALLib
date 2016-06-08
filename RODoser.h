@@ -26,7 +26,6 @@ class RODoser : public ServoMotor {
     RODoser(Servo servo, int pin, int shakes, long runEverySeconds, AnalogSwitch theSwitch, bool enabled);
     RODoser();
     static void RunDemo(vector<RODoser> dosers);
-    void Dose();
 };
 
 //vector<RODoser> RODoser::Feeders;

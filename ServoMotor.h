@@ -12,10 +12,9 @@ using namespace std;
 #include <Servo.h>
 #include "_globals.h"
 
+#include "Motor.h"
 #include "SerialExt.h"
 #include "RTCExt.h"
-//#include "RunScheduleExt.h" <- only needed for non RTC Timer
-//#include "PinValMemoryExt.h"
 
 #include "AnalogSwitch.h"
 
@@ -23,52 +22,31 @@ using namespace Globals;
 using namespace Utils;
 using namespace Models;
 
-//class MotorsContainer {
-//private:
-//
-//public:
-////extern vector<Models::NextRunMemory> _nextRunInfos;
-//MotorsContainer() {};
-//ServoMotor& AddMotor(ServoMotor& motor);
-////bool NextRunInfoExists(AccessoryType accType);
-//////template<typename T = Globals::AccessoryType>
-////NextRunMemory& FindNextRunInfo(AccessoryType accType);
-////NextRunMemory& AddNextRunInfo(NextRunMemory& mem);
-////void ClearNextRunInfos();
-//};
-//extern vector<ServoMotor> Motors;
-
-class ServoMotor {
+class ServoMotor : public Motor {
   public:
     Servo TheServo;
-    AnalogSwitch TheSwitch;
-    short RelayPin;
-    AccessoryType ServoType;
   protected:
     int _theSpeed;
   private:
-    int _pin;
     int _pos;
   public:
-    bool ShouldRunMotor(bool printToSerial);
+    //bool ShouldRunMotor(bool printToSerial);
     int Calibrate();
-    //ServoMotor& AddMotor(ServoMotor& motor);
+
   protected:
     ServoMotor(Servo servo, int pin, int shakes, int pos, int theSpeed, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, AccessoryType servoType, bool enabled);
     ServoMotor();
 
     static int GetNumberOfShakes(int potVal);
-    void Run();
+    void handleRun();
     static void RunMotorDemos(vector<ServoMotor> motors);
     static void RunMotorDemo(Servo myServo);
 
   private:
 
-    void Init(int shakes, long runEverySeconds, bool enabled);
+    void Init();
     int TranslateSpeed();
-    bool ShouldSignalRelay();
-    bool IsSwitchOn(bool isTimeToRun);
-    void RunServo();
+
 };
 //extern vector<ServoMotor> Motors;
 

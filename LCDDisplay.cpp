@@ -299,38 +299,11 @@ String LCDDisplay::LoadShakesTurnsOption(LCDMenu& menu) {
     //accMenuOptionText += F(" (Off)");
     if(menu.NextMenuId == nextMenuId)
         accMenuOptionText += " (" + shakes + ")";
-    if(menu.Id == nextMenuId && menu.Id != _prevMenuId) { //load from memoroy
+    if(menu.Id == nextMenuId && menu.Id != _prevMenuId) { //alert: example: load from memoroy
         accMenuOptionText = shakes;
         _optionCount = mem.ShakesOrTurns;
     }
     return accMenuOptionText;
-
-
-    //if(isFeederMainMenuOption) {
-    //foundOption = true;
-    //NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
-    //String shakes = String(mem.ShakesOrTurns);
-    //accMenuOptionText += " (" + shakes + ")";
-    ////alert: example: load range val from mem
-    //if(menu.Id == feedNextMenu && _prevMenuId != feedNextMenu) {
-    //accMenuOptionText = shakes;
-    //_optionCount = mem.ShakesOrTurns;
-    //}
-    //} else if(isDoserMainMenuOption) {
-    //foundOption = true;
-    //NextRunMemory& mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
-    //String shakes = String(mem.ShakesOrTurns);
-    //accMenuOptionText += " (" + shakes + ")";
-    //if(menu.Id == doseNextMenu && _prevMenuId != doseNextMenu) {
-    //accMenuOptionText = shakes;
-    //_optionCount = mem.ShakesOrTurns;
-    //}
-    //}
-    //
-    ////if(!foundOption)
-    ////accMenuOptionText = nextMethod...(menu);
-
-
 }
 
 String LCDDisplay::LoadAccOption(LCDMenu& menu) {

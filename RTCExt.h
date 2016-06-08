@@ -236,6 +236,7 @@ namespace Utils {
         bool IsTimeToRun(AccessoryType accType) {
             NextRunMemory& mem = RefreshNextRunInfo(accType);
 
+            if(!mem.Enabled)return false;
             if(mem.RunEvery <= 0)return true;  //not using rtc
 
             time_t runTime = RTCExt::GetRTCTime();
@@ -281,6 +282,17 @@ namespace Utils {
             NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
 
             nextRunMem.RunEvery = sec;
+            nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
+
+            RefreshNextRunInfo(accType, true);
+        }
+        template<typename T = long, typename M = AccessoryType>
+        void SetRunEverySeconds(T && seconds, M && accType) {
+            T t(seconds);
+            //long sec = second(seconds);
+            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+
+            nextRunMem.RunEvery = seconds;
             nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
 
             RefreshNextRunInfo(accType, true);

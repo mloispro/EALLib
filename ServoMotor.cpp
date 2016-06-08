@@ -22,41 +22,26 @@
 //ServoMotor::ServoMotor(Servo servo, int pin, int shakes, short relayPin) :
 //	ServoMotor(servo, pin, shakes, 0, 14, relayPin){};
 
-
-
 ServoMotor::ServoMotor(Servo servo, int pin, int shakes, int pos, int theSpeed, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, AccessoryType servoType, bool enabled) :
-    TheServo(servo), TheSwitch(theSwitch), RelayPin(relayPin), _theSpeed(theSpeed), _pin(pin), _pos(pos), ServoType(servoType) {
-    //TranslateSpeed();
-    Init(shakes, runEverySeconds, enabled);
+    Motor(pin, shakes, theSpeed, relayPin, runEverySeconds, theSwitch, servoType, enabled), TheServo(servo), _pos(pos) {
+
+    Init();
 }
+
+//ServoMotor::ServoMotor(Servo servo, int pin, int shakes, int pos, int theSpeed, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, AccessoryType servoType, bool enabled) :
+//TheServo(servo), TheSwitch(theSwitch), RelayPin(relayPin), _theSpeed(theSpeed), _pin(pin), _pos(pos), MotorType(servoType) {
+////TranslateSpeed();
+//Init(shakes, runEverySeconds, enabled);
+//}
 ServoMotor::ServoMotor() {}
 
 
-void ServoMotor::Init(int shakes, long runEverySeconds, bool enabled) {
-    //TranslateSpeed();
-    //ServoMotor motor;
-    if(RelayPin >= 2 && RelayPin <= 13)
-        pinMode(RelayPin, OUTPUT);
+void ServoMotor::Init() {
 
     if(_pos <= 6)
         _pos = 6;
     else if(_pos >= 174)
         _pos = 174;
-
-    RTCExt::LoadNextRunInfos(ServoType);
-    NextRunMemory& mem = RTCExt::RefreshNextRunInfo(ServoType);
-    if(mem.LastSave <= 0) {
-        mem = RTCExt::SaveNextRunInfos(ServoType);
-
-        mem.Enabled = enabled;
-        //mem.Pin = _pin;
-        mem.AccType = ServoType;
-        mem.ShakesOrTurns = shakes;
-        mem.RunEvery = runEverySeconds;
-        RTCExt::RefreshNextRunInfo(ServoType, true);
-        //RTCExt::SetShakesOrTurns(shakes, ServoType);
-        //RTCExt::SetRunEvery(runEverySeconds, ServoType);
-    }
 
     TheServo.attach(_pin);
     TheServo.write(_pos);
@@ -64,14 +49,7 @@ void ServoMotor::Init(int shakes, long runEverySeconds, bool enabled) {
 
 }
 
-void ServoMotor::Run() {
-    bool signalRelay = ShouldSignalRelay();
-    //SerialExt::Debug("ShouldSignalRelay: ", signalRelay);
-
-    if(signalRelay) {
-        SerialExt::Print(F("Signaling Relay Pin: "), RelayPin);
-        digitalWrite(RelayPin, HIGH);
-    }
+void ServoMotor::handleRun() {
 
     //TheServo.detach();
     //while(!TheServo.attached()) { //wait until servo is attached.
@@ -80,21 +58,6 @@ void ServoMotor::Run() {
     //delay(100);
     //}
 
-    RunServo();
-
-    if(signalRelay)
-        digitalWrite(RelayPin, LOW);
-
-    NextRunMemory& mem = RTCExt::RefreshNextRunInfo(ServoType);
-
-    if(mem.RunEvery > 0) {
-        mem.LastRun = RTCExt::GetRTCTime(); //using rtc
-        RTCExt::RefreshNextRunInfo(ServoType, true);
-    }
-    //SerialExt::Debug(F("mem.LastRun_servo"), mem.LastRun);
-}
-
-void ServoMotor::RunServo() {
     TheServo.write(_pos);
     delay(500);
 
@@ -107,7 +70,7 @@ void ServoMotor::RunServo() {
         TheServo.write(downPos);              // tell servo to go to position in variable 'pos'
         delay(speed);                 // waits 15ms for the servo to reach the position
     }
-    int shakes = RTCExt::GetShakesOrTurns(ServoType);
+    int shakes = RTCExt::GetShakesOrTurns(MotorType);
     if(shakes > 0) {
         //SerialExt::Print(F("Shaking: "), Shakes, F(" Times"));
         //delay(4000);
@@ -126,6 +89,7 @@ void ServoMotor::RunServo() {
     delay(2200); // wait for servo to get back to 0
     //TheServo.detach();
     //delay(1000);
+
 }
 
 
@@ -135,51 +99,7 @@ int ServoMotor::GetNumberOfShakes(int potVal) {
     return shakesVal;
 
 }
-bool ServoMotor::ShouldSignalRelay() {
-    if(RelayPin >= 2 && RelayPin <= 13)
-        return true;
-    return false;
-}
 
-
-bool ServoMotor::ShouldRunMotor(bool printToSerial) {
-
-    bool runMotor;
-    bool isTimeToRun = RTCExt::IsTimeToRun(ServoType);
-    //SerialExt::Debug("Is Time To Run: ", isTimeToRun);
-    //long runEvery = RTCExt::GetRunEvery(ServoType);
-    //if(printToSerial && runEvery > 0) { //using rtc
-    ////disabling for now since we have lcd
-    //NextRunMemory& nextRunMem = RTCExt::FindNextRunInfo(ServoType);
-    //
-    //SerialExt::Print("Time: ", RTCExt::GetRTCDateTimeString());
-    //SerialExt::Print("Run Count Down: ", TimeHelpers::GetShortDateTimeString(nextRunMem.CountDown, false));
-    //SerialExt::Print("Next Run: ", TimeHelpers::GetShortDateTimeString(nextRunMem.NextRun, false));
-    //SerialExt::Print("Last Run: ", TimeHelpers::GetShortDateTimeString(nextRunMem.LastRun, false));
-    //SerialExt::Print("Run Every: ", TimeHelpers::GetShortDateTimeString(nextRunMem.RunEvery, false));
-    //}
-
-    bool isSwitchOn = IsSwitchOn(isTimeToRun);
-
-    runMotor = (isTimeToRun) && (isSwitchOn);
-    return runMotor;
-}
-
-bool ServoMotor::IsSwitchOn(bool isTimeToRun) {
-    bool isSwitchOn = true;
-    //see if this motor has a switch
-    if(TheSwitch.AnalogPin >= 0) {
-
-        if(isTimeToRun)
-            isSwitchOn = TheSwitch.IsOn();
-
-        if(isSwitchOn)
-            SerialExt::Debug("Switch Val: ", TheSwitch.SwitchReading);
-    } else {
-        isSwitchOn = true; //no switch to turn it on.
-    }
-    return isSwitchOn;
-}
 
 int ServoMotor::Calibrate() {
     SerialExt::Debug("Calibrate Servo:");

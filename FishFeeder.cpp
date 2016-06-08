@@ -4,7 +4,7 @@
 
 //FishFeeder::FishFeeder(int pin) : ServoMotor(pin){};
 FishFeeder::FishFeeder() {
-    ServoType = AccessoryType::Feeder;
+    MotorType = AccessoryType::Feeder;
 }
 FishFeeder::FishFeeder(Servo servo, int pin, int shakes, long runEverySeconds, bool enabled) :
     ServoMotor(servo, pin, shakes, 0, 14, -1, runEverySeconds, AnalogSwitch(), AccessoryType::Feeder, enabled) {
@@ -54,7 +54,7 @@ void FishFeeder::FeedAll(vector<FishFeeder> feeders, int potVal) {
         //feeder.Shakes = shakesVal; //not setting from pot right now.
 
         SerialExt::Print("Feeder #", thisFeeder + 1, " Feeding..");
-        feeder.Feed();
+        feeder.Run();
     }
     //digitalWrite(FishFeeder::FeederPwrSigPin, HIGH);
 }
@@ -66,14 +66,10 @@ void FishFeeder::FeedAll(vector<FishFeeder> feeders) {
 
         //SerialExt::Debug("thisFeeder", thisFeeder);
 
-        feeder.Feed();
+        feeder.Run();
     }
 }
 
-void FishFeeder::Feed() {
-
-    Run();
-}
 
 void FishFeeder::RunDemo(vector<FishFeeder> feeders) {
 

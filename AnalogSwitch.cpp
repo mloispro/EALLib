@@ -4,28 +4,29 @@
 using namespace Models;
 
 AnalogSwitch::AnalogSwitch(short analogPin, int max) :
-AnalogPin(analogPin), Max(max){
-	Init();
+    AnalogPin(analogPin), Max(max) {
+    Init();
 }
 
 AnalogSwitch::AnalogSwitch(short analogPin) :
-AnalogPin(analogPin){
-	Init();
+    AnalogPin(analogPin) {
+    Init();
 }
-AnalogSwitch::AnalogSwitch(){}
+AnalogSwitch::AnalogSwitch() {}
 
-void AnalogSwitch::Init(){
-	if (AnalogPin >= 0 && AnalogPin <= 5)
-		pinMode(AnalogPin, INPUT); //receive switch signal
+void AnalogSwitch::Init() {
+    if(AnalogPin >= 1)
+        pinMode(AnalogPin, INPUT); //receive switch signal
 }
 
-bool AnalogSwitch::IsOn(){
-	//read switch
-	SwitchReading = analogRead(AnalogPin);
-	
-	if (SwitchReading > Max - 50){
-		return true;
-	}
-	return false;
+bool AnalogSwitch::IsOn() {
+    //read switch
+    int switchReading = analogRead(AnalogPin);
+    SwitchReading = switchReading;
+
+    if(SwitchReading > Max - 50) {
+        return true;
+    }
+    return false;
 }
 

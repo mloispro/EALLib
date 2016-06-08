@@ -10,13 +10,10 @@ RODoser::RODoser(Servo servo, int pin, int shakes, long runEverySeconds, AnalogS
 }
 
 RODoser::RODoser() {
-    ServoType = AccessoryType::DryDoser;
+    MotorType = AccessoryType::DryDoser;
     //_theSpeed = 10;
 }
 
-void RODoser::Dose() {
-    Run();
-}
 
 void RODoser::RunDemo(vector<RODoser> dosers) {
 
