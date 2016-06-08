@@ -34,7 +34,7 @@ namespace LCD {
             TimeShort,
             TimeFrequency,
             ShakesOrTurns,
-            ControllerType,
+            RunDurration,
             OnOff,
             RunNow
             //DoserOnOff,

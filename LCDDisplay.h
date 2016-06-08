@@ -60,16 +60,23 @@ namespace LCD {
         static const short doserAmPmMenu = 18;
         static const short doserTimeMenu = 19;
         static const short feedShakesMenu = 20;
-        static const short feedSetShakesMenu = 21;
+        //static const short feedSetShakesMenu = 21; open
         static const short doserShakesMenu = 22;
-        static const short doserSetShakesMenu = 23;
-        static const short settingsMenu = 24;
+        //static const short doserSetShakesMenu = 23; open
+        //static const short settingsMenu = 24; open
         static const short feedEnableMenu = 25;
         static const short doserEnableMenu = 26;
         static const short feedNowMenu = 27;
         static const short doseNowMenu = 29;
         static const short pumpMenu = 30;
         static const short pumpEnableMenu = 31;
+        static const short pumpFreqMenu = 32;
+        static const short pumpHourMenu = 33;
+        static const short pumpMinMenu = 34;
+        static const short pumpAmPmMenu = 35;
+        static const short pumpTimeMenu = 36;
+        static const short pumpNowMenu = 37;
+        static const short pumpRunMinutesMenu = 38;
 
         short _menuIndex = 0;
         String _mainMenuText = "";
@@ -165,7 +172,7 @@ namespace LCD {
         void IsKeyPressed();
         void HandleScrollText(short lineNum, String text);
         String LoadAccOption(LCDMenu& menu);
-        String LoadShakesTurnsOption(LCDMenu& menu);
+        String loadShakesTurnsOption(LCDMenu& menu);
 
     }; //LCDDisplay
 

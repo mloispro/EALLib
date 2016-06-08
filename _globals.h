@@ -15,7 +15,7 @@ namespace Globals {
         Feeder,
         LiqDoser,
         DryDoser,
-        Pump,
+        WaterPump,
         Lcd
     };
 

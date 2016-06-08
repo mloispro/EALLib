@@ -26,7 +26,7 @@ void LCDDisplay::CreateMenus() {
     const String feedMenuText = F("Feeder: [<] Back");
     const String doserMenuText = F("Doser: [<] Back");
     const String clockMenuText = F("Clock: [<] Back");
-    const String settingsMenuText = F("Settings: [<] Back");
+    const String pumpMenuText = F("Pump: [<] Back");
 
 
     if(_menus.size() > 0)
@@ -36,7 +36,7 @@ void LCDDisplay::CreateMenus() {
     AddMenu(mainMenu, _menuIndex++, clockMenu, mainMenu, _mainMenuText, F("Clock"), LCDMenu::RangeType::Nav);
     AddMenu(mainMenu, _menuIndex++, feedMenu, mainMenu, _mainMenuText, F("Feeders"), LCDMenu::RangeType::Nav);
     AddMenu(mainMenu, _menuIndex++, doserMenu, mainMenu, _mainMenuText, F("Dosers"), LCDMenu::RangeType::Nav);
-    AddMenu(mainMenu, _menuIndex++, settingsMenu, mainMenu, _mainMenuText, F("Settings"), LCDMenu::RangeType::Nav);
+    AddMenu(mainMenu, _menuIndex++, pumpMenu, mainMenu, _mainMenuText, F("Pump"), LCDMenu::RangeType::Nav);
 
     int subMenuIndex = 0;
 
@@ -92,6 +92,32 @@ void LCDDisplay::CreateMenus() {
 
     subMenuIndex = 0;
 
+    //pump
+    AddMenu(pumpMenu, subMenuIndex++, pumpNowMenu, mainMenu, pumpMenuText, F("Pump Now"), LCDMenu::RangeType::Nav, AccessoryType::WaterPump);
+    AddMenu(pumpMenu, subMenuIndex++, pumpEnableMenu, mainMenu, pumpMenuText, F("Pump"), LCDMenu::RangeType::Nav, AccessoryType::WaterPump);
+    AddMenu(pumpMenu, subMenuIndex++, pumpTimeMenu, mainMenu, pumpMenuText, F("Pump Time"), LCDMenu::RangeType::Nav, AccessoryType::WaterPump);
+    AddMenu(pumpMenu, subMenuIndex++, pumpFreqMenu, mainMenu, pumpMenuText, F("Set Pump Time"), LCDMenu::RangeType::Nav, AccessoryType::WaterPump);
+    AddMenu(pumpMenu, subMenuIndex++, pumpRunMinutesMenu, mainMenu, pumpMenuText, F("Pump Durration"), LCDMenu::RangeType::Nav, AccessoryType::WaterPump);
+
+    //pump on/off
+    AddMenu(pumpEnableMenu, 0, pumpMenu, pumpMenu, F("Pump On/Off: [<] Back"), F(""), LCDMenu::RangeType::OnOff, AccessoryType::WaterPump);
+
+    //pump now
+    AddMenu(pumpNowMenu, 0, pumpMenu, pumpMenu, F("Pump Now: [<] Back"), F("Press [Select]"), LCDMenu::RangeType::RunNow, AccessoryType::WaterPump);
+
+    //pump time
+    AddMenu(pumpTimeMenu, 0, pumpTimeMenu, pumpMenu, F("Pump Time: [<] Back"), F(""), LCDMenu::RangeType::TimeFrequency, AccessoryType::WaterPump);
+    AddMenu(pumpFreqMenu, 0, pumpHourMenu, pumpMenu, F("Pump Frequency: [<] Back"), F(""), LCDMenu::RangeType::Frequency, AccessoryType::WaterPump);
+    AddMenu(pumpHourMenu, 0, pumpMinMenu, pumpFreqMenu, F("Pump Hour: [<] Back"), F(""), LCDMenu::RangeType::Hour, AccessoryType::WaterPump);
+    AddMenu(pumpMinMenu, 0, pumpAmPmMenu, pumpHourMenu, F("Pump Minute: [<] Back"), F(""), LCDMenu::RangeType::Minute, AccessoryType::WaterPump);
+    AddMenu(pumpAmPmMenu, 0, pumpTimeMenu, pumpMinMenu, F("Pump AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::WaterPump);
+
+    //pump durration
+    //todo:need to implement this
+    AddMenu(pumpRunMinutesMenu, 0, pumpMenu, pumpMenu, F("Pump Durration: [<] Back"), F("0"), LCDMenu::RangeType::RunDurration, AccessoryType::WaterPump);
+
+    subMenuIndex = 0;
+
     //clock menus
     AddMenu(clockMenu, 0, clockMenu, mainMenu, clockMenuText, F("Time"), LCDMenu::RangeType::TimeLong, AccessoryType::Clock);
     AddMenu(clockMenu, 1, clockYearMenu, clockMenu, clockMenuText, F("Set Clock Time"), LCDMenu::RangeType::Nav, AccessoryType::Clock);
@@ -104,22 +130,28 @@ void LCDDisplay::CreateMenus() {
 
     subMenuIndex = 0;
 
-    //settings
-    AddMenu(settingsMenu, subMenuIndex++, settingsMenu, mainMenu, settingsMenuText, F("??"), LCDMenu::RangeType::ControllerType, AccessoryType::Lcd);
-    //AddMenu(settingsMenu, subMenuIndex++, settingsDoserMenu, settingsMenu, settingsMenuText, F("Change Settings"), LCDMenu::RangeType::Nav, AccessoryType::Lcd);
-
-
 }
 
 String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType) {
 
-    if(rangeType == LCDMenu::RangeType::Frequency) {
+    if(rangeType == LCDMenu::RangeType::Frequency &&
+            accType != AccessoryType::WaterPump) {
         LimitRange(0, 1);
         if(_optionCount <= _lowerLimit)
             return F("Daily");
         else if(_optionCount >= _upperLimit)
             return F("Every Other Day");
-
+    } else if(rangeType == LCDMenu::RangeType::Frequency &&
+              accType == AccessoryType::WaterPump) {
+        LimitRange(0, 3);
+        if(_optionCount == 0)  //Weekly
+            return F("Weekly");
+        else if(_optionCount == 1)// ot week
+            return F("Every 2 Weeks");
+        else if(_optionCount == 2)// every three weeks
+            return F("Every 3 Weeks");
+        else if(_optionCount == 3)// monthly
+            return F("Monthly");
     } else if(rangeType == LCDMenu::RangeType::Hour) {
         LimitRange(1, 12);
         String hour = GetOptionAsNumber(F("01"), true);
@@ -204,12 +236,23 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
             RTCExt::SetRunEvery(24, accType);
         else // ot day
             RTCExt::SetRunEvery(48, accType);
+    } else if(rangeType == LCDMenu::RangeType::Frequency &&
+              accType == AccessoryType::WaterPump) {
+        if(_optionCount == 0)  //Weekly
+            RTCExt::SetRunEvery(168, accType);
+        else if(_optionCount == 1)// ot week
+            RTCExt::SetRunEvery(336, accType);
+        else if(_optionCount == 2)// every three weeks
+            RTCExt::SetRunEvery(504, accType);
+        else if(_optionCount == 3)// monthly
+            RTCExt::SetRunEvery(672, accType);
     } else if((rangeType == LCDMenu::RangeType::Hour ||
                rangeType == LCDMenu::RangeType::Minute ||
                rangeType == LCDMenu::RangeType::AmPm ||
                rangeType == LCDMenu::RangeType::RunNow) &&
               (accType == AccessoryType::Feeder ||
-               accType == AccessoryType::DryDoser)) {
+               accType == AccessoryType::DryDoser ||
+               accType == AccessoryType::WaterPump)) {
         RTCExt::SetNextRun(_optionCount, rangeType, accType);
         if(rangeType == LCDMenu::RangeType::RunNow)
             ExitMainMenu(); //exit after run now, so run can execute.
@@ -228,12 +271,14 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
         RTCExt::SetRTCTimeFromTemp();
     } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns &&
               (accType == AccessoryType::Feeder ||
-               accType == AccessoryType::DryDoser)) {
+               accType == AccessoryType::DryDoser ||
+               accType == AccessoryType::WaterPump)) {
         RTCExt::SetMotorShakesOrTurns(_optionCount, accType);
         //_lcdValCallBack(_optionCount);
     } else if(rangeType == LCDMenu::RangeType::OnOff &&
               (accType == AccessoryType::Feeder ||
-               accType == AccessoryType::DryDoser)) {
+               accType == AccessoryType::DryDoser ||
+               accType == AccessoryType::WaterPump)) {
         SetOnOff(accType);
     }
     //else if (rangeType == LCDMenu::RangeType::OutPin &&
@@ -272,7 +317,7 @@ String LCDDisplay::GetOptionAsNumber(T&& defaultNumber) {
 }
 
 
-String LCDDisplay::LoadShakesTurnsOption(LCDMenu& menu) {
+String LCDDisplay::loadShakesTurnsOption(LCDMenu& menu) {
 
     int nextMenuId = feedShakesMenu;
     String accMenuOptionText = menu.OptionText;
@@ -313,7 +358,8 @@ String LCDDisplay::LoadAccOption(LCDMenu& menu) {
     NextRunMemory mem;
 
     bool isFeederOption = ((menu.Id == mainMenu && menu.NextMenuId == feedMenu) || menu.NextMenuId == feedEnableMenu || menu.Id == feedEnableMenu);
-    bool isDoserOption = ((menu.Id == mainMenu && menu.NextMenuId == doserMenu) || menu.NextMenuId == doserEnableMenu || menu.Id == feedEnableMenu);
+    bool isDoserOption = ((menu.Id == mainMenu && menu.NextMenuId == doserMenu) || menu.NextMenuId == doserEnableMenu || menu.Id == doserEnableMenu);
+    bool isPumpOption = ((menu.Id == mainMenu && menu.NextMenuId == pumpMenu) || menu.NextMenuId == pumpEnableMenu || menu.Id == pumpEnableMenu);
 
     if(isFeederOption) {
         nextMenuId = feedEnableMenu;
@@ -321,9 +367,12 @@ String LCDDisplay::LoadAccOption(LCDMenu& menu) {
     } else if(isDoserOption) {
         nextMenuId = doserEnableMenu;
         mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+    } else if(isPumpOption) {
+        nextMenuId = pumpEnableMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::WaterPump);
     } else {
         //got to next options
-        accMenuOptionText = LoadShakesTurnsOption(menu).c_str();
+        accMenuOptionText = loadShakesTurnsOption(menu).c_str();
         return accMenuOptionText;
     }
 
