@@ -25,6 +25,7 @@ void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
         mem.AccType = MotorType;
         mem.ShakesOrTurns = shakesOrTurns;
         mem.RunEvery = runEverySeconds;
+        mem.RunDurration = 0;
         RTCExt::RefreshNextRunInfo(MotorType, true);
         //RTCExt::SetShakesOrTurns(shakes, ServoType);
         //RTCExt::SetRunEvery(runEverySeconds, ServoType);

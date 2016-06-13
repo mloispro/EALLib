@@ -268,8 +268,16 @@ namespace Utils {
 
             if(h == 24)
                 freq = F(", Daily");
-            else if(h = 48)
+            else if(h == 48)
                 freq = F(", Every Other Day");
+            else if(h == 168)
+                freq = F(", Weekly");
+            else if(h == 336)
+                freq = F(", Every 2 Weeks");
+            else if(h == 504)
+                freq = F(", Every 3 Weeks");
+            else if(h == 672)
+                freq = F(", Monthly");
 
             String freqTime = theTime + freq;
             return freqTime;
@@ -397,6 +405,10 @@ namespace Utils {
                 RefreshNextRunInfo(accType, true);
             } else if(rangeType == LCDMenu::RangeType::RunNow) {
                 NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+
+                if(!nextRunMem.Enabled) //acc not enabled so dont run.
+                    return;
+
                 nextRunMem.NextRun = RTCExt::GetRTCTime();
                 nextRunMem.LastRun = -1; //force recalculate
                 RefreshNextRunInfo(accType, true);

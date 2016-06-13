@@ -10,6 +10,7 @@ Pump::Pump() {
     //_theSpeed = 10;
 }
 void Pump::handleRun() {
-    //todo: need to implement
-    delay(3000);
+    NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
+    long runDurration = mem.RunDurration * 1000;
+    delay(runDurration);
 }

@@ -59,7 +59,26 @@ namespace TimeHelpers {
 
         return timeString;
     }
+    template<typename M = int, typename S = int>
+    String FormatMinutesSeconds(M && minutes, S && seconds) {
 
+        String minString = String(minutes);
+        if(minutes < 10)
+            minString = "0" + minString;
+
+        String timeString = minString;
+        // timeString += minString; //+":";
+
+
+        String secString = String(seconds);
+        if(seconds < 10)
+            secString = "0" + secString;
+
+        timeString = timeString + ":" + secString;
+
+
+        return timeString;
+    }
     template<typename T = DigitalTime, typename I = bool>
     String FormatDigialTime(T && time, I && includeSeconds) {
 
@@ -78,6 +97,14 @@ namespace TimeHelpers {
         DigitalTime time = DigitalTime(h, m, s);
 
         return time;
+    }
+    template<typename T = time_t>
+    String GetMinutesSecondsString(T && seconds) {
+
+        DigitalTime time = GetDigitalTime(seconds);
+
+        String runTime = FormatMinutesSeconds(time.Minutes, time.Seconds);
+        return runTime;
     }
     template<typename T = time_t, typename I = bool>
     String GetDigitalTimeString(T && seconds, I && includeSeconds) {

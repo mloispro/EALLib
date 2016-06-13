@@ -166,6 +166,8 @@ namespace LCD {
 
         String GetOnOff(AccessoryType accType);
         void SetOnOff(AccessoryType accType);
+        String GetRunDurration(AccessoryType accType);
+        void SetRunDurration(AccessoryType accType);
 
         void AddMenu(AccessoryType accType);
         void PrintInstructions();
@@ -173,6 +175,7 @@ namespace LCD {
         void HandleScrollText(short lineNum, String text);
         String LoadAccOption(LCDMenu& menu);
         String loadShakesTurnsOption(LCDMenu& menu);
+        String loadRunNowOption(LCDMenu& menu);
 
     }; //LCDDisplay
 

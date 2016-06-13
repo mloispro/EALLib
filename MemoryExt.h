@@ -36,6 +36,7 @@ namespace Models {
         short ShakesOrTurns = -1;
         long LastSave = 0;
         bool Enabled = false;
+        long RunDurration = 0;
     };
     struct MemAddress {
         int AccType; //id
