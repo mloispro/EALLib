@@ -113,7 +113,6 @@ void LCDDisplay::CreateMenus() {
     AddMenu(pumpAmPmMenu, 0, pumpTimeMenu, pumpMinMenu, F("Pump AM-PM: [<] Back"), F(""), LCDMenu::RangeType::AmPm, AccessoryType::WaterPump);
 
     //pump durration
-    //todo:need to implement this
     AddMenu(pumpRunMinutesMenu, 0, pumpMenu, pumpMenu, F("Pump Durration: [<] Back"), F("0"), LCDMenu::RangeType::RunDurration, AccessoryType::WaterPump);
 
     subMenuIndex = 0;
@@ -199,6 +198,12 @@ String LCDDisplay::GetRangeOption(LCDMenu::RangeType rangeType, Globals::Accesso
 
         String txt = GetOnOff(accType);
         return txt.c_str();
+    } else if(rangeType == LCDMenu::RangeType::RunDurration) {
+
+        LimitRange(0, 3);
+
+        String txt = GetRunDurration(accType);
+        return txt.c_str();
     }
     //else if (rangeType == LCDMenu::RangeType::OutPin)
     //{
@@ -254,8 +259,11 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
                accType == AccessoryType::DryDoser ||
                accType == AccessoryType::WaterPump)) {
         RTCExt::SetNextRun(_optionCount, rangeType, accType);
-        if(rangeType == LCDMenu::RangeType::RunNow)
+        if(rangeType == LCDMenu::RangeType::RunNow) {
+            PrintLine(0, "Please Wait..");
+            PrintLine(1, "");
             ExitMainMenu(); //exit after run now, so run can execute.
+        }
     } else if(rangeType == LCDMenu::RangeType::TimeFrequency) {
         //Daily, 08:30AM
     } else if((rangeType == LCDMenu::RangeType::Year ||
@@ -271,8 +279,7 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
         RTCExt::SetRTCTimeFromTemp();
     } else if(rangeType == LCDMenu::RangeType::ShakesOrTurns &&
               (accType == AccessoryType::Feeder ||
-               accType == AccessoryType::DryDoser ||
-               accType == AccessoryType::WaterPump)) {
+               accType == AccessoryType::DryDoser)) {
         RTCExt::SetMotorShakesOrTurns(_optionCount, accType);
         //_lcdValCallBack(_optionCount);
     } else if(rangeType == LCDMenu::RangeType::OnOff &&
@@ -280,6 +287,9 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
                accType == AccessoryType::DryDoser ||
                accType == AccessoryType::WaterPump)) {
         SetOnOff(accType);
+    } else if(rangeType == LCDMenu::RangeType::RunDurration &&
+              (accType == AccessoryType::WaterPump)) {
+        SetRunDurration(accType);
     }
     //else if (rangeType == LCDMenu::RangeType::OutPin &&
     //	(accType == AccessoryType::Feeder ||
@@ -335,7 +345,7 @@ String LCDDisplay::loadShakesTurnsOption(LCDMenu& menu) {
         mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
     } else {
         //got to next options
-        //accMenuOptionText = LoadShakesTurnsOption(menu).c_str();
+        accMenuOptionText = loadRunNowOption(menu).c_str();
         return accMenuOptionText;
     }
 
@@ -348,6 +358,40 @@ String LCDDisplay::loadShakesTurnsOption(LCDMenu& menu) {
         accMenuOptionText = shakes;
         _optionCount = mem.ShakesOrTurns;
     }
+    return accMenuOptionText;
+}
+String LCDDisplay::loadRunNowOption(LCDMenu& menu) {
+
+    int nextMenuId = feedNowMenu;
+    String accMenuOptionText = menu.OptionText;
+
+    NextRunMemory mem;
+
+    bool isFeederOption = ((menu.Id == feedMenu && menu.NextMenuId == feedNowMenu) || menu.Id == feedNowMenu || menu.Id == feedNowMenu);
+    bool isDoserOption = ((menu.Id == doserMenu && menu.NextMenuId == doseNowMenu) || menu.Id == doseNowMenu || menu.Id == doseNowMenu);
+    bool isPumpOption = ((menu.Id == pumpMenu && menu.NextMenuId == pumpNowMenu) || menu.Id == pumpNowMenu || menu.Id == pumpNowMenu);
+
+    if(isFeederOption) {
+        nextMenuId = feedNowMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
+    } else if(isDoserOption) {
+        nextMenuId = doseNowMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+    } else if(isPumpOption) {
+        nextMenuId = pumpNowMenu;
+        mem = RTCExt::RefreshNextRunInfo(AccessoryType::WaterPump);
+    } else {
+        //got to next options
+        //accMenuOptionText = LoadShakesTurnsOption(menu).c_str();
+        return accMenuOptionText;
+    }
+
+    if(!mem.Enabled) {
+        accMenuOptionText += F(" (Acc is Off)");
+        if(menu.Id == nextMenuId)
+            accMenuOptionText = F(" (Acc is Off)");
+    }
+
     return accMenuOptionText;
 }
 
@@ -411,12 +455,35 @@ void LCDDisplay::SetSelectedMenu(LCDMenu menu) {
 
 }
 
-String LCDDisplay::GetOnOff(AccessoryType accType) {
+String LCDDisplay::GetRunDurration(AccessoryType accType) {
 
-    //if(!_optionChanged) {
-    //NextRunMemory& mem = RTCExt::FindNextRunInfo(accType);
-    //_optionCount = mem.Enabled;
-    //}
+    if(_optionCount == 0)
+        return F("1/2 Min");
+    else if(_optionCount == 1)
+        return F("1 Min");
+    else if(_optionCount == 2)
+        return F("1 1/2 Min");
+    else if(_optionCount == 3)
+        return F("2 Min");
+}
+void LCDDisplay::SetRunDurration(AccessoryType accType) {
+    NextRunMemory& mem = RTCExt::RefreshNextRunInfo(accType);
+
+    long secs = 0;
+    if(_optionCount == 0)
+        secs = 30;
+    else if(_optionCount == 1)
+        secs = 60;
+    else if(_optionCount == 2)
+        secs = 90;
+    else if(_optionCount == 3)
+        secs = 120;
+
+    mem.RunDurration = secs;
+
+    RTCExt::RefreshNextRunInfo(accType, true);
+}
+String LCDDisplay::GetOnOff(AccessoryType accType) {
 
     if(_optionCount == 0)
         return F("Off");
@@ -428,11 +495,6 @@ void LCDDisplay::SetOnOff(AccessoryType accType) {
 
     mem.Enabled = (bool)_optionCount;
     RTCExt::RefreshNextRunInfo(accType, true);
-
-    //if(_optionCount == 0)
-    //_menuIndex--;
-
-    //AddMenu(accType);
 }
 
 void LCDDisplay::SetClockMenu() {
@@ -667,11 +729,20 @@ void LCDDisplay::PrintTime() {
 
 void LCDDisplay::PrintRunInfo(NextRunMemory& nextRunMem) {
 
+    int key = GetKey();
+    if(key == 4) {
+        _scrollIndex = 0;
+        //scrolling = false;
+        return;
+    }
+
     String label;
     if(nextRunMem.AccType == AccessoryType::Feeder)
         label = F("Feeders");
     else if(nextRunMem.AccType == AccessoryType::DryDoser)
         label = F("Dosers");
+    else if(nextRunMem.AccType == AccessoryType::WaterPump)
+        label = F("Pump");
 
     if(!nextRunMem.Enabled) {
         _lcd.clear();
@@ -697,7 +768,7 @@ void LCDDisplay::PrintRunInfo(NextRunMemory& nextRunMem) {
     String countDownText = label + " Count Down:";
     String runEveryText = label + " Next Run:";
 
-    for(int i = 0; i <= 3; i++) {
+    for(int i = 0; i <= 4; i++) {
 
         switch(i) {
             case 0:
@@ -718,9 +789,23 @@ void LCDDisplay::PrintRunInfo(NextRunMemory& nextRunMem) {
                 PrintLine(1, nextRun);
                 HandleScrollText(0, runEveryText);
                 break;
+            case 3:
+                if(nextRunMem.AccType == AccessoryType::WaterPump) {
+                    String runDurration =  F("(Not Set)");
+                    if(nextRunMem.RunDurration > 0)
+                        runDurration = TimeHelpers::GetMinutesSecondsString(nextRunMem.RunDurration).c_str();
+
+                    String runDurrationText = label + F(" Run Durration:");
+                    _lcd.clear();
+                    PrintLine(0, runDurrationText);
+                    PrintLine(1, runDurration);
+                    HandleScrollText(0, runDurrationText);
+                }
+                break;
             default:
                 break;
         }
+
 
         //_lcd.clear();
         delay(_scrollDelay);
@@ -744,6 +829,7 @@ void LCDDisplay::Scroll() {
 
     NextRunMemory& feederNextRunMem = RTCExt::RefreshNextRunInfo(AccessoryType::Feeder);
     NextRunMemory& doserNextRunMem = RTCExt::RefreshNextRunInfo(AccessoryType::DryDoser);
+    NextRunMemory& pumpNextRunMem = RTCExt::RefreshNextRunInfo(AccessoryType::WaterPump);
 
     while(scrolling) {
 
@@ -759,12 +845,13 @@ void LCDDisplay::Scroll() {
                 PrintInstructions();
                 break;
             case 1:
-
                 PrintRunInfo(feederNextRunMem);
                 break;
             case 2:
-
                 PrintRunInfo(doserNextRunMem);
+                break;
+            case 3:
+                PrintRunInfo(pumpNextRunMem);
                 break;
             default:
                 PrintTime();
