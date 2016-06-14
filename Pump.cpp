@@ -1,10 +1,13 @@
 
 #include "Pump.h"
-
+//RO Pump
 Pump::Pump(int pin, int turns, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, bool enabled) :
     Motor(pin, turns, 10, relayPin, runEverySeconds, theSwitch, AccessoryType::WaterPump, enabled) {
 }
-
+//Tank water drain pump
+Pump::Pump(int pin, int turns, short relayPin, long runEverySeconds, bool enabled) :
+    Motor(pin, turns, 10, relayPin, runEverySeconds, AnalogSwitch(), AccessoryType::WaterPump, enabled) {
+}
 Pump::Pump() {
     MotorType = AccessoryType::WaterPump;
     //_theSpeed = 10;

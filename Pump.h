@@ -21,7 +21,10 @@ class Pump : public Motor {
   private:
 
   public:
+    //RO Pump
     Pump(int pin, int turns, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, bool enabled);
+    //Tank water drain pump
+    Pump(int pin, int turns, short relayPin, long runEverySeconds, bool enabled);
     Pump();
   protected:
     void handleRun();

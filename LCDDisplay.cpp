@@ -260,8 +260,6 @@ void LCDDisplay::SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType acc
                accType == AccessoryType::WaterPump)) {
         RTCExt::SetNextRun(_optionCount, rangeType, accType);
         if(rangeType == LCDMenu::RangeType::RunNow) {
-            PrintLine(0, "Please Wait..");
-            PrintLine(1, "");
             ExitMainMenu(); //exit after run now, so run can execute.
         }
     } else if(rangeType == LCDMenu::RangeType::TimeFrequency) {
@@ -542,6 +540,8 @@ void LCDDisplay::ExitMainMenu() {
     _menuTimeout = 0;
     _selectedMenuId = -1;
     _selectedOptionId = -1;
+    PrintLine(0, "Please Wait..");
+    PrintLine(1, "");
 }
 
 void LCDDisplay::LimitRange(int lower, int upper) {

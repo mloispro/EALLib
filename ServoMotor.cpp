@@ -58,6 +58,8 @@ void ServoMotor::handleRun() {
     //delay(100);
     //}
 
+    SerialExt::Print(F("Servo Pin: "), _pin);
+
     TheServo.write(_pos);
     delay(500);
 
@@ -72,7 +74,7 @@ void ServoMotor::handleRun() {
     }
     int shakes = RTCExt::GetShakesOrTurns(MotorType);
     if(shakes > 0) {
-        //SerialExt::Print(F("Shaking: "), Shakes, F(" Times"));
+        SerialExt::Print(F("Shaking: "), shakes, F(" Times"));
         //delay(4000);
         int shakeCount = 0;
         while(shakeCount < shakes) {

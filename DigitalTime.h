@@ -62,7 +62,7 @@ namespace TimeHelpers {
     template<typename M = int, typename S = int>
     String FormatMinutesSeconds(M && minutes, S && seconds) {
 
-        String minString = String(minutes);
+        String minString = String(minutes) + "m";
         if(minutes < 10)
             minString = "0" + minString;
 
@@ -70,7 +70,7 @@ namespace TimeHelpers {
         // timeString += minString; //+":";
 
 
-        String secString = String(seconds);
+        String secString = String(seconds) + "s";
         if(seconds < 10)
             secString = "0" + secString;
 

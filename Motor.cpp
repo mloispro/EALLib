@@ -17,6 +17,7 @@ void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
     RTCExt::LoadNextRunInfos(MotorType);
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
+    SerialExt::Print("Init Pin: ", _pin);
     if(mem.LastSave <= 0) {
         mem = RTCExt::SaveNextRunInfos(MotorType);
 
@@ -79,7 +80,8 @@ bool Motor::ShouldRunMotor(bool printToSerial) {
 bool Motor::IsSwitchOn(bool isTimeToRun) {
     bool isSwitchOn = true;
     //see if this motor has a switch
-    if(TheSwitch.AnalogPin >= 1) {
+    int switchPin = TheSwitch.AnalogPin;
+    if(switchPin >= 1) {
 
         if(isTimeToRun)
             isSwitchOn = TheSwitch.IsOn();
