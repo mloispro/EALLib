@@ -12,11 +12,8 @@ Motor::Motor() {}
 
 void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
-    int relayPin = RelayPin;
-    if(relayPin >= 2) {
-        pinMode(relayPin, OUTPUT);
-        digitalWrite(relayPin, HIGH);
-    }
+    if(RelayPin >= 2)
+        pinMode(RelayPin, OUTPUT);
 
     RTCExt::LoadNextRunInfos(MotorType);
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
@@ -46,13 +43,13 @@ void Motor::Run() {
 
     if(signalRelay) {
         SerialExt::Print(F("Signaling Relay Pin: "), RelayPin);
-        digitalWrite(RelayPin, LOW);
+        digitalWrite(RelayPin, HIGH);
     }
 
     handleRun();
 
     if(signalRelay)
-        digitalWrite(RelayPin, HIGH);
+        digitalWrite(RelayPin, LOW);
 
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
 
