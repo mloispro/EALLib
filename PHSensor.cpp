@@ -30,7 +30,7 @@ double PHSensor::GetPH() {
             _pHArrayIndex = 0;
         }
         _voltage = CalculateAverage(_pHAverage, 40) * 5.0 / 1024;
-        _pHValue = 2.5 * _voltage + _offset;
+        _pHValue = 1.5 * _voltage + Offset;
         samplingTime = millis();
     }
     return _pHValue;

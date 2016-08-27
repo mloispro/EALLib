@@ -13,7 +13,7 @@ class PHSensor {
 
 private:
     int _pin;
-    double _offset = 0.0;
+
     int _printPHEvery = 800;
     int _pHAverage[40];
     int _pHArrayIndex = 0;
@@ -29,6 +29,8 @@ private:
     void ClearLCDLine(short lineNum);
 
 public:
+    double Offset = 0.5;
+
     double GetPH();
     double GetVoltage();
     void PrintPHToSerial();
