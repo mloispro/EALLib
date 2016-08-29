@@ -9,32 +9,71 @@ PHSensor::PHSensor(int pin, int printPHEvery, bool printToLCD):
     Init();
 }
 
+//PHSensor::PHSensor() :
+//PHSensor(0, 0, false) {}
 
 void PHSensor::Init() {
-//led to show board working
+    //led to show board working
     pinMode(13, OUTPUT);
+
     if(_printToLCD) {
         _lcd.begin(16, 2);
         _lcd.clear();
         _lcd.setCursor(0, 0);
     }
 
+    //load vars from eeprom
+    _mem.load();
+    double memOffset = _mem.Offset;
+    _offset = memOffset;
+    if(isnan(_offset)) {
+        _offset = 0;
+    }
+
+
+}
+void PHSensor::Update(double offset) {
+    _offset = offset;
+    _mem.Offset = _offset;
+    _mem.save();
+}
+double PHSensor::GetPH() {
+
+    return _pHValue;
+
 }
 
-double PHSensor::GetPH() {
+void PHSensor::CalculatePH() {
+    float phTotal = GetPHValue();
+    int numOfSamples = 1;
+
+    for(int i = 0; i <= 20; i++) {
+        int wait = i + 100;
+        delay(wait);
+        float phVal = GetPHValue();
+        phTotal += phVal;
+        numOfSamples++;
+    }
+    float phAverage = phTotal / numOfSamples;
+    _pHValue = phAverage;
+
+}
+
+double PHSensor::GetPHValue() {
     static unsigned long samplingTime = millis();
-    //static float pHValue, voltage;
     if(millis() - samplingTime > 60) {
         _pHAverage[_pHArrayIndex++] = analogRead(_pin);
         if(_pHArrayIndex == 40) {
             _pHArrayIndex = 0;
         }
         _voltage = CalculateAverage(_pHAverage, 40) * 5.0 / 1024;
-        _pHValue = 1.5 * _voltage + Offset;
+        float pHVal = 1.5 * _voltage + _offset;
+        return pHVal;
         samplingTime = millis();
     }
     return _pHValue;
 }
+
 double PHSensor::GetVoltage() {
 
     return _voltage;
@@ -44,9 +83,9 @@ void PHSensor::PrintPHToSerial() {
     static unsigned long printTime = millis();
     if(millis() - printTime > _printPHEvery) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
         //if(Serial.available()) {
-        Serial.print("Voltage:");
+        Serial.print(F("Voltage:"));
         Serial.print(_voltage, 2);
-        Serial.print("    pH value: ");
+        Serial.print(F("    pH value: "));
         Serial.println(_pHValue, 2);
         //}
         digitalWrite(13, digitalRead(13) ^ 1);
@@ -61,7 +100,7 @@ void PHSensor::PrintPHToLCD() {
 
             ClearLCDLine(0);
             _lcd.setCursor(0, 0);
-            _lcd.print("PH: ");
+            _lcd.print(F("PH: "));
             _lcd.print(_pHValue, 2);
 
         }
@@ -69,9 +108,10 @@ void PHSensor::PrintPHToLCD() {
         printTime = millis();
     }
 }
+
 void PHSensor::ClearLCDLine(short lineNum) {
     _lcd.setCursor(0, lineNum);
-    _lcd.print("                ");
+    _lcd.print(F("                "));
 }
 double PHSensor::CalculateAverage(int* arr, int number) {
     int i;
@@ -79,7 +119,7 @@ double PHSensor::CalculateAverage(int* arr, int number) {
     double avg;
     long amount = 0;
     if(number <= 0) {
-        Serial.println("Error number for the array to avraging!/n");
+        Serial.println(F("Error number for the array to avraging!/n"));
         return 0;
     }
     if(number < 5) { //less than 5, calculated directly statistics
