@@ -12,8 +12,14 @@ Motor::Motor() {}
 
 void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
-    if(RelayPin >= 2)
+    if(RelayPin >= 2) {
         pinMode(RelayPin, OUTPUT);
+        digitalWrite(RelayPin, HIGH);
+    }
+
+    if(MotorType == AccessoryType::ROWaterPump) {
+        return; //dont need to save to eeprom because triggered by only float switch
+    }
 
     RTCExt::LoadNextRunInfos(MotorType);
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
@@ -43,13 +49,18 @@ void Motor::Run() {
 
     if(signalRelay) {
         SerialExt::Print(F("Signaling Relay Pin: "), RelayPin);
-        digitalWrite(RelayPin, HIGH);
+        digitalWrite(RelayPin, LOW);
     }
 
     handleRun();
 
-    if(signalRelay)
-        digitalWrite(RelayPin, LOW);
+    if(signalRelay) {
+        digitalWrite(RelayPin, HIGH);
+    }
+
+    if(MotorType == AccessoryType::ROWaterPump) {
+        return; //dont need to save to eeprom because triggered by only float switch
+    }
 
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
 
@@ -60,8 +71,9 @@ void Motor::Run() {
 }
 
 bool Motor::ShouldSignalRelay() {
-    if(RelayPin >= 2)
+    if(RelayPin >= 2) {
         return true;
+    }
     return false;
 }
 
@@ -71,24 +83,27 @@ bool Motor::ShouldRunMotor(bool printToSerial) {
     bool runMotor;
     bool isTimeToRun = RTCExt::IsTimeToRun(MotorType);
 
-    bool isSwitchOn = IsSwitchOn(isTimeToRun);
+    bool isSwitchOn = IsSwitchOnAndTimeToRun(isTimeToRun);
 
     runMotor = (isTimeToRun) && (isSwitchOn);
     return runMotor;
 }
 //analog pin must be greater than 1 because of lcd
-bool Motor::IsSwitchOn(bool isTimeToRun) {
+bool Motor::IsSwitchOnAndTimeToRun(bool isTimeToRun) {
     bool isSwitchOn = true;
     //see if this motor has a switch
     int switchPin = TheSwitch.AnalogPin;
     if(switchPin >= 1) {
 
-        if(isTimeToRun)
+        if(isTimeToRun) {
             isSwitchOn = TheSwitch.IsOn();
+        }
 
-        if(isSwitchOn)
+        if(isSwitchOn) {
             SerialExt::Debug("Switch Val: ", TheSwitch.SwitchReading);
-    } else {
+        }
+    }
+    else {
         isSwitchOn = true; //no switch to turn it on.
     }
     return isSwitchOn;

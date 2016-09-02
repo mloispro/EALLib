@@ -42,9 +42,9 @@ class PHSensor {
     private:
         int _pin;
 
-        int _printPHEvery = 800;
-        int _pHAverage[40];
+        int _pHAverage[80];
         int _pHArrayIndex = 0;
+        int _printPHEvery = 800;
         float _pHValue;
         float _voltage;
         bool _printToLCD;

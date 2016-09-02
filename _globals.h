@@ -16,7 +16,8 @@ namespace Globals {
         LiqDoser,
         DryDoser,
         WaterPump,
-        Lcd
+        Lcd,
+        ROWaterPump
     };
 
 }

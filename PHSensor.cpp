@@ -61,12 +61,13 @@ void PHSensor::CalculatePH() {
 
 double PHSensor::GetPHValue() {
     static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 60) {
+    if(millis() - samplingTime > 110) {
+        int numOfSamples = 80;
         _pHAverage[_pHArrayIndex++] = analogRead(_pin);
-        if(_pHArrayIndex == 40) {
+        if(_pHArrayIndex == numOfSamples) {
             _pHArrayIndex = 0;
         }
-        _voltage = CalculateAverage(_pHAverage, 40) * 5.0 / 1024;
+        _voltage = CalculateAverage(_pHAverage, numOfSamples) * 5.0 / 1024;
         //float pHVal = 3.5 * _voltage + _offset; //for DH Robot PH Sensor
         float pHVal = 7 + ((2.5 - _voltage) / 0.18) + _offset;
         return pHVal;
@@ -74,16 +75,6 @@ double PHSensor::GetPHValue() {
     }
     return _pHValue;
 
-    ////alternate reading
-    //int measure = analogRead(_pin);
-    //_voltage = 5.0 / 1024.0 * measure; //classic digital to voltage conversion
-    ////Serial.print("\tVoltage: ");
-    ////Serial.print(_voltage, 3);
-    //
-    //// PH_step = (voltage@PH7 - voltage@PH4) / (PH7 - PH4)
-    //// PH_probe = PH7 - ((voltage@PH7 - voltage@probe) / PH_step)
-    //float pHVal = 7 + ((2.5 - _voltage) / 0.18);
-    //return pHVal;
 }
 
 double PHSensor::GetVoltage() {

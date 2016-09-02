@@ -78,8 +78,9 @@ namespace Utils {
             setSyncProvider(RTC.get);   // the function to get the time from the RTC
             //#endif
 
-            if(timeStatus() != timeSet)
+            if(timeStatus() != timeSet) {
                 SerialExt::Print(F("Unable to sync with the RTC, time not set."));
+            }
             else {
                 String digitalTime = GetDigitalTimeString(GetRTCTime(), false);
                 SerialExt::Print(F("RTC Initialized: "), digitalTime);
@@ -114,10 +115,12 @@ namespace Utils {
             auto time = GetRTCTime();
             auto theYear = year(time);
             //SerialExt::Debug("theYear", theYear);
-            if(theYear >= 2016)
+            if(theYear >= 2016) {
                 return true;
-            else
+            }
+            else {
                 return false;
+            }
         }
         //loads collection from eeprom
         template<typename T = void>
@@ -129,8 +132,9 @@ namespace Utils {
             mem.AccType = accType;
             NextRunMemory newMem = MemoryExt::GetNextRunMem(mem);
             //mem = MemoryExt::GetNextRunMem(mem);
-            if(!_memoryContainer.NextRunInfoExists(accType))
+            if(!_memoryContainer.NextRunInfoExists(accType)) {
                 _memoryContainer.AddNextRunInfo(newMem);
+            }
 
         }
         template<typename T = void>
@@ -146,8 +150,9 @@ namespace Utils {
             //mem.Pin = pin;
             mem.AccType = accType;
             NextRunMemory newMem = MemoryExt::SaveNextRunMem(mem);
-            if(!_memoryContainer.NextRunInfoExists(accType))
+            if(!_memoryContainer.NextRunInfoExists(accType)) {
                 _memoryContainer.AddNextRunInfo(newMem);
+            }
 
             return newMem;
         }
@@ -162,8 +167,9 @@ namespace Utils {
 
             NextRunMemory& nextRunMem = _memoryContainer.FindNextRunInfo((AccessoryType)accType);
 
-            if(!forceSave && !nextRunMem.Enabled)
+            if(!forceSave && !nextRunMem.Enabled) {
                 return nextRunMem;
+            }
 
             auto rtcTime = GetRTCTime();
             long runEvery = nextRunMem.RunEvery;
@@ -177,22 +183,26 @@ namespace Utils {
             //auto cd1 = GetTimeRemainingString(countDown, true);
             //auto re1 = GetTimeRemainingString(runEvery, true);
 
-            if(!IsRTCTimeSet() || runEvery == 0)
-                return nextRunMem;// rtcTime;
+            if(!IsRTCTimeSet() || runEvery == 0) {
+                return nextRunMem;    // rtcTime;
+            }
 
-            if(lastRun == 0)  //before first feeding
+            if(lastRun == 0) { //before first feeding
                 lastRun = rtcTime;
+            }
 
             if(lastRun > rtcTime) {
                 lastRun = rtcTime;
                 nextRun = 0;
             }
 
-            if(nextRun <= 0)
-                nextRun = rtcTime + runEvery; //08:51:49
+            if(nextRun <= 0) {
+                nextRun = rtcTime + runEvery;    //08:51:49
+            }
 
-            if(lastRun > 0 && nextRun <= rtcTime)
+            if(lastRun > 0 && nextRun <= rtcTime) {
                 nextRun = lastRun + runEvery;
+            }
 
             countDown = nextRun - rtcTime; //00:00:06
 
@@ -211,8 +221,9 @@ namespace Utils {
             nextRunMem.NextRun = nextRun;
             nextRunMem.LastRun = lastRun;
 
-            if(forceSave)
+            if(forceSave) {
                 nextRunMem.LastSave = 0;
+            }
 
             //save every 15 min. 900 sec
             long saveTime = nextRunMem.LastSave + 900;
@@ -236,8 +247,12 @@ namespace Utils {
         bool IsTimeToRun(AccessoryType accType) {
             NextRunMemory& mem = RefreshNextRunInfo(accType);
 
-            if(!mem.Enabled)return false;
-            if(mem.RunEvery <= 0)return true;  //not using rtc
+            if(!mem.Enabled) {
+                return false;
+            }
+            if(mem.RunEvery <= 0) {
+                return true;    //not using rtc
+            }
 
             time_t runTime = RTCExt::GetRTCTime();
 
@@ -258,26 +273,38 @@ namespace Utils {
             String freq = "";
 
             String am = F("AM");
-            if(isPM(nextRun))
+            if(isPM(nextRun)) {
                 am = F("PM");
+            }
 
             String theTime = GetDigitalTimeString(nextRun, false);
             theTime = theTime + am;
 
             int h = ConvSecToHour(runEvery);
 
-            if(h == 24)
+            if(h == 24) {
                 freq = F(", Daily");
-            else if(h == 48)
-                freq = F(", Every Other Day");
-            else if(h == 168)
-                freq = F(", Weekly");
-            else if(h == 336)
-                freq = F(", Every 2 Weeks");
-            else if(h == 504)
-                freq = F(", Every 3 Weeks");
-            else if(h == 672)
-                freq = F(", Monthly");
+            }
+            else
+                if(h == 48) {
+                    freq = F(", Every Other Day");
+                }
+                else
+                    if(h == 168) {
+                        freq = F(", Weekly");
+                    }
+                    else
+                        if(h == 336) {
+                            freq = F(", Every 2 Weeks");
+                        }
+                        else
+                            if(h == 504) {
+                                freq = F(", Every 3 Weeks");
+                            }
+                            else
+                                if(h == 672) {
+                                    freq = F(", Monthly");
+                                }
 
             String freqTime = theTime + freq;
             return freqTime;
@@ -349,23 +376,37 @@ namespace Utils {
             if(rangeType == LCDMenu::RangeType::Year) {
                 ClearTimeTemp();
                 _timeBuffer.Year = val;
-            } else if(rangeType == LCDMenu::RangeType::Month)
-                _timeBuffer.Month = val;
-            else if(rangeType == LCDMenu::RangeType::Day)
-                _timeBuffer.Day = val;
-            else if(rangeType == LCDMenu::RangeType::Hour)
-                _timeBuffer.Hour = val;
-            else if(rangeType == LCDMenu::RangeType::Minute)
-                _timeBuffer.Minute = val;
-            else if(rangeType == LCDMenu::RangeType::AmPm) {
-                if(val == 0) { // val = 0->AM
-                    if(_timeBuffer.Hour == 12) //midnight
-                        _timeBuffer.Hour = 0;
-                } else if(val == 1) { // val = 1->PM
-                    if(_timeBuffer.Hour < 12) //pm
-                        _timeBuffer.Hour += 12;
-                }
             }
+            else
+                if(rangeType == LCDMenu::RangeType::Month) {
+                    _timeBuffer.Month = val;
+                }
+                else
+                    if(rangeType == LCDMenu::RangeType::Day) {
+                        _timeBuffer.Day = val;
+                    }
+                    else
+                        if(rangeType == LCDMenu::RangeType::Hour) {
+                            _timeBuffer.Hour = val;
+                        }
+                        else
+                            if(rangeType == LCDMenu::RangeType::Minute) {
+                                _timeBuffer.Minute = val;
+                            }
+                            else
+                                if(rangeType == LCDMenu::RangeType::AmPm) {
+                                    if(val == 0) { // val = 0->AM
+                                        if(_timeBuffer.Hour == 12) { //midnight
+                                            _timeBuffer.Hour = 0;
+                                        }
+                                    }
+                                    else
+                                        if(val == 1) { // val = 1->PM
+                                            if(_timeBuffer.Hour < 12) { //pm
+                                                _timeBuffer.Hour += 12;
+                                            }
+                                        }
+                                }
         }
 
 
@@ -379,41 +420,51 @@ namespace Utils {
             if(rangeType == LCDMenu::RangeType::Hour) {
                 ClearTimeTemp();
                 _timeBuffer.Hour = val;
-            } else if(rangeType == LCDMenu::RangeType::Minute)
-                _timeBuffer.Minute = val;
-            else if(rangeType == LCDMenu::RangeType::AmPm) {
+            }
+            else
+                if(rangeType == LCDMenu::RangeType::Minute) {
+                    _timeBuffer.Minute = val;
+                }
+                else
+                    if(rangeType == LCDMenu::RangeType::AmPm) {
 
-                NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+                        NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
 
-                //next run in seconds.
-                long nrSecs = nextRunMem.NextRun;
+                        //next run in seconds.
+                        long nrSecs = nextRunMem.NextRun;
 
-                if(val == 1) //pm
-                    _timeBuffer.Hour = _timeBuffer.Hour + 12;
+                        if(val == 1) { //pm
+                            _timeBuffer.Hour = _timeBuffer.Hour + 12;
+                        }
 
-                int y = year(nrSecs);
-                _timeBuffer.Year = CalendarYrToTm(y);
-                _timeBuffer.Month = month(nrSecs);
-                _timeBuffer.Day = day(nrSecs);
-                _timeBuffer.Second = second(nrSecs);
+                        int y = year(nrSecs);
+                        _timeBuffer.Year = CalendarYrToTm(y);
+                        _timeBuffer.Month = month(nrSecs);
+                        _timeBuffer.Day = day(nrSecs);
+                        _timeBuffer.Second = second(nrSecs);
 
-                //meridian is last step so update time
-                time_t newNrTime = makeTime(_timeBuffer);
+                        //meridian is last step so update time
+                        time_t newNrTime = makeTime(_timeBuffer);
 
-                nextRunMem.NextRun = newNrTime;
-                nextRunMem.LastRun = -1; //force recalculate
-                RefreshNextRunInfo(accType, true);
-            } else if(rangeType == LCDMenu::RangeType::RunNow) {
-                NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+                        nextRunMem.NextRun = newNrTime;
+                        nextRunMem.LastRun = -1; //force recalculate
+                        RefreshNextRunInfo(accType, true);
+                    }
+                    else
+                        if(rangeType == LCDMenu::RangeType::RunNow) {
+                            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
 
-                if(!nextRunMem.Enabled) //acc not enabled so dont run.
-                    return;
+                            if(!nextRunMem.Enabled) { //acc not enabled so dont run.
+                                return;
+                            }
 
-                nextRunMem.NextRun = RTCExt::GetRTCTime();
-                nextRunMem.LastRun = -1; //force recalculate
-                RefreshNextRunInfo(accType, true);
-            } else
-                return;
+                            nextRunMem.NextRun = RTCExt::GetRTCTime();
+                            nextRunMem.LastRun = -1; //force recalculate
+                            RefreshNextRunInfo(accType, true);
+                        }
+                        else {
+                            return;
+                        }
 
 
         }
@@ -437,7 +488,20 @@ namespace Utils {
             return timeString;
         }
 
-
+        template<typename T = void>
+        bool IsDayTime() {
+            time_t rtcTime = GetRTCTime();
+            int theHour = hourFormat12(rtcTime);
+            bool am = isAM(rtcTime);
+            if(am && theHour > 8) {
+                return true;
+            }
+            else
+                if(theHour < 9) {
+                    return true;
+                }
+            return false;
+        }
     }
     //extern MemoryContainer RTCExt::_memoryContainer;
 }
