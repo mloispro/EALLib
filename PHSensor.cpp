@@ -39,7 +39,8 @@ void PHSensor::Update(double offset) {
 }
 double PHSensor::GetPH() {
 
-    return _pHValue;
+    double tankPH = _pHValue - TankOffsetToSubtract;
+    return tankPH;
 
 }
 

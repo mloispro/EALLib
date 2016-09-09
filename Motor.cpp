@@ -7,6 +7,7 @@ Motor::Motor(int pin, int shakesOrTurns, int theSpeed, short relayPin, long runE
 
     Init(shakesOrTurns, runEverySeconds, enabled);
 }
+
 Motor::Motor() {}
 
 
@@ -14,7 +15,13 @@ void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
     if(RelayPin >= 2) {
         pinMode(RelayPin, OUTPUT);
-        digitalWrite(RelayPin, HIGH);
+
+        if(_relayHigh) {
+            digitalWrite(RelayPin, LOW);
+        }
+        else {
+            digitalWrite(RelayPin, HIGH);
+        }
     }
 
     if(MotorType == AccessoryType::ROWaterPump) {
@@ -48,14 +55,27 @@ void Motor::Run() {
     bool signalRelay = ShouldSignalRelay();
 
     if(signalRelay) {
-        SerialExt::Print(F("Signaling Relay Pin: "), RelayPin);
-        digitalWrite(RelayPin, LOW);
+        SerialExt::Debug(F("Signaling Relay Pin: "), RelayPin);
+
+        if(_relayHigh) {
+            digitalWrite(RelayPin, HIGH);
+        }
+        else {
+            digitalWrite(RelayPin, LOW);
+        }
+
     }
 
     handleRun();
 
     if(signalRelay) {
-        digitalWrite(RelayPin, HIGH);
+        //digitalWrite(RelayPin, HIGH);
+        if(_relayHigh) {
+            digitalWrite(RelayPin, LOW);
+        }
+        else {
+            digitalWrite(RelayPin, HIGH);
+        }
     }
 
     if(MotorType == AccessoryType::ROWaterPump) {
@@ -99,9 +119,9 @@ bool Motor::IsSwitchOnAndTimeToRun(bool isTimeToRun) {
             isSwitchOn = TheSwitch.IsOn();
         }
 
-        if(isSwitchOn) {
-            SerialExt::Debug("Switch Val: ", TheSwitch.SwitchReading);
-        }
+        //if(isSwitchOn) {
+        //SerialExt::Debug(F("Sensor Reading"), TheSwitch.SwitchReading);
+        //}
     }
     else {
         isSwitchOn = true; //no switch to turn it on.
@@ -109,3 +129,7 @@ bool Motor::IsSwitchOnAndTimeToRun(bool isTimeToRun) {
     return isSwitchOn;
 }
 
+void Motor::SetRelayHigh() {
+    digitalWrite(RelayPin, LOW);
+    _relayHigh = true;
+}

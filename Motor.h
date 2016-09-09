@@ -26,14 +26,17 @@ class Motor {
         AnalogSwitch TheSwitch;
         short RelayPin;
         AccessoryType MotorType;
+
     protected:
         int _theSpeed;
         int _pin;
+        bool _relayHigh;
     private:
 
     public:
         bool ShouldRunMotor(bool printToSerial);
         void Run();
+        void SetRelayHigh();
     protected:
         Motor(int pin, int shakesOrTurns, int theSpeed, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, AccessoryType motorType, bool enabled);
         Motor();

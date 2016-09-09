@@ -65,7 +65,7 @@ class PHSensor {
         //PHSensor(const PHSensor& c);
     public:
 
-
+        double TankOffsetToSubtract = 0;
         double GetPH();
         void CalculatePH();
         double GetVoltage();
