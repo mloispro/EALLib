@@ -1,11 +1,12 @@
 
 #include "PHSensor.h"
 
-PHSensor::PHSensor(int pin, int printPHEvery) :
-    PHSensor(pin, printPHEvery, false) {}
 
-PHSensor::PHSensor(int pin, int printPHEvery, bool printToLCD):
-    _pin(pin), _printPHEvery(printPHEvery), _printToLCD(printToLCD), _lcd(8, 9, 4, 5, 6, 7) {
+PHSensor::PHSensor(int pin, int printPHEvery, LCDBase lcd) :
+    PHSensor(pin, printPHEvery, false, lcd) {}
+
+PHSensor::PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd):
+    _pin(pin), _printPHEvery(printPHEvery), _printToLCD(printToLCD), _lcd(lcd) {
     Init();
 }
 
@@ -16,11 +17,11 @@ void PHSensor::Init() {
     //led to show board working
     pinMode(13, OUTPUT);
 
-    if(_printToLCD) {
-        _lcd.begin(16, 2);
-        _lcd.clear();
-        _lcd.setCursor(0, 0);
-    }
+    //if(_printToLCD) {
+    //_lcd.begin(16, 2);
+    //_lcd.clear();
+    //_lcd.setCursor(0, 0);
+    //}
 
     //load vars from eeprom
     _mem.load();
@@ -29,8 +30,6 @@ void PHSensor::Init() {
     if(isnan(_offset)) {
         _offset = 0;
     }
-
-
 }
 void PHSensor::Update(double offset) {
     _offset = offset;
@@ -83,40 +82,35 @@ double PHSensor::GetVoltage() {
     return _voltage;
 }
 void PHSensor::PrintPHToSerial() {
-    GetPH();
+    double tankPH = GetPH();
     static unsigned long printTime = millis();
     if(millis() - printTime > _printPHEvery) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
         //if(Serial.available()) {
         Serial.print(F("Voltage:"));
         Serial.print(_voltage, 2);
         Serial.print(F("    pH value: "));
-        Serial.println(_pHValue, 2);
+        Serial.println(tankPH, 2);
         //}
         digitalWrite(13, digitalRead(13) ^ 1);
         printTime = millis();
     }
 }
 void PHSensor::PrintPHToLCD() {
-    GetPH();
+    double tankPH = GetPH();
     static unsigned long printTime = millis();
     if(millis() - printTime > _printPHEvery + 400) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
         if(_printToLCD) {
 
-            ClearLCDLine(0);
+            _lcd.ClearLine(0);
             _lcd.setCursor(0, 0);
             _lcd.print(F("PH: "));
-            _lcd.print(_pHValue, 2);
-
         }
         digitalWrite(13, digitalRead(13) ^ 1);
         printTime = millis();
     }
 }
 
-void PHSensor::ClearLCDLine(short lineNum) {
-    _lcd.setCursor(0, lineNum);
-    _lcd.print(F("                "));
-}
+
 double PHSensor::CalculateAverage(int* arr, int number) {
     int i;
     int max, min;

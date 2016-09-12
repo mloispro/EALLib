@@ -7,14 +7,15 @@
 #include <vector>
 using namespace std;
 
+#include "LCDBase.h"
 #include "PhSensor.h"
 
-
-
 namespace Globals {
-    int _phSensorPin = A5;//A15;
 
-    PHSensor ThePHSensor(_phSensorPin, 2000, true);
+    LCDBase TheLCD;
+
+    int _phSensorPin = A5;//A15;
+    PHSensor ThePHSensor(_phSensorPin, 2000, true, TheLCD);
 
 
 

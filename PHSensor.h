@@ -11,6 +11,9 @@
 #include <cmath>
 using namespace std;
 
+
+#include "LCDBase.h"
+
 // Define a 'Storage' class that will manage EEPROM related data
 class PHSensorStorage : public erom::Storage {
     protected:
@@ -53,8 +56,9 @@ class PHSensor {
         PHSensorStorage _mem;
         double _offset = 0;
 
+        LCDBase _lcd;
         //LiquidCrystal* _lcd = new LiquidCrystal(8, 9, 4, 5, 6, 7);
-        LiquidCrystal _lcd;
+        //LiquidCrystal _lcd;
 
         void Init();
         double CalculateAverage(int* arr, int number);
@@ -73,8 +77,8 @@ class PHSensor {
         void PrintPHToLCD();
         void Update(double offset);
 
-        PHSensor(int pin, int printPHEvery);
-        PHSensor(int pin, int printPHEvery, bool printToLCD);
+        PHSensor(int pin, int printPHEvery, LCDBase lcd);
+        PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd);
         // PHSensor();
 
 };
