@@ -16,12 +16,12 @@ void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
     if(RelayPin >= 2) {
         pinMode(RelayPin, OUTPUT);
 
-        if(_relayHigh) {
-            digitalWrite(RelayPin, LOW);
-        }
-        else {
-            digitalWrite(RelayPin, HIGH);
-        }
+#ifdef DEBUG
+        digitalWrite(RelayPin, LOW);
+#else
+        digitalWrite(RelayPin, !_relayHigh);
+#endif
+
     }
 
     if(MotorType == AccessoryType::ROWaterPump) {
@@ -57,25 +57,24 @@ void Motor::Run() {
     if(signalRelay) {
         SerialExt::Debug(F("Signaling Relay Pin: "), RelayPin);
 
-        if(_relayHigh) {
-            digitalWrite(RelayPin, HIGH);
-        }
-        else {
-            digitalWrite(RelayPin, LOW);
-        }
 
+#ifdef DEBUG
+        digitalWrite(RelayPin, HIGH);
+#else
+        digitalWrite(RelayPin, _relayHigh);
+#endif
     }
 
     handleRun();
 
     if(signalRelay) {
         //digitalWrite(RelayPin, HIGH);
-        if(_relayHigh) {
-            digitalWrite(RelayPin, LOW);
-        }
-        else {
-            digitalWrite(RelayPin, HIGH);
-        }
+
+#ifdef DEBUG
+        digitalWrite(RelayPin, LOW);
+#else
+        digitalWrite(RelayPin, !_relayHigh);
+#endif
     }
 
     if(MotorType == AccessoryType::ROWaterPump) {

@@ -497,7 +497,7 @@ namespace Utils {
                 return true;
             }
             else
-                if(theHour < 9) {
+                if(theHour = 12 || theHour < 9) {
                     return true;
                 }
             return false;
