@@ -20,6 +20,11 @@ void LCDBase::ClearLine(short lineNum) {
     setCursor(0, lineNum);
     print(F("                "));
 }
+void LCDBase::PrintLine(short lineNum, String text) {
+    ClearLine(lineNum);
+    setCursor(0, lineNum);
+    print(text);
+}
 //template<typename T>
 //void LCDBase::Print(short lineNum, T&& text) {
 //_lcd.setCursor(0, lineNum);

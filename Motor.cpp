@@ -24,7 +24,8 @@ void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
     }
 
-    if(MotorType == AccessoryType::ROWaterPump) {
+    if(MotorType == AccessoryType::ROWaterPump ||
+            MotorType == AccessoryType::LiqDoser) {
         return; //dont need to save to eeprom because triggered by only float switch
     }
 

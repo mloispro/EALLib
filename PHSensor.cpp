@@ -17,29 +17,24 @@ void PHSensor::Init() {
     //led to show board working
     pinMode(13, OUTPUT);
 
-    //if(_printToLCD) {
-    //_lcd.begin(16, 2);
-    //_lcd.clear();
-    //_lcd.setCursor(0, 0);
-    //}
-
     //load vars from eeprom
-    _mem.load();
-    double memOffset = _mem.Offset;
-    _offset = memOffset;
-    if(isnan(_offset)) {
-        _offset = 0;
+    Offset.load();
+    if(isnan(Offset)) {
+        Offset = 3.0;
     }
 }
 void PHSensor::Update(double offset) {
-    _offset = offset;
-    _mem.Offset = _offset;
-    _mem.save();
+    Offset = offset;
+    Offset.save();
 }
+
+
 double PHSensor::GetPH() {
 
-    double tankPH = _pHValue - TankOffsetToSubtract;
-    return tankPH;
+    //double tankPH = _pHValue;// - TankOffsetToSubtract;
+    PhString = String(_pHValue, 2).c_str();
+    PhAvgString = String(_pHAvgValue, 2).c_str();
+    return _pHValue;
 
 }
 
@@ -48,7 +43,7 @@ void PHSensor::CalculatePH() {
     int numOfSamples = 1;
 
     for(int i = 0; i <= 20; i++) {
-        int wait = i + 100;
+        int wait = i + 50;
         delay(wait);
         float phVal = GetPHValue();
         phTotal += phVal;
@@ -62,14 +57,15 @@ void PHSensor::CalculatePH() {
 double PHSensor::GetPHValue() {
     static unsigned long samplingTime = millis();
     if(millis() - samplingTime > 110) {
-        int numOfSamples = 80;
+        int numOfSamples = 60;
         _pHAverage[_pHArrayIndex++] = analogRead(_pin);
         if(_pHArrayIndex == numOfSamples) {
             _pHArrayIndex = 0;
         }
-        _voltage = CalculateAverage(_pHAverage, numOfSamples) * 5.0 / 1024;
-        //float pHVal = 3.5 * _voltage + _offset; //for DH Robot PH Sensor
-        float pHVal = 7 + ((2.5 - _voltage) / 0.18) + _offset;
+        double avgReading = CalculateAverage(_pHAverage, numOfSamples);
+        _voltage = avgReading * 5.0 / 1024;
+        float pHVal = 3.5 * _voltage + Offset; //for DH Robot PH Sensor
+        //float pHVal = 7 + ((2.5 - _voltage) / 0.18) + Offset;
         return pHVal;
         samplingTime = millis();
     }
@@ -101,9 +97,8 @@ void PHSensor::PrintPHToLCD() {
     if(millis() - printTime > _printPHEvery + 400) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
         if(_printToLCD) {
 
-            _lcd.ClearLine(0);
-            _lcd.setCursor(0, 0);
-            _lcd.print(F("PH: "));
+            String text = "PH: " + String(tankPH, 2);
+            _lcd.PrintLine(0, text);
         }
         digitalWrite(13, digitalRead(13) ^ 1);
         printTime = millis();

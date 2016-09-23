@@ -23,6 +23,7 @@ class LCDBase : public LiquidCrystal {
 
         LCDBase();
         void ClearLine(short lineNum);
+        void PrintLine(short lineNum, String text);
         //template<typename T>
         //void Print(short lineNum, T&& text);
 };

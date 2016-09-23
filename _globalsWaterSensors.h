@@ -9,14 +9,15 @@ using namespace std;
 
 #include "LCDBase.h"
 #include "PhSensor.h"
+#include "TDSSensor.h"
 
 namespace Globals {
 
-    LCDBase TheLCD;
+    extern LCDBase TheLCD;
 
-    int _phSensorPin = A5;//A15;
-    PHSensor ThePHSensor(_phSensorPin, 2000, true, TheLCD);
+    extern PHSensor ThePHSensor;
 
+    extern TDSSensor TheTDSSensor;
 
 
     //namespace MegaPins {
@@ -95,6 +96,5 @@ namespace Globals {
     //
     //}
 }
-
 
 #endif /* _GLOBALS_H_ */
