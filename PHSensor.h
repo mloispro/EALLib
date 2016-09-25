@@ -19,9 +19,12 @@ class PHSensor : public erom::Storage {
     private:
         int _pin;
 
-        int _pHAverage[60];
+        int _pHAverage[40];
         int _pHArrayIndex = 0;
         int _printPHEvery = 800;
+
+        vector<double> _pHHourAverage;
+        int _pHHourArrayIndex = 0;
         float _pHValue;
         float _pHAvgValue;
         float _voltage;
@@ -31,6 +34,7 @@ class PHSensor : public erom::Storage {
 
         void Init();
         double CalculateAverage(int* arr, int number);
+        double CalculateAverage(vector<double> phs);
         void ClearLCDLine(short lineNum);
         double GetPHValue();
 

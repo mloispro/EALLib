@@ -19,6 +19,7 @@ class LCDBase : public LiquidCrystal {
         //LiquidCrystal _lcd;
 
         void Init();
+
     public:
 
         LCDBase();
@@ -26,6 +27,8 @@ class LCDBase : public LiquidCrystal {
         void PrintLine(short lineNum, String text);
         //template<typename T>
         //void Print(short lineNum, T&& text);
+        //LCDBase& operator=(const LCDBase& c);
+        //LCDBase(const LCDBase& c);
 };
 
 

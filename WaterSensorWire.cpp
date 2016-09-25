@@ -1,7 +1,7 @@
 
 #include "WaterSensorWire.h"
 
-const byte _slave = 18;
+const byte _slave = 8;
 static const uint8_t _wireReqLength = 20;
 static const uint8_t _wireRespLength = 10;
 static String _wireRequest = "";
@@ -12,6 +12,9 @@ static String _cmdData = "";
 static String _response = "";
 
 void WaterSensorWire::Setup() {
+    Serial.print("_slave: ");
+    Serial.println(_slave);
+
     Wire.begin(_slave); //attached to esp8266 wifi
     Wire.onRequest(Request);
     Wire.onReceive(Receive);
@@ -19,6 +22,7 @@ void WaterSensorWire::Setup() {
 }
 void WaterSensorWire::Receive(int bytes) {
     //!!DONT PUT SERIAL.PRINTS IN HERE IT WILL SCREW UP WIRE COMM!!
+
     _wireRequest = "";
     _cmd = "";
     _cmdData = "";

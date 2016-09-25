@@ -13,11 +13,11 @@ using namespace std;
 
 namespace Globals {
 
-    extern LCDBase TheLCD;
+    //extern LCDBase TheLCD;
 
-    extern PHSensor ThePHSensor;
+    extern PHSensor& ThePHSensor;
 
-    extern TDSSensor TheTDSSensor;
+    extern TDSSensor& TheTDSSensor;
 
 
     //namespace MegaPins {

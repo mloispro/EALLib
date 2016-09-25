@@ -39,33 +39,51 @@ double PHSensor::GetPH() {
 }
 
 void PHSensor::CalculatePH() {
-    float phTotal = GetPHValue();
-    int numOfSamples = 1;
+    _pHValue = GetPHValue();
 
-    for(int i = 0; i <= 20; i++) {
-        int wait = i + 50;
-        delay(wait);
-        float phVal = GetPHValue();
-        phTotal += phVal;
-        numOfSamples++;
+    //hourly avg
+    static unsigned long samplingTime = millis();
+    if(millis() - samplingTime > 60000) { //add every 1 minute.
+        int numOfSamples = 60;
+        int pHHourAverageSize = _pHHourAverage.size();
+        if(pHHourAverageSize <= numOfSamples) {
+            _pHHourAverage.push_back(_pHValue);
+        }
+        else {
+            _pHHourAverage[_pHHourArrayIndex++] = _pHValue;
+        }
+
+        if(_pHHourArrayIndex == numOfSamples) {
+            _pHHourArrayIndex = 0;
+        }
+        _pHAvgValue = CalculateAverage(_pHHourAverage);
+        samplingTime = millis();
     }
-    float phAverage = phTotal / numOfSamples;
-    _pHValue = phAverage;
+    //Serial.print(F("samplingTime: "));
+    //Serial.println(millis() - samplingTime);
+    //Serial.print(F("_pHHourAverage.size: "));
+    //Serial.println(_pHHourAverage.size());
+    //Serial.print(F("_pHHourArrayIndex: "));
+    //Serial.println(_pHHourArrayIndex);
+    //Serial.print(F("_pHAvgValue: "));
+    //Serial.println(_pHAvgValue);
+    //Serial.print(F("_pHValue: "));
+    //Serial.println(_pHValue);
 
 }
 
 double PHSensor::GetPHValue() {
     static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 110) {
-        int numOfSamples = 60;
+    if(millis() - samplingTime > 1000) { //read every 1 second.
+        int numOfSamples = 40;
         _pHAverage[_pHArrayIndex++] = analogRead(_pin);
         if(_pHArrayIndex == numOfSamples) {
             _pHArrayIndex = 0;
         }
         double avgReading = CalculateAverage(_pHAverage, numOfSamples);
         _voltage = avgReading * 5.0 / 1024;
-        float pHVal = 3.5 * _voltage + Offset; //for DH Robot PH Sensor
-        //float pHVal = 7 + ((2.5 - _voltage) / 0.18) + Offset;
+        //float pHVal = 3.5 * _voltage + Offset; //for DH Robot PH Sensor
+        float pHVal = 7 + ((2.5 - _voltage) / 0.18) + Offset;
         return pHVal;
         samplingTime = millis();
     }
@@ -105,7 +123,14 @@ void PHSensor::PrintPHToLCD() {
     }
 }
 
-
+double PHSensor::CalculateAverage(vector<double> phs) {
+    double total = 0;
+    for(int i = 0; i < phs.size(); i++) {
+        total += phs[i];
+    }
+    double avgPh = total / phs.size();
+    return avgPh;
+}
 double PHSensor::CalculateAverage(int* arr, int number) {
     int i;
     int max, min;
