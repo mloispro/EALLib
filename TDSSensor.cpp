@@ -5,28 +5,33 @@
 //TDSSensor::TDSSensor(int pin, int printPHEvery, LCDBase lcd) :
 //TDSSensor(pin, printPHEvery, false, lcd) {}
 
-TDSSensor::TDSSensor(int pin, int printTDSEvery, bool printToLCD, LCDBase lcd):
-    _pin(pin), _printTDSEvery(printTDSEvery), _printToLCD(printToLCD), _lcd(lcd) {
-    Init();
+TDSSensor::TDSSensor(int pin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin):
+    _pin(pin), _printTDSEvery(printTDSEvery), _printToLCD(printToLCD), _lcd(lcd), _relayPin(relayPin) {
+    init();
 }
 
 //PHSensor::PHSensor() :
 //PHSensor(0, 0, false) {}
 
-void TDSSensor::Init() {
+void TDSSensor::init() {
     //led to show board working
     pinMode(13, OUTPUT);
-
+    pinMode(_relayPin, OUTPUT);
 
     //load vars from eeprom
-    Offset.load();
-    if(isnan(Offset)) {
-        Offset = 1210;
+    //TdsOffset.load();
+    //if(isnan(TdsOffset)) {
+    //TdsOffset = 1210;
+    //}
+
+    double offset = TheSensorsMem.TdsOffset;
+    if(!isnan(offset)) {
+        Offset = offset;
     }
 }
-void TDSSensor::Update(double offset) {
+void TDSSensor::Update(int offset) {
     Offset = offset;
-    Offset.save();
+    TheSensorsMem.TdsOffset = Offset;
 }
 
 double TDSSensor::GetTDS() {
@@ -44,18 +49,22 @@ double TDSSensor::GetTDS() {
     //analogWrite(9, outputValue);
     //double sensorVal2 = analogRead(_pin);//analogRead(1);
 
-    TdsString = String(_tdsValue, 2).c_str();
-    TdsAvgString = String(_tdsValueAverage, 2).c_str();
+
+    TdsString = String(_tdsValue, 0).c_str();
+    TdsAvgString = String(_tdsValueAverage, 0).c_str();
     return _tdsValue;
 
 }
 void TDSSensor::PrintTDSToLCD() {
-    double tankTDS = GetTDS();
+    GetTDS();
     static unsigned long printTime = millis();
     if(millis() - printTime > _printTDSEvery + 400) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
         if(_printToLCD) {
-
-            String text = "TDS: " + String(tankTDS, 2);
+            String enabled = "";
+            if(_enabled) {
+                enabled = "<";
+            }
+            String text = "TDS: " + TdsAvgString + ", " + TdsString + enabled;
             _lcd.PrintLine(1, text);
 
         }
@@ -64,30 +73,58 @@ void TDSSensor::PrintTDSToLCD() {
     }
 }
 void TDSSensor::CalculateTDS() {
-    float tdsTotal = GetTDSValue();
-    int numOfSamples = 1;
 
-    for(int i = 0; i <= 10; i++) {
-        int wait = i + 100;
-        delay(wait);
-        float tdsVal = GetTDSValue();
-        tdsTotal += tdsVal;
-        numOfSamples++;
+    if(!_enabled) {
+        return;
     }
-    float phAverage = tdsTotal / numOfSamples;
-    _tdsValue = phAverage;
+
+    _tdsValue = getTDSValue();
+
+    if(_numOfSamples <= 1) {
+        _numOfSamples = 1;
+        _tdsTotal = _tdsValue;
+    }
+
+    //_tdsTotal = getTDSValue();
+
+    static unsigned long samplingTime = millis();
+    if(millis() - samplingTime > 60000) { //wait 1 min inbetween readings
+
+        _tdsValue = getTDSValue();
+        _tdsTotal += _tdsValue;
+        _numOfSamples++;
+
+        samplingTime = millis();
+    }
+
+    _tdsValueAverage = _tdsTotal / _numOfSamples;
+    //Serial.print(F("tdsTotal: "));
+    //Serial.println(_tdsTotal, 2);
+    //Serial.print(F("_numOfSamples: "));
+    //Serial.println(_numOfSamples);
+    //Serial.print(F("_tdsValueAverage: "));
+    //Serial.println(_tdsValueAverage, 2);
+
+    //soften
+    _tdsValueAverage = (_tdsValueAverage + _tdsValue) / 2;
+    //Serial.print(F("sft_tdsValueAverage: "));
+    //Serial.println(_tdsValueAverage, 2);
+
+    if(_numOfSamples > 10) {
+        _numOfSamples = 1;
+    }
 
 }
 
-double TDSSensor::GetTDSValue() {
+double TDSSensor::getTDSValue() {
     static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 110) {
+    if(millis() - samplingTime > 500) {//wait .5 sec between readings, according to spec
         int numOfSamples = 40;
         _tdsAverage[_tdsArrayIndex++] = analogRead(_pin);
         if(_tdsArrayIndex == numOfSamples) {
             _tdsArrayIndex = 0;
         }
-        double tdsAvg = CalculateAverage(_tdsAverage, numOfSamples);
+        double tdsAvg = MathExt::CalculateAverage(_tdsAverage, numOfSamples);
         double voltage = tdsAvg * (5.0 / 1024);
         double tankTDS = voltage * Offset;
 
@@ -99,52 +136,17 @@ double TDSSensor::GetTDSValue() {
 }
 
 
-double TDSSensor::CalculateAverage(int* arr, int number) {
-    int i;
-    int max, min;
-    double avg;
-    long amount = 0;
-    if(number <= 0) {
-        Serial.println(F("Error number for the array to avraging!/n"));
-        return 0;
-    }
-    if(number < 5) { //less than 5, calculated directly statistics
-        for(i = 0; i < number; i++) {
-            amount += arr[i];
-        }
-        avg = amount / number;
-        return avg;
-    }
-    else {
-        if(arr[0] < arr[1]) {
-            min = arr[0];
-            max = arr[1];
-        }
-        else {
-            min = arr[1];
-            max = arr[0];
-        }
-        for(i = 2; i < number; i++) {
-            if(arr[i] < min) {
-                amount += min;      //arr<min
-                min = arr[i];
-            }
-            else {
-                if(arr[i] > max) {
-                    amount += max;  //arr>max
-                    max = arr[i];
-                }
-                else {
-                    amount += arr[i]; //min<=arr<=max
-                }
-            }//if
-        }//for
-        avg = (double)amount / (number - 2);
-    }//if
-    return avg;
+void TDSSensor::TurnOn() {
+    _enabled = true;
+    digitalWrite(_relayPin, HIGH);
 }
 
+void TDSSensor::TurnOff() {
+    _enabled = false;
+    digitalWrite(_relayPin, LOW);
+    delay(1000);
 
+}
 
 
 

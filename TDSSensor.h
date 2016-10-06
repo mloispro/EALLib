@@ -4,17 +4,19 @@
 
 #include <Arduino.h>
 #include <LiquidCrystal.h>
-#include <erom.h>
+//#include <erom.h>
 
 #include <StandardCplusplus.h>
 #include <vector>
 #include <cmath>
 using namespace std;
 
-
+#include "SensorsMem.h"
+using namespace Memory;
+#include "MathExt.h"
 #include "LCDBase.h"
 
-class TDSSensor : public erom::Storage {
+class TDSSensor {
 
     private:
         int _pin;
@@ -24,16 +26,19 @@ class TDSSensor : public erom::Storage {
         int _printTDSEvery = 800;
         float _tdsValue;
         float _tdsValueAverage;
+        float _tdsTotal;
         bool _printToLCD;
-
+        int _relayPin;
+        bool _enabled;
+        int _numOfSamples = 0;
 
         LCDBase _lcd;
 
 
-        void Init();
-        double CalculateAverage(int* arr, int number);
+        void init();
+        //double calculateAverage(int* arr, int number);
 
-        double GetTDSValue();
+        double getTDSValue();
 
     public:
 
@@ -41,18 +46,21 @@ class TDSSensor : public erom::Storage {
         String TdsAvgString;
 
         //double TankOffsetToSubtract = 0;
-        erom::Entry<double> Offset = 1210;
+        //erom::Entry<int> Offset = 1210;
+        int Offset = 1210;
         double GetTDS();
         void PrintTDSToLCD();
         void CalculateTDS();
 
         //void PrintPHToSerial();
 
-        void Update(double offset);
+        void Update(int offset);
         //String GetResponseString();
-        TDSSensor(int pin, int printTDSEvery, bool printToLCD, LCDBase lcd);
+        TDSSensor(int pin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
         // PHSensor();
 
+        void TurnOn();
+        void TurnOff();
 };
 
 

@@ -15,17 +15,21 @@ using namespace std;
 
 using namespace Globals;
 
+
 class WaterSensorWire {
 
     private:
 
         //void Init();
         static String SplitString(String data, char separator, int index);
+        static void Transmit(String partialResponse);
     public:
         //WaterSensorWire(PHSensor phSensor, TDSSensor tdsSensor);
         static void Setup();
         static void Receive(int bytes);
         static void Request();
+        static void Scan();
+        static int I2C_ClearBus();
 };
 
 

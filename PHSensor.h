@@ -4,17 +4,21 @@
 
 #include <Arduino.h>
 #include <LiquidCrystal.h>
-#include <erom.h>
+//#include <erom.h>
 
 #include <StandardCplusplus.h>
 #include <vector>
 #include <cmath>
+#include <numeric>
 using namespace std;
 
+#include "SensorsMem.h"
+using namespace Memory;
+#include "MathExt.h"
 
 #include "LCDBase.h"
 
-class PHSensor : public erom::Storage {
+class PHSensor {
 
     private:
         int _pin;
@@ -29,15 +33,18 @@ class PHSensor : public erom::Storage {
         float _pHAvgValue;
         float _voltage;
         bool _printToLCD;
+        int _relayPin;
+        bool _enabled;
+        int _outlierCount = 0;
 
         LCDBase _lcd;
 
-        void Init();
-        double CalculateAverage(int* arr, int number);
-        double CalculateAverage(vector<double> phs);
-        void ClearLCDLine(short lineNum);
-        double GetPHValue();
-
+        void init();
+        //double calculateAverage(int* arr, int number);
+        //double calculateAverage(vector<double> phs);
+        void clearLCDLine(short lineNum);
+        double getPHValue();
+        bool isOutlier(double x, double avg);
         //PHSensor& operator=(const PHSensor& c);
         //PHSensor(const PHSensor& c);
     public:
@@ -46,7 +53,8 @@ class PHSensor : public erom::Storage {
         String PhAvgString;
 
         //double TankOffsetToSubtract = 0;
-        erom::Entry<double> Offset = 3.0;
+        //erom::Entry<double> Offset = 3.0;
+        double Offset = 3.0;
         double GetPH();
         void CalculatePH();
         double GetVoltage();
@@ -55,10 +63,12 @@ class PHSensor : public erom::Storage {
         void Update(double offset);
         //String GetResponseString();
 
-        PHSensor(int pin, int printPHEvery, LCDBase lcd);
-        PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd);
+        //PHSensor(int pin, int printPHEvery, LCDBase lcd);
+        PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd, int relayPin);
         //PHSensor() {};
 
+        void TurnOff();
+        void TurnOn();
 };
 
 

@@ -3,6 +3,8 @@
 #define _GLOBALSWATERSENSORS_H_
 
 #include <Arduino.h>
+#include <EEPROM.h>
+#include <EEWrap.h>
 #include <StandardCplusplus.h>
 #include <vector>
 using namespace std;
@@ -14,10 +16,17 @@ using namespace std;
 namespace Globals {
 
     //extern LCDBase TheLCD;
+    extern bool ReadingTDS;
+    extern long SensorReadInterval; // every 5 min switch ph and tds sensor
+    //int _lastSensorReadTime = 0;
 
     extern PHSensor& ThePHSensor;
 
     extern TDSSensor& TheTDSSensor;
+
+    extern LCDBase& TheLCD;
+
+    extern void SwitchSensors();
 
 
     //namespace MegaPins {

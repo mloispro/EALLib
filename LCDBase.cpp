@@ -31,5 +31,53 @@ void LCDBase::PrintLine(short lineNum, String text) {
 //_lcd.print(text);
 //}
 
+LcdKeyPress LCDBase::DetectKeyPress() {
+    int key = getKey();
+    //SerialExt::Debug("key_dkp:", key);
+
+    if(key == 0 || key == 1 || key == 2 || key == 3 || key == 4) {
+        //_optionChanged = true;
+    }
+
+
+    switch(key) {
+        case 0: //right
+            return LcdKeyPress::Right;
+        case 1: //up
+            return LcdKeyPress::Up;
+        case 2: //down
+            return LcdKeyPress::Down;
+        case 3: //left
+            return LcdKeyPress::Left;
+        case 4: //select
+            return LcdKeyPress::Select;
+        default:
+            return LcdKeyPress::None;
+
+    }
+}
+
+//--key press
+int LCDBase::getKeyFromVal(unsigned int input) {
+    int k;
+    for(k = 0; k < _numOfKeys; k++) {
+        if(input < _keyValues[k]) {
+            return k;
+        }
+    }
+    if(k >= _numOfKeys) {
+        k = -1;
+    }
+    return k;
+}
+
+int LCDBase::getKey() {
+    int keyVal = analogRead(0);
+    //SerialExt::Debug(F("keyVal"), keyVal);
+    int key = getKeyFromVal(keyVal);
+    //SerialExt::Debug(F("key"), key);
+    //_lastKey = key;
+    return key;
+}
 
 
