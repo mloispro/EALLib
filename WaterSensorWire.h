@@ -26,8 +26,10 @@ class WaterSensorWire {
     public:
         //WaterSensorWire(PHSensor phSensor, TDSSensor tdsSensor);
         static void Setup();
+        static void Loop();
         static void Receive(int bytes);
         static void Request();
+        //static void CheckConnection();
         static void Scan();
         static int I2C_ClearBus();
 };

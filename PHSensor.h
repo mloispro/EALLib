@@ -23,7 +23,7 @@ class PHSensor {
     private:
         int _pin;
 
-        int _pHAverage[40];
+        int _pHAverage[30];
         int _pHArrayIndex = 0;
         int _printPHEvery = 800;
 

@@ -82,7 +82,7 @@ void PHSensor::CalculatePH() {
         }
         _outlierCount = 0;
 
-        int numOfSamples = 40;
+        int numOfSamples = 15;
         int pHHourAverageSize = _pHHourAverage.size();
 
         if(pHHourAverageSize < numOfSamples) {
@@ -122,10 +122,13 @@ void PHSensor::CalculatePH() {
 double PHSensor::getPHValue() {
     static unsigned long samplingTime = millis();
     if(millis() - samplingTime > 1000) { //read every 1 second.
-        int numOfSamples = 40;
-        //int reading = analogRead(_pin);
+        int numOfSamples = 30;
+        int reading = analogRead(_pin);
 
-        _pHAverage[_pHArrayIndex++] = analogRead(_pin);
+        Serial.print(F("PH Raw Reading: "));
+        Serial.println(reading);
+
+        _pHAverage[_pHArrayIndex++] = reading;
         if(_pHArrayIndex == numOfSamples) {
             _pHArrayIndex = 0;
         }

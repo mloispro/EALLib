@@ -10,6 +10,19 @@ static int _responseIndex = -1;
 static String _cmd = "";
 static String _cmdData = "";
 static String _response = "";
+//static long _lastReqReceived = 0;
+//static const char* _sensorReadInter = "";
+//static const char* _sensorReadDur = "";
+//static const char* _reading = "";
+static String _ph = "";
+static String _phAvg = "";
+static String _tds = "";
+static String _tdsAvg = "";
+static String _sensorReadInter = "";
+static String _sensorReadDur = "";
+static String _reading = "";
+static String _phOffset = "";
+static String _tdsOffset = "";
 
 void WaterSensorWire::Setup() {
     Serial.print(F("_slave: "));
@@ -19,6 +32,33 @@ void WaterSensorWire::Setup() {
 
     Wire.onRequest(Request);
     Wire.onReceive(Receive);
+
+    //_lastReqReceived = millis();
+
+
+}
+void WaterSensorWire::Loop() {
+
+    _ph = ThePHSensor.PhString.c_str();
+    _phAvg = ThePHSensor.PhAvgString.c_str();
+    _tds = TheTDSSensor.TdsString.c_str();
+    _tdsAvg = TheTDSSensor.TdsAvgString.c_str();
+
+    _phOffset = String(ThePHSensor.Offset, 2).c_str(); //c_str detaches from ref so faster, prevents wire hang.
+    _tdsOffset = String(TheTDSSensor.Offset).c_str();
+
+    if(!ReadingTDS) {
+        _reading = "ph";
+    }
+    else {
+        _reading = "tds";
+    }
+
+    long dur = SensorReadDuration / 1000;
+    _sensorReadDur = String(dur) + "s";
+
+    long inter = SensorReadInterval / 1000;
+    _sensorReadInter = String(inter) + "s";
 
 }
 void WaterSensorWire::Receive(int bytes) {
@@ -66,6 +106,7 @@ void WaterSensorWire::Request() {
     //!!DONT PUT SERIAL.PRINTS IN HERE IT WILL SCREW UP WIRE COMM!!
 
     //Serial.println("Request()");
+    //_lastReqReceived = millis();
 
     String partialResponse;
     if(_cmd == "/") {
@@ -79,22 +120,39 @@ void WaterSensorWire::Request() {
     _responseIndex++;
     //String partialResponse = "";
     if(_responseIndex == 0) {
-        partialResponse = ThePHSensor.PhString;
+        partialResponse = _ph;
     }
     else if(_responseIndex == 1) {
-        partialResponse = ThePHSensor.PhAvgString;
+        partialResponse = _phAvg;
     }
     else if(_responseIndex == 2) {
-        partialResponse = TheTDSSensor.TdsString;
+        partialResponse = _tds;
     }
     else if(_responseIndex == 3) {
-        partialResponse = TheTDSSensor.TdsAvgString;
+        partialResponse = _tdsAvg;
     }
     else if(_responseIndex == 4) {
-        partialResponse = String(ThePHSensor.Offset, 2).c_str();
+        partialResponse = _phOffset;//String(ThePHSensor.Offset, 2).c_str();
     }
     else if(_responseIndex == 5) {
-        partialResponse = String(TheTDSSensor.Offset).c_str();
+        partialResponse = _tdsOffset; //String(TheTDSSensor.Offset).c_str();
+    }
+    else if(_responseIndex == 6) {
+        partialResponse = _reading;
+    }
+    else if(_responseIndex == 7) {
+        //long dur = SensorReadDuration / 1000;
+        //Serial.println(F("dur: "));
+        //Serial.print(dur);
+        //String durSec = String(dur, 0) + "s";
+        //Serial.print(durSec);
+        partialResponse = _sensorReadDur;
+    }
+    else if(_responseIndex == 8) {
+        //long inter = SensorReadInterval / 1000;
+        //String interSec = String(inter, 0) + "s";
+        //partialResponse = interSec.c_str();
+        partialResponse = _sensorReadInter;
         _responseIndex = -1; //need to keep this in last if always
     }
     else {
@@ -127,8 +185,20 @@ void WaterSensorWire::Transmit(String partialResponse) {
     //Serial.println(p);
     //}
     Wire.write(response, _wireRespLength);
+    // delay(10);//todo: may need to delete this
 }
-
+//void (*resetFunc)(void) = 0;
+//void WaterSensorWire::CheckConnection() {
+////Serial.println(millis() - _lastReqReceived);
+////Serial.println(millis() - _lastReqReceived > 180000);
+//if(millis() - _lastReqReceived > 180000) { //check every 3 minute. 180000
+//Serial.println(F("Wire Connection Lost Reseting.."));
+//delay(1000);
+////_lastReqReceived = millis();
+//wdt_reset();
+//resetFunc();
+//}
+//}
 String WaterSensorWire::SplitString(String data, char separator, int index) {
     int found = 0;
     int strIndex[] = {0, -1};

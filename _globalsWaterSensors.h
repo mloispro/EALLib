@@ -18,6 +18,7 @@ namespace Globals {
     //extern LCDBase TheLCD;
     extern bool ReadingTDS;
     extern long SensorReadInterval; // every 5 min switch ph and tds sensor
+    extern long SensorReadDuration;
     //int _lastSensorReadTime = 0;
 
     extern PHSensor& ThePHSensor;

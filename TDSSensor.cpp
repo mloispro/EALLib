@@ -118,8 +118,8 @@ void TDSSensor::CalculateTDS() {
 
 double TDSSensor::getTDSValue() {
     static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 500) {//wait .5 sec between readings, according to spec
-        int numOfSamples = 40;
+    if(millis() - samplingTime > 1000) {//wait .5 sec between readings, according to spec
+        int numOfSamples = 30;
         _tdsAverage[_tdsArrayIndex++] = analogRead(_pin);
         if(_tdsArrayIndex == numOfSamples) {
             _tdsArrayIndex = 0;
@@ -128,8 +128,9 @@ double TDSSensor::getTDSValue() {
         double voltage = tdsAvg * (5.0 / 1024);
         double tankTDS = voltage * Offset;
 
-        return tankTDS;
+
         samplingTime = millis();
+        return tankTDS;
     }
     return _tdsValue;
 
