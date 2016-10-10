@@ -21,12 +21,12 @@ class TDSSensor {
     private:
         int _pin;
 
-        int _tdsAverage[30];
+        int _tdsAverage[10];
         int _tdsArrayIndex = 0;
         int _printTDSEvery = 800;
         float _tdsValue;
-        float _tdsValueAverage;
-        float _tdsTotal;
+        //float _tdsValueAverage;
+        //float _tdsTotal;
         bool _printToLCD;
         int _relayPin;
         bool _enabled;
@@ -43,11 +43,11 @@ class TDSSensor {
     public:
 
         String TdsString;
-        String TdsAvgString;
+        //String TdsAvgString;
 
         //double TankOffsetToSubtract = 0;
         //erom::Entry<int> Offset = 1210;
-        int Offset = 1210;
+        int Offset = 270;
         double GetTDS();
         void PrintTDSToLCD();
         void CalculateTDS();

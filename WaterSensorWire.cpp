@@ -11,13 +11,10 @@ static String _cmd = "";
 static String _cmdData = "";
 static String _response = "";
 //static long _lastReqReceived = 0;
-//static const char* _sensorReadInter = "";
-//static const char* _sensorReadDur = "";
-//static const char* _reading = "";
 static String _ph = "";
-static String _phAvg = "";
+//static String _phAvg = "";
 static String _tds = "";
-static String _tdsAvg = "";
+//static String _tdsAvg = "";
 static String _sensorReadInter = "";
 static String _sensorReadDur = "";
 static String _reading = "";
@@ -40,9 +37,9 @@ void WaterSensorWire::Setup() {
 void WaterSensorWire::Loop() {
 
     _ph = ThePHSensor.PhString.c_str();
-    _phAvg = ThePHSensor.PhAvgString.c_str();
+    //_phAvg = ThePHSensor.PhAvgString.c_str();
     _tds = TheTDSSensor.TdsString.c_str();
-    _tdsAvg = TheTDSSensor.TdsAvgString.c_str();
+    //_tdsAvg = TheTDSSensor.TdsAvgString.c_str();
 
     _phOffset = String(ThePHSensor.Offset, 2).c_str(); //c_str detaches from ref so faster, prevents wire hang.
     _tdsOffset = String(TheTDSSensor.Offset).c_str();
@@ -123,24 +120,18 @@ void WaterSensorWire::Request() {
         partialResponse = _ph;
     }
     else if(_responseIndex == 1) {
-        partialResponse = _phAvg;
-    }
-    else if(_responseIndex == 2) {
         partialResponse = _tds;
     }
-    else if(_responseIndex == 3) {
-        partialResponse = _tdsAvg;
-    }
-    else if(_responseIndex == 4) {
+    else if(_responseIndex == 2) {
         partialResponse = _phOffset;//String(ThePHSensor.Offset, 2).c_str();
     }
-    else if(_responseIndex == 5) {
+    else if(_responseIndex == 3) {
         partialResponse = _tdsOffset; //String(TheTDSSensor.Offset).c_str();
     }
-    else if(_responseIndex == 6) {
+    else if(_responseIndex == 4) {
         partialResponse = _reading;
     }
-    else if(_responseIndex == 7) {
+    else if(_responseIndex == 5) {
         //long dur = SensorReadDuration / 1000;
         //Serial.println(F("dur: "));
         //Serial.print(dur);
@@ -148,7 +139,7 @@ void WaterSensorWire::Request() {
         //Serial.print(durSec);
         partialResponse = _sensorReadDur;
     }
-    else if(_responseIndex == 8) {
+    else if(_responseIndex == 6) {
         //long inter = SensorReadInterval / 1000;
         //String interSec = String(inter, 0) + "s";
         //partialResponse = interSec.c_str();

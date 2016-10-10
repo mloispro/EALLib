@@ -39,7 +39,7 @@ double PHSensor::GetPH() {
 
     //double tankPH = _pHValue;// - TankOffsetToSubtract;
     PhString = String(_pHValue, 2).c_str();
-    PhAvgString = String(_pHAvgValue, 2).c_str();
+    //PhAvgString = String(_pHAvgValue, 2).c_str();
     return _pHValue;
 
 }
@@ -52,70 +52,70 @@ void PHSensor::CalculatePH() {
 
     _pHValue = getPHValue();
 
-    //hourly avg
-    static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 60000) { //add every 1 minute.
-        //_phValue = MathExt::RandomFloat(8, 6.9);
-        double avg = 0;
-        if(_pHHourAverage.size() < 5) {
-            _pHHourAverage.push_back(_pHValue);
-
-            avg = MathExt::GetAverage(_pHHourAverage);
-            _pHAvgValue = avg;
-            return;
-        }
-        avg = MathExt::GetAverage(_pHHourAverage);
-
-        //soften the avg
-        double phAvg = (_pHValue + avg) / 2;
-
-        bool isAOutlier = isOutlier(_pHValue, phAvg);
-        if(isAOutlier && _outlierCount < 10) {
-            _outlierCount++;
-            //Serial.print(F("Outlier Found, skipping add: "));
-            //Serial.print(phAvg);
-            //Serial.print(F(" - "));
-            //Serial.println(millis() - samplingTime);
-            //Serial.print(F("_outlierCount: "));
-            //Serial.println(_outlierCount);
-            return;
-        }
-        _outlierCount = 0;
-
-        int numOfSamples = 15;
-        int pHHourAverageSize = _pHHourAverage.size();
-
-        if(pHHourAverageSize < numOfSamples) {
-            Serial.print(F("Adding phVal: "));
-            Serial.println(phAvg);
-            _pHHourAverage.push_back(phAvg);
-
-        }
-        else {
-            Serial.print(F("Setting phVal: "));
-            Serial.println(phAvg);
-            _pHHourAverage[_pHHourArrayIndex++] = phAvg;
-
-        }
-
-        if(_pHHourArrayIndex == numOfSamples) {
-            _pHHourArrayIndex = 0;
-        }
-
-        double avgPh = MathExt::GetAverage(_pHHourAverage);
-        _pHAvgValue = avgPh;
-        samplingTime = millis();
-    }
-    //Serial.print(F("samplingTime: "));
-    //Serial.println(millis() - samplingTime);
-    //Serial.print(F("_pHHourAverage.size: "));
-    //Serial.println(_pHHourAverage.size());
-    //Serial.print(F("_pHHourArrayIndex: "));
-    //Serial.println(_pHHourArrayIndex);
-    //Serial.print(F("_pHAvgValue: "));
-    //Serial.println(_pHAvgValue);
-    //Serial.print(F("_pHValue: "));
-    //Serial.println(_pHValue);
+    ////hourly avg
+    //static unsigned long samplingTime = millis();
+    //if(millis() - samplingTime > 60000) { //add every 1 minute.
+    ////_phValue = MathExt::RandomFloat(8, 6.9);
+    //double avg = 0;
+    //if(_pHHourAverage.size() < 5) {
+    //_pHHourAverage.push_back(_pHValue);
+    //
+    //avg = MathExt::GetAverage(_pHHourAverage);
+    //_pHAvgValue = avg;
+    //return;
+    //}
+    //avg = MathExt::GetAverage(_pHHourAverage);
+    //
+    ////soften the avg
+    //double phAvg = (_pHValue + avg) / 2;
+    //
+    //bool isAOutlier = isOutlier(_pHValue, phAvg);
+    //if(isAOutlier && _outlierCount < 10) {
+    //_outlierCount++;
+    ////Serial.print(F("Outlier Found, skipping add: "));
+    ////Serial.print(phAvg);
+    ////Serial.print(F(" - "));
+    ////Serial.println(millis() - samplingTime);
+    ////Serial.print(F("_outlierCount: "));
+    ////Serial.println(_outlierCount);
+    //return;
+    //}
+    //_outlierCount = 0;
+    //
+    //int numOfSamples = 15;
+    //int pHHourAverageSize = _pHHourAverage.size();
+    //
+    //if(pHHourAverageSize < numOfSamples) {
+    //Serial.print(F("Adding phVal: "));
+    //Serial.println(phAvg);
+    //_pHHourAverage.push_back(phAvg);
+    //
+    //}
+    //else {
+    //Serial.print(F("Setting phVal: "));
+    //Serial.println(phAvg);
+    //_pHHourAverage[_pHHourArrayIndex++] = phAvg;
+    //
+    //}
+    //
+    //if(_pHHourArrayIndex == numOfSamples) {
+    //_pHHourArrayIndex = 0;
+    //}
+    //
+    //double avgPh = MathExt::GetAverage(_pHHourAverage);
+    //_pHAvgValue = avgPh;
+    //samplingTime = millis();
+    //}
+    ////Serial.print(F("samplingTime: "));
+    ////Serial.println(millis() - samplingTime);
+    ////Serial.print(F("_pHHourAverage.size: "));
+    ////Serial.println(_pHHourAverage.size());
+    ////Serial.print(F("_pHHourArrayIndex: "));
+    ////Serial.println(_pHHourArrayIndex);
+    ////Serial.print(F("_pHAvgValue: "));
+    ////Serial.println(_pHAvgValue);
+    ////Serial.print(F("_pHValue: "));
+    ////Serial.println(_pHValue);
 
 }
 
@@ -183,7 +183,7 @@ void PHSensor::PrintPHToLCD() {
                 enabled = "<";
             }
 
-            String text = "PH: " + PhAvgString + ", " + PhString + enabled;
+            String text = "PH: " + PhString + " " + enabled;
             _lcd.PrintLine(0, text);
         }
         //digitalWrite(13, digitalRead(13) ^ 1);
@@ -204,12 +204,12 @@ void PHSensor::TurnOff() {
     delay(1000);
 
 }
-bool PHSensor::isOutlier(double x, double avg) {
-    double cuttOff = .2;//stdDev;// * 1.12; // * 3;
-    bool isAbove = x < (avg - cuttOff);
-    bool isBelow = x > (avg + cuttOff);
-    bool isAOutlier = (isAbove || isBelow);
-    return isAOutlier;
-}
+//bool PHSensor::isOutlier(double x, double avg) {
+//double cuttOff = .2;//stdDev;// * 1.12; // * 3;
+//bool isAbove = x < (avg - cuttOff);
+//bool isBelow = x > (avg + cuttOff);
+//bool isAOutlier = (isAbove || isBelow);
+//return isAOutlier;
+//}
 
 

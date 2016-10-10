@@ -35,23 +35,9 @@ void TDSSensor::Update(int offset) {
 }
 
 double TDSSensor::GetTDS() {
-    //double offset = 1210;
-    //double tankTDS = 0;
-
-    // read the analog in value:
-    //double tdsReading = analogRead(_pin);
-    //double voltage = tdsReading * (5.00 / 1024);
-    //tankTDS = voltage * Offset;
-
-    // map it to the range of the analog out:
-    //double outputValue = map(tdsReading, 0, 1023, 0, 5000);
-    //// change the analog out value:
-    //analogWrite(9, outputValue);
-    //double sensorVal2 = analogRead(_pin);//analogRead(1);
-
 
     TdsString = String(_tdsValue, 0).c_str();
-    TdsAvgString = String(_tdsValueAverage, 0).c_str();
+    //TdsAvgString = String(_tdsValueAverage, 0).c_str();
     return _tdsValue;
 
 }
@@ -64,7 +50,7 @@ void TDSSensor::PrintTDSToLCD() {
             if(_enabled) {
                 enabled = "<";
             }
-            String text = "TDS: " + TdsAvgString + ", " + TdsString + enabled;
+            String text = "TDS: " + TdsString + " " + enabled;
             _lcd.PrintLine(1, text);
 
         }
@@ -80,46 +66,46 @@ void TDSSensor::CalculateTDS() {
 
     _tdsValue = getTDSValue();
 
-    if(_numOfSamples <= 1) {
-        _numOfSamples = 1;
-        _tdsTotal = _tdsValue;
-    }
-
-    //_tdsTotal = getTDSValue();
-
-    static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 60000) { //wait 1 min inbetween readings
-
-        _tdsValue = getTDSValue();
-        _tdsTotal += _tdsValue;
-        _numOfSamples++;
-
-        samplingTime = millis();
-    }
-
-    _tdsValueAverage = _tdsTotal / _numOfSamples;
-    //Serial.print(F("tdsTotal: "));
-    //Serial.println(_tdsTotal, 2);
-    //Serial.print(F("_numOfSamples: "));
-    //Serial.println(_numOfSamples);
-    //Serial.print(F("_tdsValueAverage: "));
-    //Serial.println(_tdsValueAverage, 2);
-
-    //soften
-    _tdsValueAverage = (_tdsValueAverage + _tdsValue) / 2;
-    //Serial.print(F("sft_tdsValueAverage: "));
-    //Serial.println(_tdsValueAverage, 2);
-
-    if(_numOfSamples > 10) {
-        _numOfSamples = 1;
-    }
+    //if(_numOfSamples <= 1) {
+    //_numOfSamples = 1;
+    //_tdsTotal = _tdsValue;
+    //}
+    //
+    ////_tdsTotal = getTDSValue();
+    //
+    //static unsigned long samplingTime = millis();
+    //if(millis() - samplingTime > 60000) { //wait 1 min inbetween readings
+    //
+    //_tdsValue = getTDSValue();
+    //_tdsTotal += _tdsValue;
+    //_numOfSamples++;
+    //
+    //samplingTime = millis();
+    //}
+    //
+    //_tdsValueAverage = _tdsTotal / _numOfSamples;
+    ////Serial.print(F("tdsTotal: "));
+    ////Serial.println(_tdsTotal, 2);
+    ////Serial.print(F("_numOfSamples: "));
+    ////Serial.println(_numOfSamples);
+    ////Serial.print(F("_tdsValueAverage: "));
+    ////Serial.println(_tdsValueAverage, 2);
+    //
+    ////soften
+    //_tdsValueAverage = (_tdsValueAverage + _tdsValue) / 2;
+    ////Serial.print(F("sft_tdsValueAverage: "));
+    ////Serial.println(_tdsValueAverage, 2);
+    //
+    //if(_numOfSamples > 10) {
+    //_numOfSamples = 1;
+    //}
 
 }
 
 double TDSSensor::getTDSValue() {
     static unsigned long samplingTime = millis();
     if(millis() - samplingTime > 1000) {//wait .5 sec between readings, according to spec
-        int numOfSamples = 30;
+        int numOfSamples = 10;
         int reading = analogRead(_pin);
 
         Serial.print(F("TDS Raw Reading: "));

@@ -27,30 +27,28 @@ class PHSensor {
         int _pHArrayIndex = 0;
         int _printPHEvery = 800;
 
-        vector<double> _pHHourAverage;
-        int _pHHourArrayIndex = 0;
+        //vector<double> _pHHourAverage;
+        //int _pHHourArrayIndex = 0;
         float _pHValue;
-        float _pHAvgValue;
+        //float _pHAvgValue;
         float _voltage;
         bool _printToLCD;
         int _relayPin;
         bool _enabled;
-        int _outlierCount = 0;
+        //int _outlierCount = 0;
 
         LCDBase _lcd;
 
         void init();
-        //double calculateAverage(int* arr, int number);
-        //double calculateAverage(vector<double> phs);
         void clearLCDLine(short lineNum);
         double getPHValue();
-        bool isOutlier(double x, double avg);
+        //bool isOutlier(double x, double avg);
         //PHSensor& operator=(const PHSensor& c);
         //PHSensor(const PHSensor& c);
     public:
 
         String PhString;
-        String PhAvgString;
+        //String PhAvgString;
 
         //double TankOffsetToSubtract = 0;
         //erom::Entry<double> Offset = 3.0;
