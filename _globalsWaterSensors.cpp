@@ -8,7 +8,7 @@ namespace Globals {
     int _phRelayPin = 3;
     int _tdsRelayPin = 2;
     bool ReadingTDS = false;
-    long SensorReadInterval = 300000;//300000;//5000; // every 5 min switch ph and tds sensor
+    long SensorReadInterval = 600000;//300000;//5000; // every 5 min switch ph and tds sensor
     long SensorReadDuration = 0;
 
     static LCDBase _theLCD = LCDBase();

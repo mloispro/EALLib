@@ -120,14 +120,18 @@ double TDSSensor::getTDSValue() {
     static unsigned long samplingTime = millis();
     if(millis() - samplingTime > 1000) {//wait .5 sec between readings, according to spec
         int numOfSamples = 30;
-        _tdsAverage[_tdsArrayIndex++] = analogRead(_pin);
+        int reading = analogRead(_pin);
+
+        Serial.print(F("TDS Raw Reading: "));
+        Serial.println(reading);
+
+        _tdsAverage[_tdsArrayIndex++] = reading;
         if(_tdsArrayIndex == numOfSamples) {
             _tdsArrayIndex = 0;
         }
         double tdsAvg = MathExt::CalculateAverage(_tdsAverage, numOfSamples);
         double voltage = tdsAvg * (5.0 / 1024);
         double tankTDS = voltage * Offset;
-
 
         samplingTime = millis();
         return tankTDS;
