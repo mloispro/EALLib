@@ -65,6 +65,12 @@ void TDSSensor::CalculateTDS() {
     }
 
     _tdsValue = getTDSValue();
+    static unsigned long samplingTime = millis();
+    if(millis() - samplingTime > 60000) { //wait 1 min inbetween readings
+
+        _tdsValue = getTDSValue();
+        samplingTime = millis();
+    }
 
     //if(_numOfSamples <= 1) {
     //_numOfSamples = 1;

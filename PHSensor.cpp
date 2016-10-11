@@ -51,7 +51,11 @@ void PHSensor::CalculatePH() {
     }
 
     _pHValue = getPHValue();
-
+    static unsigned long samplingTime = millis();
+    if(millis() - samplingTime > 60000) { //add every 1 minute.
+        _pHValue = getPHValue();
+        samplingTime = millis();
+    }
     ////hourly avg
     //static unsigned long samplingTime = millis();
     //if(millis() - samplingTime > 60000) { //add every 1 minute.
