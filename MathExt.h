@@ -10,6 +10,8 @@
 #include <numeric>
 using namespace std;
 
+#include "EEWrap.h"
+
 
 
 ////remeber: dependant functions must be defined first in namespace.
@@ -20,7 +22,7 @@ namespace MathExt {
 
     extern double GetStdDeviation(vector<double> vec, double mean);
     extern double CalculateAverage(int* arr, int number);
-
+    extern double CalculateAverage(int16_e* arr, int number);
     ////use debug prints for debug statements that should be removed, after debugging.
     //template<typename T, typename F>
     //extern void Debug(T&& text, F&& val) {

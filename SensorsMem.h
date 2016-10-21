@@ -15,6 +15,10 @@ namespace Memory {
     struct SensorsMem {
         float_e PhOffset;
         int16_e TdsOffset;
+        float_e PhVal;
+        float_e TdsVal;
+        int16_e PhAvgArr[30];
+        int16_e TdsAvgArr[10];
     };
     //struct SensorsPGMem {
     ////int16_p TdsAverage[40];

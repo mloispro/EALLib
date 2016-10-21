@@ -1,36 +1,27 @@
 
-#ifndef _GLOBALSWATERSENSORS_H_
-#define _GLOBALSWATERSENSORS_H_
+#ifndef _SKETCHEXTSWATERSENSORS_H_
+#define _SKETCHEXTSWATERSENSORS_H_
 
 #include <Arduino.h>
-#include <avr/wdt.h> //watch dog timer
 #include <EEPROM.h>
 #include <EEWrap.h>
 #include <StandardCplusplus.h>
 #include <vector>
 using namespace std;
 
-#include "MathExt.h"
-
-
+#include "_globalsWaterSensors.h"
+#include "WaterSensorWire.h"
 #include "LCDBase.h"
 #include "PhSensor.h"
 #include "TDSSensor.h"
 
-namespace Globals {
+namespace Sketch {
 
-    //extern LCDBase TheLCD;
-    extern bool ReadingTDS;
-    extern long SensorReadInterval; // every 5 min switch ph and tds sensor
-    extern long SensorReadDuration;
-    //int _lastSensorReadTime = 0;
 
-    extern PHSensor& ThePHSensor;
-
-    extern TDSSensor& TheTDSSensor;
-
-    extern LCDBase& TheLCD;
-
+    extern void SwitchSensors();
+    extern void Setup();
+    extern void Loop();
+    extern void AsyncDoWork();
 
     //namespace MegaPins {
     //const int PWM_2 = 2;

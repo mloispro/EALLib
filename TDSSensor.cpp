@@ -28,6 +28,9 @@ void TDSSensor::init() {
     if(!isnan(offset)) {
         Offset = offset;
     }
+    if(isnan(TheSensorsMem.TdsVal)) {
+        TheSensorsMem.TdsVal = 0;
+    }
 }
 void TDSSensor::Update(int offset) {
     Offset = offset;
@@ -36,9 +39,9 @@ void TDSSensor::Update(int offset) {
 
 double TDSSensor::GetTDS() {
 
-    TdsString = String(_tdsValue, 0).c_str();
+    TdsString = String(TheSensorsMem.TdsVal, 0).c_str();
     //TdsAvgString = String(_tdsValueAverage, 0).c_str();
-    return _tdsValue;
+    return TheSensorsMem.TdsVal;
 
 }
 void TDSSensor::PrintTDSToLCD() {
@@ -64,13 +67,8 @@ void TDSSensor::CalculateTDS() {
         return;
     }
 
-    _tdsValue = getTDSValue();
-    static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 60000) { //wait 1 min inbetween readings
-
-        _tdsValue = getTDSValue();
-        samplingTime = millis();
-    }
+    //TheSensorsMem.TdsVal = getTDSValue();
+    getTDSValue();
 
     //if(_numOfSamples <= 1) {
     //_numOfSamples = 1;
@@ -110,25 +108,28 @@ void TDSSensor::CalculateTDS() {
 
 double TDSSensor::getTDSValue() {
     static unsigned long samplingTime = millis();
-    if(millis() - samplingTime > 1000) {//wait .5 sec between readings, according to spec
+    if(millis() - samplingTime > 5000) {//wait .5 sec between readings, according to spec
         int numOfSamples = 10;
         int reading = analogRead(_pin);
 
         Serial.print(F("TDS Raw Reading: "));
         Serial.println(reading);
 
-        _tdsAverage[_tdsArrayIndex++] = reading;
+        //_tdsAverage[_tdsArrayIndex++] = reading;
+        TheSensorsMem.TdsAvgArr[_tdsArrayIndex++] = reading;
         if(_tdsArrayIndex == numOfSamples) {
             _tdsArrayIndex = 0;
         }
-        double tdsAvg = MathExt::CalculateAverage(_tdsAverage, numOfSamples);
+        double tdsAvg = MathExt::CalculateAverage(TheSensorsMem.TdsAvgArr, numOfSamples);
         double voltage = tdsAvg * (5.0 / 1024);
         double tankTDS = voltage * Offset;
 
+        TheSensorsMem.TdsVal = tankTDS;
+        //TheSensorsMem.TdsAvgArr = _tdsAverage;
         samplingTime = millis();
-        return tankTDS;
+        //return tankTDS;
     }
-    return _tdsValue;
+    return TheSensorsMem.TdsVal;
 
 }
 

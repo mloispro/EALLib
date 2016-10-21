@@ -21,17 +21,7 @@ namespace Globals {
 
     TDSSensor& TheTDSSensor = _theTDSSensor;//TDSSensor(_tdsSensorPin, 1000, true, TheLCD);
 
-    void SwitchSensors() {
-        ReadingTDS = !ReadingTDS;
-        if(ReadingTDS) {
-            ThePHSensor.TurnOff();
-            TheTDSSensor.TurnOn(); //signal mofset
-        }
-        else {
-            TheTDSSensor.TurnOff();//signal mofset
-            ThePHSensor.TurnOn();
-        }
-    }
+
 
 }
 

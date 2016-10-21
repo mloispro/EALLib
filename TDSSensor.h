@@ -21,10 +21,10 @@ class TDSSensor {
     private:
         int _pin;
 
-        int _tdsAverage[10];
+        //int _tdsAverage[10];
         int _tdsArrayIndex = 0;
         int _printTDSEvery = 800;
-        float _tdsValue;
+        //float _tdsValue;
         //float _tdsValueAverage;
         //float _tdsTotal;
         bool _printToLCD;

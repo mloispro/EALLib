@@ -23,13 +23,13 @@ class PHSensor {
     private:
         int _pin;
 
-        int _pHAverage[30];
+        //int _pHAverage[30];
         int _pHArrayIndex = 0;
         int _printPHEvery = 800;
 
         //vector<double> _pHHourAverage;
         //int _pHHourArrayIndex = 0;
-        float _pHValue;
+        //float _pHValue;
         //float _pHAvgValue;
         float _voltage;
         bool _printToLCD;
