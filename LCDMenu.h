@@ -5,8 +5,8 @@
 
 #include <Arduino.h>
 
-//#include <StandardCplusplus.h>
-//#include <string>
+#include <StandardCplusplus.h>
+#include <string>
 //#include <vector>
 using namespace std;
 #include "_globals.h"
@@ -15,61 +15,93 @@ using namespace Utils;
 using namespace Globals;
 
 namespace LCD {
+    enum RangeType {
+        Nav,
+        Year,
+        Month,
+        Day,
+        Hour,
+        Minute,
+        AmPm,
+        Frequency,
+        TimeLong,
+        TimeShort,
+        TimeFrequency,
+        ShakesOrTurns,
+        RunDurration,
+        OnOff,
+        RunNow
+        //DoserOnOff,
+        //FeederOnOff
+    }; //extern RangeTypeEnum;
 
-
-
-    class LCDMenu {
-
-      public:
-        enum RangeType {
-            Nav,
-            Year,
-            Month,
-            Day,
-            Hour,
-            Minute,
-            AmPm,
-            Frequency,
-            TimeLong,
-            TimeShort,
-            TimeFrequency,
-            ShakesOrTurns,
-            RunDurration,
-            OnOff,
-            RunNow
-            //DoserOnOff,
-            //FeederOnOff
-        }; //extern RangeTypeEnum;
-
-
-        //typedef RangeTypeEnum RangeType;
-        //extern RangeTypeEnum RangeTypeEx;
-
-        //RangeType& operator=(RangeType& r);
-        short Id;
-        short OptionId;
-        short NextMenuId;
-        short  PrevMenuId;
-        String Text;
-        String  OptionText;
+    struct LCDMenu {
+        int Id;
+        int OptionId;
+        int NextMenuId;
+        int  PrevMenuId;
+        char* Text;
+        char*  OptionText;
         RangeType  TheRangeType;
         AccessoryType AccType;
-
-        //vector<LCDMenu> MenuItems; //dont work, fuck it!!!!!!!!!!
-
-        LCDMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, RangeType rangeType, AccessoryType accType) :
-            Id(id), OptionId(optionId), NextMenuId(nextMenuId), PrevMenuId(prevMenuId), Text(text), OptionText(optionText), TheRangeType(rangeType), AccType(accType) {
-            //MenuItems();
-        }
-        LCDMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, RangeType rangeType) :
-            LCDMenu(id, optionId, nextMenuId, prevMenuId, text, optionText, rangeType, AccessoryType::None) {
-        }
-
-      private:
-        LCDMenu& operator=(const LCDMenu& c);
-
-
+        //LCDMenu& operator=(const LCDMenu& c);
+        //const LCDMenu& operator=(LCDMenu& c);
     };
+
+    //class LCDMenu {
+    //
+    //public:
+    //enum RangeType {
+    //Nav,
+    //Year,
+    //Month,
+    //Day,
+    //Hour,
+    //Minute,
+    //AmPm,
+    //Frequency,
+    //TimeLong,
+    //TimeShort,
+    //TimeFrequency,
+    //ShakesOrTurns,
+    //RunDurration,
+    //OnOff,
+    //RunNow
+    ////DoserOnOff,
+    ////FeederOnOff
+    //}; //extern RangeTypeEnum;
+    //
+    //
+    ////typedef RangeTypeEnum RangeType;
+    ////extern RangeTypeEnum RangeTypeEx;
+    //
+    ////RangeType& operator=(RangeType& r);
+    //short Id;
+    //short OptionId;
+    //short NextMenuId;
+    //short  PrevMenuId;
+    //String Text;
+    //String  OptionText;
+    //RangeType  TheRangeType;
+    //AccessoryType AccType;
+    //
+    ////vector<LCDMenu> MenuItems; //dont work, fuck it!!!!!!!!!!
+    //
+    //LCDMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, RangeType rangeType, AccessoryType accType) :
+    //Id(id), OptionId(optionId), NextMenuId(nextMenuId), PrevMenuId(prevMenuId), Text(text), OptionText(optionText), TheRangeType(rangeType), AccType(accType) {
+    ////MenuItems();
+    //}
+    //LCDMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, RangeType rangeType) :
+    //LCDMenu(id, optionId, nextMenuId, prevMenuId, text, optionText, rangeType, AccessoryType::None) {
+    //}
+    //
+    //LCDMenu() {} //needed to add to array
+    //
+    //private:
+    //
+    //LCDMenu& operator=(const LCDMenu& c);
+    //
+    //};
 }
 
 #endif

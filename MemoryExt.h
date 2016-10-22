@@ -37,6 +37,7 @@ namespace Models {
         long LastSave = 0;
         bool Enabled = false;
         long RunDurration = 0;
+        int RunDurrationOption = -1;
     };
     struct MemAddress {
         int AccType; //id
@@ -47,17 +48,17 @@ namespace Utils {
     using namespace Models;
 
     class MemoryContainer {
-      private:
+        private:
 
-      public:
-        //extern vector<Models::NextRunMemory> _nextRunInfos;
-        MemoryContainer() {};
+        public:
+            //extern vector<Models::NextRunMemory> _nextRunInfos;
+            MemoryContainer() {};
 
-        bool NextRunInfoExists(AccessoryType accType);
-        //template<typename T = Globals::AccessoryType>
-        NextRunMemory& FindNextRunInfo(AccessoryType accType);
-        NextRunMemory& AddNextRunInfo(NextRunMemory& mem);
-        void ClearNextRunInfos();
+            bool NextRunInfoExists(AccessoryType accType);
+            //template<typename T = Globals::AccessoryType>
+            NextRunMemory& FindNextRunInfo(AccessoryType accType);
+            NextRunMemory& AddNextRunInfo(NextRunMemory& mem);
+            void ClearNextRunInfos();
     };
     extern vector<Models::NextRunMemory> NextRunInfos;
 
@@ -186,6 +187,18 @@ namespace Utils {
             return total;
 
         }
+
+        //static String GetFreeRam() {
+        //
+        //extern int __heap_start, *__brkval;
+        //int v;
+        //int freeRam = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+        //
+        //String total = String(freeRam);
+        //
+        //return total;
+        //
+        //}
 
     }
 

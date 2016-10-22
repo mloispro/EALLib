@@ -1,30 +1,15 @@
 
 #include "LiquidDoser.h"
 
+LiquidDoser::LiquidDoser(short relayPin, AccessoryType accType) :
+    Motor(relayPin, 0, 0, relayPin, 0, AnalogSwitch(), accType, true) {
 
-//Tank water drain pump
-LiquidDoser::LiquidDoser(short relayPin, int runDurationInSecs) :
-    Motor(relayPin, 0, 0, relayPin, 0, AnalogSwitch(), AccessoryType::LiqDoser, true),
-    _runDurationInSecs(runDurationInSecs) {
-    Init();
 }
 LiquidDoser::LiquidDoser() {
-    MotorType = AccessoryType::LiqDoser;
-    Init();
-}
-void LiquidDoser::Init() {
-    issue(RunDurationInSecs);
-    RunDurationInSecs.load();
-    if(RunDurationInSecs > 900) {
-        RunDurationInSecs = _runDurationInSecs;
-        RunDurationInSecs.save(true);
-    }
-}
-void LiquidDoser::SetRunDurration(int secs) {
-    RunDurationInSecs = secs;
-    RunDurationInSecs.save();
+    MotorType = AccessoryType::None;
 }
 void LiquidDoser::handleRun() {
-    int dur = RunDurationInSecs; //todo: delete this
-    delay(RunDurationInSecs * 1000);
+    NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
+    long runDurration = mem.RunDurration * 1000;
+    delay(runDurration);
 }

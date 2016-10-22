@@ -4,20 +4,22 @@
 vector<Models::NextRunMemory> Utils::NextRunInfos;
 
 //vector<Models::NextRunMemory> Utils::MemoryContainer::NextRunInfos;
-//use RefreshNextRunInfo not FindNextRunInfo to get NextRunInfo
-//template<typename T = Globals::AccessoryType>
+
+//**use RefreshNextRunInfo not FindNextRunInfo to get NextRunInfo**
 NextRunMemory& Utils::MemoryContainer::FindNextRunInfo(AccessoryType accType) {
     //int sizev = NextRunInfos.size();
     for(NextRunMemory& mem : NextRunInfos) {
-        if(mem.AccType == accType)
+        if(mem.AccType == accType) {
             return mem;
+        }
     }
 }
 
 bool Utils::MemoryContainer::NextRunInfoExists(AccessoryType accType) {
     for(NextRunMemory& mem : NextRunInfos) {
-        if(mem.AccType == accType)
+        if(mem.AccType == accType) {
             return true;
+        }
     }
     return false;
 }

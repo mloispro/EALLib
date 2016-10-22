@@ -32,150 +32,167 @@ using namespace Utils;
 using namespace TimeHelpers;
 using namespace Globals;
 
+#define MENUITEMS 100
+
 namespace LCD {
 
     class LCDDisplay {
 
-      public:
-      protected:
-      private:
-        static const short mainMenu = 0;
-        static const short feedMenu = 1;
-        static const short feedFreqMenu = 2;
-        static const short feedHourMenu = 3;
-        static const short feedMinMenu = 4;
-        static const short feedAmPmMenu = 5;
-        static const short clockMenu = 6;
-        static const short clockYearMenu = 7;
-        static const short clockMonthMenu = 8;
-        static const short clockDayMenu = 9;
-        static const short feedTimeMenu = 10;
-        static const short clockHourMenu = 11;
-        static const short clockMinMenu = 12;
-        static const short clockAmPmMenu = 13;
-        static const short doserMenu = 14;
-        static const short doserFreqMenu = 15;
-        static const short doserHourMenu = 16;
-        static const short doserMinMenu = 17;
-        static const short doserAmPmMenu = 18;
-        static const short doserTimeMenu = 19;
-        static const short feedShakesMenu = 20;
-        //static const short feedSetShakesMenu = 21; open
-        static const short doserShakesMenu = 22;
-        //static const short doserSetShakesMenu = 23; open
-        //static const short settingsMenu = 24; open
-        static const short feedEnableMenu = 25;
-        static const short doserEnableMenu = 26;
-        static const short feedNowMenu = 27;
-        static const short doseNowMenu = 29;
-        static const short pumpMenu = 30;
-        static const short pumpEnableMenu = 31;
-        static const short pumpFreqMenu = 32;
-        static const short pumpHourMenu = 33;
-        static const short pumpMinMenu = 34;
-        static const short pumpAmPmMenu = 35;
-        static const short pumpTimeMenu = 36;
-        static const short pumpNowMenu = 37;
-        static const short pumpRunMinutesMenu = 38;
+        public:
+        protected:
+        private:
+            const int mainMenu = 0;
+            const int feedMenu = 1;
+            const int feedFreqMenu = 2;
+            const int feedHourMenu = 3;
+            const int feedMinMenu = 4;
+            const int feedAmPmMenu = 5;
+            const int clockMenu = 6;
+            const int clockYearMenu = 7;
+            const int clockMonthMenu = 8;
+            const int clockDayMenu = 9;
+            const int feedTimeMenu = 10;
+            const int clockHourMenu = 11;
+            const int clockMinMenu = 12;
+            const int clockAmPmMenu = 13;
+            const int doserMenu = 14;
+            const int doserFreqMenu = 15;
+            const int doserHourMenu = 16;
+            const int doserMinMenu = 17;
+            const int doserAmPmMenu = 18;
+            const int doserTimeMenu = 19;
+            const int feedShakesMenu = 20;
+            // const int feedSetShakesMenu = 21; open
+            const int doserShakesMenu = 22;
+            // const int doserSetShakesMenu = 23; open
+            // const int settingsMenu = 24; open
+            const int feedEnableMenu = 25;
+            const int doserEnableMenu = 26;
+            const int feedNowMenu = 27;
+            const int doseNowMenu = 29;
+            const int pumpMenu = 30;
+            const int pumpEnableMenu = 31;
+            const int pumpFreqMenu = 32;
+            const int pumpHourMenu = 33;
+            const int pumpMinMenu = 34;
+            const int pumpAmPmMenu = 35;
+            const int pumpTimeMenu = 36;
+            const int pumpNowMenu = 37;
+            const int pumpRunMinutesMenu = 38;
+            const int microsMenu = 39;
+            const int microsEnableMenu = 40;
+            const int microsFreqMenu = 41;
+            const int microsHourMenu = 42;
+            const int microsMinMenu = 43;
+            const int microsAmPmMenu = 44;
+            const int microsTimeMenu = 45;
+            const int microsNowMenu = 46;
+            const int microsRunMinutesMenu = 47;
 
-        short _menuIndex = 0;
-        String _mainMenuText = "";
+            short _menuIndex = 0;
+            char* _mainMenuText = "";
 
-        short _scrollIndex;
-        int _scrollDelay = 3000;
+            //lcd text scroll left
+            short _scrollIndex;
+            int _scrollDelay = 3000;
 
-        int _selectDelay = 2000;
+            int _selectDelay = 2000;
 
-        vector<LCDMenu> _menus;
-        //String _selectedText;
-        short _selectedMenuId = -1;
-        short _selectedOptionId = -1;
-        int _optionCount;
-        short _prevMenuId;
+            int _menusIndex = 0;
+            //vector<LCDMenu> _menus;
+            LCDMenu _menus[MENUITEMS];
 
-        int _lowerLimit;
-        int _upperLimit;
+            //String _selectedText;
+            short _selectedMenuId = -1;
+            short _selectedOptionId = -1;
+            int _optionCount;
+            short _prevMenuId;
 
-        //--key press
-        // int _keyValues[5] = { 50, 200, 400, 600, 800 };
-        static int  _keyValues[5];
-        static short _numOfKeys;
+            int _lowerLimit;
+            int _upperLimit;
 
-        bool _optionChanged;
-        //static String _menuText;
-        String _optionText;
-        String _menuText;
-        long _menuTimeout = 0;
-        //char const n[3]{'a', 'b', 'c'};
-        //LiquidCrystal _lcd;
-        //bool _optionChanged = false;
+            //--key press
+            // int _keyValues[5] = { 50, 200, 400, 600, 800 };
+            static int  _keyValues[5];
+            static short _numOfKeys;
 
-        //SimpleTimer _scrollRightTimer;
-        //int _scrollRightTimerId = 0;
-        LiquidCrystal _lcd;
-      public:
+            bool _optionChanged;
+            //static String _menuText;
+            String _optionText;
+            String _menuText;
+            long _menuTimeout = 0;
+            bool _loadedOptionFromMem;
+            //char const n[3]{'a', 'b', 'c'};
+            //LiquidCrystal _lcd;
+            //bool _optionChanged = false;
 
-        LCDDisplay(): _lcd(8, 9, 4, 5, 6, 7) {};
+            //SimpleTimer _scrollRightTimer;
+            //int _scrollRightTimerId = 0;
+            LiquidCrystal _lcd;
+        public:
 
-        void Init();
+            LCDDisplay(): _lcd(8, 9, 4, 5, 6, 7) {};
 
-        String GetRangeOption(LCDMenu::RangeType rangeType, Globals::AccessoryType accType);
-        //template<typename R = LCDMenu::RangeType, typename A = Globals::AccessoryType>
-        //String GetRangeOption(R& rangeType, A& accType);
-        void SaveRangeOption(LCDMenu::RangeType rangeType, AccessoryType accType);
+            void Init();
 
-        static int GetKey();
-        void SelectMainMenu();
-        void ExitMainMenu();
+            String GetRangeOption(RangeType rangeType, Globals::AccessoryType accType);
+            //template<typename R = RangeType, typename A = Globals::AccessoryType>
+            //String GetRangeOption(R& rangeType, A& accType);
+            void SaveRangeOption(RangeType rangeType, AccessoryType accType);
 
-        void PrintRunInfo(NextRunMemory& nextRunMem);
-        void PrintTime();
-        void Scroll();
+            static int GetKey();
+            void SelectMainMenu();
+            void ExitMainMenu();
 
-        String GetTimeFrequency(AccessoryType accType);
-        String GetTimeLong(AccessoryType accType);
+            void PrintRunInfo(NextRunMemory& nextRunMem);
+            void PrintTime();
+            void Scroll();
 
-      protected:
-      private:
-        LCDDisplay(const LCDDisplay& c);
-        LCDDisplay& operator=(const LCDDisplay& c);
+            String GetTimeFrequency(AccessoryType accType);
+            String GetTimeLong(AccessoryType accType);
 
-        static int GetKeyFromVal(unsigned int input);
-        void NextOption();
-        void PreviousOption();
-        void LeftButton();
-        void SelectButton();
-        void LimitRange(int lower, int upper);
-        void DetectKeyPress();
+        protected:
+        private:
+            LCDDisplay(const LCDDisplay& c);
+            LCDDisplay& operator=(const LCDDisplay& c);
 
-        LCDMenu GetMenu(short id, short optionId);
-        void PrintMenu(LCDMenu& menu);
-        void PrintLine(short lineNum, String text);
-        void SetSelectedMenu(LCDMenu menu);
-        //
-        void AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, LCDMenu::RangeType rangeType);
-        void AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, String text, String optionText, LCDMenu::RangeType rangeType, AccessoryType accType);
-        void CreateMenus();
-        LCDMenu GetSelectedMenu();
-        void SetClockMenu();
+            static int GetKeyFromVal(unsigned int input);
+            void NextOption();
+            void PreviousOption();
+            void LeftButton();
+            void SelectButton();
+            void LimitRange(int lower, int upper);
+            void DetectKeyPress();
 
-        template<typename T>
-        String GetOptionAsNumber(T&& defaultNumber, bool isTwoDigits);
-        template<typename T>
-        String GetOptionAsNumber(T&& defaultNumber);
+            LCDMenu GetMenu(short id, short optionId);
+            void PrintMenu(LCDMenu menu);
+            void PrintLine(short lineNum, String text);
+            void SetSelectedMenu(LCDMenu menu);
+            //
+            void AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, char* text, char* optionText, RangeType rangeType);
+            void AddMenu(short id, short optionId, short nextMenuId, short prevMenuId, char* text, char* optionText, RangeType rangeType, AccessoryType accType);
+            void CreateMenus();
+            LCDMenu GetSelectedMenu();
+            void SetClockMenu();
 
-        String GetOnOff(AccessoryType accType);
-        void SetOnOff(AccessoryType accType);
-        String GetRunDurration(AccessoryType accType);
-        void SetRunDurration(AccessoryType accType);
+            template<typename T>
+            String GetOptionAsNumber(T&& defaultNumber, bool isTwoDigits);
+            template<typename T>
+            String GetOptionAsNumber(T&& defaultNumber);
 
-        void AddMenu(AccessoryType accType);
-        void PrintInstructions();
-        void IsKeyPressed();
-        void HandleScrollText(short lineNum, String text);
-        String LoadAccOption(LCDMenu& menu);
-        String loadShakesTurnsOption(LCDMenu& menu);
-        String loadRunNowOption(LCDMenu& menu);
+            String GetOnOff(AccessoryType accType);
+            void SetOnOff(AccessoryType accType);
+            String GetRunDurration(AccessoryType accType);
+            void SetRunDurration(AccessoryType accType);
+
+            void AddMenu(AccessoryType accType);
+            void PrintInstructions();
+            void IsKeyPressed();
+            void HandleScrollText(short lineNum, String text);
+            String LoadAccOption(LCDMenu menu);
+            String loadShakesTurnsOption(LCDMenu menu);
+            String loadRunNowOption(LCDMenu menu);
+            void PrintDisabledAcc(NextRunMemory& feederNextRunMem, NextRunMemory& doserNextRunMem, NextRunMemory& pumpNextRunMem, NextRunMemory& microsNextRunMem);
 
     }; //LCDDisplay
 

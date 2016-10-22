@@ -285,26 +285,21 @@ namespace Utils {
             if(h == 24) {
                 freq = F(", Daily");
             }
-            else
-                if(h == 48) {
-                    freq = F(", Every Other Day");
-                }
-                else
-                    if(h == 168) {
-                        freq = F(", Weekly");
-                    }
-                    else
-                        if(h == 336) {
-                            freq = F(", Every 2 Weeks");
-                        }
-                        else
-                            if(h == 504) {
-                                freq = F(", Every 3 Weeks");
-                            }
-                            else
-                                if(h == 672) {
-                                    freq = F(", Monthly");
-                                }
+            else if(h == 48) {
+                freq = F(", Every Other Day");
+            }
+            else if(h == 168) {
+                freq = F(", Weekly");
+            }
+            else if(h == 336) {
+                freq = F(", Every 2 Weeks");
+            }
+            else if(h == 504) {
+                freq = F(", Every 3 Weeks");
+            }
+            else if(h == 672) {
+                freq = F(", Monthly");
+            }
 
             String freqTime = theTime + freq;
             return freqTime;
@@ -369,102 +364,93 @@ namespace Utils {
             _timeBuffer.Wday = 0;
         }
 
-        template<typename T, typename M = LCDMenu::RangeType>
+        template<typename T, typename M = RangeType>
         void SetTimeTemp(T && val, M && rangeType) {
             T t(val);
 
-            if(rangeType == LCDMenu::RangeType::Year) {
+            if(rangeType == RangeType::Year) {
                 ClearTimeTemp();
                 _timeBuffer.Year = val;
             }
-            else
-                if(rangeType == LCDMenu::RangeType::Month) {
-                    _timeBuffer.Month = val;
-                }
-                else
-                    if(rangeType == LCDMenu::RangeType::Day) {
-                        _timeBuffer.Day = val;
+            else if(rangeType == RangeType::Month) {
+                _timeBuffer.Month = val;
+            }
+            else if(rangeType == RangeType::Day) {
+                _timeBuffer.Day = val;
+            }
+            else if(rangeType == RangeType::Hour) {
+                _timeBuffer.Hour = val;
+            }
+            else if(rangeType == RangeType::Minute) {
+                _timeBuffer.Minute = val;
+            }
+            else if(rangeType == RangeType::AmPm) {
+                if(val == 0) { // val = 0->AM
+                    if(_timeBuffer.Hour == 12) { //midnight
+                        _timeBuffer.Hour = 0;
                     }
-                    else
-                        if(rangeType == LCDMenu::RangeType::Hour) {
-                            _timeBuffer.Hour = val;
-                        }
-                        else
-                            if(rangeType == LCDMenu::RangeType::Minute) {
-                                _timeBuffer.Minute = val;
-                            }
-                            else
-                                if(rangeType == LCDMenu::RangeType::AmPm) {
-                                    if(val == 0) { // val = 0->AM
-                                        if(_timeBuffer.Hour == 12) { //midnight
-                                            _timeBuffer.Hour = 0;
-                                        }
-                                    }
-                                    else
-                                        if(val == 1) { // val = 1->PM
-                                            if(_timeBuffer.Hour < 12) { //pm
-                                                _timeBuffer.Hour += 12;
-                                            }
-                                        }
-                                }
+                }
+                else if(val == 1) { // val = 1->PM
+                    if(_timeBuffer.Hour < 12) { //pm
+                        _timeBuffer.Hour += 12;
+                    }
+                }
+            }
         }
 
 
 
-        template<typename T, typename M = LCDMenu::RangeType, typename P = AccessoryType>
+        template<typename T, typename M = RangeType, typename P = AccessoryType>
         void SetNextRun(T && val, M && rangeType, P && accType) {
             T t(val);
             M m(rangeType);
             P p(accType);
 
-            if(rangeType == LCDMenu::RangeType::Hour) {
+            if(rangeType == RangeType::Hour) {
                 ClearTimeTemp();
                 _timeBuffer.Hour = val;
             }
-            else
-                if(rangeType == LCDMenu::RangeType::Minute) {
-                    _timeBuffer.Minute = val;
+            else if(rangeType == RangeType::Minute) {
+                _timeBuffer.Minute = val;
+            }
+            else if(rangeType == RangeType::AmPm) {
+
+                NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+
+                //next run in seconds.
+                long nrSecs = nextRunMem.NextRun;
+
+                if(val == 1) { //pm
+                    _timeBuffer.Hour = _timeBuffer.Hour + 12;
                 }
-                else
-                    if(rangeType == LCDMenu::RangeType::AmPm) {
 
-                        NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+                int y = year(nrSecs);
+                _timeBuffer.Year = CalendarYrToTm(y);
+                _timeBuffer.Month = month(nrSecs);
+                _timeBuffer.Day = day(nrSecs);
+                _timeBuffer.Second = second(nrSecs);
 
-                        //next run in seconds.
-                        long nrSecs = nextRunMem.NextRun;
+                //meridian is last step so update time
+                time_t newNrTime = makeTime(_timeBuffer);
 
-                        if(val == 1) { //pm
-                            _timeBuffer.Hour = _timeBuffer.Hour + 12;
-                        }
+                nextRunMem.NextRun = newNrTime;
+                nextRunMem.LastRun = -1; //force recalculate
+                RefreshNextRunInfo(accType, true);
+            }
+            else if(rangeType == RangeType::RunNow) {
+                NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
 
-                        int y = year(nrSecs);
-                        _timeBuffer.Year = CalendarYrToTm(y);
-                        _timeBuffer.Month = month(nrSecs);
-                        _timeBuffer.Day = day(nrSecs);
-                        _timeBuffer.Second = second(nrSecs);
+                if(!nextRunMem.Enabled) { //acc not enabled so dont run.
+                    return;
+                }
 
-                        //meridian is last step so update time
-                        time_t newNrTime = makeTime(_timeBuffer);
-
-                        nextRunMem.NextRun = newNrTime;
-                        nextRunMem.LastRun = -1; //force recalculate
-                        RefreshNextRunInfo(accType, true);
-                    }
-                    else
-                        if(rangeType == LCDMenu::RangeType::RunNow) {
-                            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
-
-                            if(!nextRunMem.Enabled) { //acc not enabled so dont run.
-                                return;
-                            }
-
-                            nextRunMem.NextRun = RTCExt::GetRTCTime();
-                            nextRunMem.LastRun = -1; //force recalculate
-                            RefreshNextRunInfo(accType, true);
-                        }
-                        else {
-                            return;
-                        }
+                nextRunMem.NextRun = RTCExt::GetRTCTime();
+                nextRunMem.LastRun = -1; //force recalculate
+                RefreshNextRunInfo(accType, true);
+            }
+            else {
+                return;
+            }
 
 
         }
@@ -496,10 +482,9 @@ namespace Utils {
             if(am && theHour > 8) {
                 return true;
             }
-            else
-                if(theHour = 12 || theHour < 9) {
-                    return true;
-                }
+            else if(theHour = 12 || theHour < 9) {
+                return true;
+            }
             return false;
         }
     }

@@ -3,7 +3,6 @@
 #define _LIQUIDDOSER_h
 
 #include <Arduino.h>
-#include <erom.h>
 #include "Motor.h"
 
 //#include "StandardCplusplus.h"
@@ -39,19 +38,14 @@ using namespace std;
 //}
 //};
 
-class LiquidDoser : public Motor, public erom::Storage {
+class LiquidDoser : public Motor {
     private:
-        //erom::Storage _mem;
-        //LiquidDoserStorage _mem;
-        int _runDurationInSecs;
-        void Init();
+
     public:
-        //int RunDurationInSecs;
-        erom::Entry<int> RunDurationInSecs;
         //Tank water drain pump
-        LiquidDoser(short relayPin, int runDurationInSecs);
+        LiquidDoser(short relayPin, AccessoryType accType);
         LiquidDoser();
-        void SetRunDurration(int secs);
+        // void SetRunDurration(int secs);
     protected:
         void handleRun();
 };

@@ -14,11 +14,12 @@ namespace Globals {
         None,
         Clock,
         Feeder,
-        LiqDoser,
+        MicrosDoser,
         DryDoser,
         WaterPump,
         Lcd,
-        ROWaterPump
+        ROWaterPump,
+        GHDoser //aka macros doser
     };
 
 }

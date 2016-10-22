@@ -24,9 +24,9 @@ void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
     }
 
-    if(MotorType == AccessoryType::ROWaterPump ||
-            MotorType == AccessoryType::LiqDoser) {
-        return; //dont need to save to eeprom because triggered by only float switch
+    if(MotorType == AccessoryType::ROWaterPump || //dont need to save to eeprom because triggered by only float switch
+            MotorType == AccessoryType::GHDoser) { //dont need to save to eeprom because triggered by tds
+        return;
     }
 
     RTCExt::LoadNextRunInfos(MotorType);
@@ -78,8 +78,9 @@ void Motor::Run() {
 #endif
     }
 
-    if(MotorType == AccessoryType::ROWaterPump) {
-        return; //dont need to save to eeprom because triggered by only float switch
+    if(MotorType == AccessoryType::ROWaterPump || //dont need to save to eeprom because triggered by only float switch
+            MotorType == AccessoryType::GHDoser) { //dont need to save to eeprom because triggered by tds
+        return;
     }
 
     NextRunMemory& mem = RTCExt::RefreshNextRunInfo(MotorType);
