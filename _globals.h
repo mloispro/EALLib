@@ -19,7 +19,7 @@ namespace Globals {
         WaterPump,
         Lcd,
         ROWaterPump,
-        GHDoser //aka macros doser
+        MacrosDoser //aka gh doser
     };
 
 }

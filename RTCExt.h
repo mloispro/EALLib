@@ -23,6 +23,7 @@
 #include "SerialExt.h"
 #include "DigitalTime.h"
 #include "LCDMenu.h"
+#include "AquaControllerWire.h"
 
 using namespace std;
 
@@ -87,7 +88,7 @@ namespace Utils {
                 //_initalized = true;
             }
             delay(200);//wait for rtc
-
+            AquaControllerWire::Setup();
             //LoadNextRunInfos();
         }
 
@@ -240,119 +241,6 @@ namespace Utils {
         NextRunMemory & RefreshNextRunInfo(T && accType) {
             RefreshNextRunInfo(accType, false);
         }
-
-
-
-        template<typename T = void>
-        bool IsTimeToRun(AccessoryType accType) {
-            NextRunMemory& mem = RefreshNextRunInfo(accType);
-
-            if(!mem.Enabled) {
-                return false;
-            }
-            if(mem.RunEvery <= 0) {
-                return true;    //not using rtc
-            }
-
-            time_t runTime = RTCExt::GetRTCTime();
-
-            time_t nextRun = mem.NextRun;
-            //int runTime = TimerExt::GetRuntimeInSeconds();
-            if(nextRun <= runTime) {
-                return true;
-            }
-            return false;
-        }
-        template<typename T = void>
-        bool IsAccEnabled(AccessoryType accType) {
-            NextRunMemory& mem = RefreshNextRunInfo(accType);
-            return mem.Enabled;
-        }
-        template<typename T = long, typename N = long>
-        String GetTimeFrequencyString(T && runEvery, N && nextRun) {
-            String freq = "";
-
-            String am = F("AM");
-            if(isPM(nextRun)) {
-                am = F("PM");
-            }
-
-            String theTime = GetDigitalTimeString(nextRun, false);
-            theTime = theTime + am;
-
-            int h = ConvSecToHour(runEvery);
-
-            if(h == 24) {
-                freq = F(", Daily");
-            }
-            else if(h == 48) {
-                freq = F(", Every Other Day");
-            }
-            else if(h == 168) {
-                freq = F(", Weekly");
-            }
-            else if(h == 336) {
-                freq = F(", Every 2 Weeks");
-            }
-            else if(h == 504) {
-                freq = F(", Every 3 Weeks");
-            }
-            else if(h == 672) {
-                freq = F(", Monthly");
-            }
-
-            String freqTime = theTime + freq;
-            return freqTime;
-        }
-
-        template<typename T = long, typename M = AccessoryType>
-        void SetRunEvery(T && hour, M && accType) {
-            T t(hour);
-            long sec = ConvHoursToSec(hour);
-            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
-
-            nextRunMem.RunEvery = sec;
-            nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
-
-            RefreshNextRunInfo(accType, true);
-        }
-        template<typename T = long, typename M = AccessoryType>
-        void SetRunEverySeconds(T && seconds, M && accType) {
-            T t(seconds);
-            //long sec = second(seconds);
-            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
-
-            nextRunMem.RunEvery = seconds;
-            nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
-
-            RefreshNextRunInfo(accType, true);
-        }
-        template<typename T = AccessoryType>
-        int GetRunEvery(T && accType) {
-
-            NextRunMemory& mem = RefreshNextRunInfo(accType);
-            int shakes = mem.RunEvery;
-            return shakes;
-        }
-        template<typename T = int, typename M = AccessoryType>
-        void SetMotorShakesOrTurns(T && shakesOrTurns, M && accType) {
-
-            NextRunMemory& mem = RefreshNextRunInfo(accType);
-            mem.ShakesOrTurns = shakesOrTurns;
-            RefreshNextRunInfo(accType, true);
-        }
-        template<typename T = AccessoryType>
-        int GetShakesOrTurns(T && accType) {
-
-            NextRunMemory& mem = RefreshNextRunInfo(accType);
-            int shakes = mem.ShakesOrTurns;
-            return shakes;
-        }
-        template<typename T = void>
-        void SetRTCTimeFromTemp() {
-            SetRTCTime(_timeBuffer.Hour, _timeBuffer.Minute, _timeBuffer.Second, _timeBuffer.Day, _timeBuffer.Month, _timeBuffer.Year);
-        }
-
         template<typename T = void>
         void ClearTimeTemp() {
             _timeBuffer.Hour = 0;
@@ -363,42 +251,6 @@ namespace Utils {
             _timeBuffer.Year = 0;
             _timeBuffer.Wday = 0;
         }
-
-        template<typename T, typename M = RangeType>
-        void SetTimeTemp(T && val, M && rangeType) {
-            T t(val);
-
-            if(rangeType == RangeType::Year) {
-                ClearTimeTemp();
-                _timeBuffer.Year = val;
-            }
-            else if(rangeType == RangeType::Month) {
-                _timeBuffer.Month = val;
-            }
-            else if(rangeType == RangeType::Day) {
-                _timeBuffer.Day = val;
-            }
-            else if(rangeType == RangeType::Hour) {
-                _timeBuffer.Hour = val;
-            }
-            else if(rangeType == RangeType::Minute) {
-                _timeBuffer.Minute = val;
-            }
-            else if(rangeType == RangeType::AmPm) {
-                if(val == 0) { // val = 0->AM
-                    if(_timeBuffer.Hour == 12) { //midnight
-                        _timeBuffer.Hour = 0;
-                    }
-                }
-                else if(val == 1) { // val = 1->PM
-                    if(_timeBuffer.Hour < 12) { //pm
-                        _timeBuffer.Hour += 12;
-                    }
-                }
-            }
-        }
-
-
 
         template<typename T, typename M = RangeType, typename P = AccessoryType>
         void SetNextRun(T && val, M && rangeType, P && accType) {
@@ -454,6 +306,186 @@ namespace Utils {
 
 
         }
+        template<typename T = long, typename M = AccessoryType>
+        void SetRunEverySeconds(T && seconds, M && accType) {
+            T t(seconds);
+            //long sec = second(seconds);
+            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+
+            nextRunMem.RunEvery = seconds;
+            nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
+
+            RefreshNextRunInfo(accType, true);
+        }
+
+        template<typename T = void>
+        bool IsTimeToRun(AccessoryType accType) {
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+
+            time_t runTime = RTCExt::GetRTCTime();
+
+            if(!mem.Enabled) {
+                return false;
+            }
+            if(mem.RunEvery <= 0) {
+                return true;    //not using rtc
+            }
+
+            time_t nextRun = mem.NextRun;
+            //int runTime = TimerExt::GetRuntimeInSeconds();
+            if(nextRun <= runTime) {
+                return true;
+            }
+            return false;
+        }
+        template<typename T = void>
+        bool IsAccEnabled(AccessoryType accType) {
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+
+            WireRunInfo& updateWireRunInfo = AquaControllerWire::GetUpdatedRunInfo();
+
+            int updateAccType = updateWireRunInfo.AccType.toInt();
+            if(updateAccType != 0 &&
+                    updateAccType == mem.AccType) {
+
+                mem.Enabled = updateWireRunInfo.Enabled.toInt();
+                mem.RunDurration = updateWireRunInfo.RunDurration.toInt();
+                long runEverySec = updateWireRunInfo.RunEvery.toInt();
+                SetRunEverySeconds(runEverySec, accType);
+
+                bool runNow = updateWireRunInfo.RunNow.toInt();
+                if(runNow) {
+                    SetNextRun(mem.NextRun, RangeType::RunNow, accType);
+                }
+
+                long nextRun = updateWireRunInfo.NextRun.toInt();
+                if(nextRun > 0) {
+                    mem.NextRun = nextRun;
+                    mem.LastRun = -1;
+                }
+
+                RefreshNextRunInfo(accType, true);
+
+                //mem.RunEvery = updateWireRunInfo.RunEvery.toInt();
+                updateWireRunInfo.AccType = "0";
+
+            }
+            AquaControllerWire::Loop(mem, RTCExt::GetRTCTime());
+
+            return mem.Enabled;
+        }
+
+        template<typename T = long, typename N = long>
+        String GetTimeFrequencyString(T && runEvery, N && nextRun) {
+            String freq = "";
+
+            String am = F("AM");
+            if(isPM(nextRun)) {
+                am = F("PM");
+            }
+
+            String theTime = GetDigitalTimeString(nextRun, false);
+            theTime = theTime + am;
+
+            int h = ConvSecToHour(runEvery);
+
+            if(h == 24) {
+                freq = F(", Daily");
+            }
+            else if(h == 48) {
+                freq = F(", Every Other Day");
+            }
+            else if(h == 168) {
+                freq = F(", Weekly");
+            }
+            else if(h == 336) {
+                freq = F(", Every 2 Weeks");
+            }
+            else if(h == 504) {
+                freq = F(", Every 3 Weeks");
+            }
+            else if(h == 672) {
+                freq = F(", Monthly");
+            }
+
+            String freqTime = theTime + freq;
+            return freqTime;
+        }
+
+        template<typename T = long, typename M = AccessoryType>
+        void SetRunEvery(T && hour, M && accType) {
+            T t(hour);
+            long sec = ConvHoursToSec(hour);
+            NextRunMemory& nextRunMem = RefreshNextRunInfo(accType);
+
+            nextRunMem.RunEvery = sec;
+            nextRunMem.NextRun = 0; //need to set to 0 so it recalculates
+
+            RefreshNextRunInfo(accType, true);
+        }
+
+        template<typename T = AccessoryType>
+        int GetRunEvery(T && accType) {
+
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            int shakes = mem.RunEvery;
+            return shakes;
+        }
+        template<typename T = int, typename M = AccessoryType>
+        void SetMotorShakesOrTurns(T && shakesOrTurns, M && accType) {
+
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            mem.ShakesOrTurns = shakesOrTurns;
+            RefreshNextRunInfo(accType, true);
+        }
+        template<typename T = AccessoryType>
+        int GetShakesOrTurns(T && accType) {
+
+            NextRunMemory& mem = RefreshNextRunInfo(accType);
+            int shakes = mem.ShakesOrTurns;
+            return shakes;
+        }
+        template<typename T = void>
+        void SetRTCTimeFromTemp() {
+            SetRTCTime(_timeBuffer.Hour, _timeBuffer.Minute, _timeBuffer.Second, _timeBuffer.Day, _timeBuffer.Month, _timeBuffer.Year);
+        }
+
+
+
+        template<typename T, typename M = RangeType>
+        void SetTimeTemp(T && val, M && rangeType) {
+            T t(val);
+
+            if(rangeType == RangeType::Year) {
+                ClearTimeTemp();
+                _timeBuffer.Year = val;
+            }
+            else if(rangeType == RangeType::Month) {
+                _timeBuffer.Month = val;
+            }
+            else if(rangeType == RangeType::Day) {
+                _timeBuffer.Day = val;
+            }
+            else if(rangeType == RangeType::Hour) {
+                _timeBuffer.Hour = val;
+            }
+            else if(rangeType == RangeType::Minute) {
+                _timeBuffer.Minute = val;
+            }
+            else if(rangeType == RangeType::AmPm) {
+                if(val == 0) { // val = 0->AM
+                    if(_timeBuffer.Hour == 12) { //midnight
+                        _timeBuffer.Hour = 0;
+                    }
+                }
+                else if(val == 1) { // val = 1->PM
+                    if(_timeBuffer.Hour < 12) { //pm
+                        _timeBuffer.Hour += 12;
+                    }
+                }
+            }
+        }
+
         //template<typename P = AccessoryType>
         //void SetLastRun(P && accType) {
         //NextRunMemory& nextRunMem = FindNextRunInfo(accType);
