@@ -14,13 +14,15 @@ Motor::Motor() {}
 void Motor::Init(int shakesOrTurns, long runEverySeconds, bool enabled) {
 
     if(RelayPin >= 2) {
-        pinMode(RelayPin, OUTPUT);
+
 
 #ifdef DEBUG
         digitalWrite(RelayPin, LOW);
 #else
         digitalWrite(RelayPin, !_relayHigh);
 #endif
+        //relay, always put digitalwrite before pinmode to prevent relay engage on startup
+        pinMode(RelayPin, OUTPUT);
 
     }
 
