@@ -16,8 +16,10 @@ const int medPulse = 4140;
 const int highPulse = 6350;//7350;
 const int highHighPulse = 10200;
 
-#define NUMSAMPLES 5 // how many samples to take and average, more takes longer, but is more 'smooth'
+#define NUMSAMPLES 8 //**If you up this, increase the "AsyncDelay". how many samples to take and average, more takes longer, but is more 'smooth'
 int _samples[NUMSAMPLES];
+int _tdsAvgArr[NUMSAMPLES];
+int _tdsAvgArrIndex = 0;
 
 long _pulseCount = 0;  //a pulse counter variable
 unsigned long _pulseTime, _lastTime, _duration, _totalDuration;
@@ -62,7 +64,9 @@ void TDSSensorDIY::init() {
         TheSensorsMem.Tds_volts = 5.0;
         Volts = 5.0;
     }
-    Volts = volts;
+    else {
+        Volts = volts;
+    }
 
     int tdsMin = TheSensorsMem.Tds_minVal;
     if(isnan(tdsMin) ||
@@ -171,6 +175,9 @@ void TDSSensorDIY::calculateTDS() {
     float higherEcVar;
     float lowerEcVar;
 
+    Serial.print("pulseCount: ");
+    Serial.println(_pulseCount);
+
     if (_pulseCount >= noPulse && _pulseCount < lowPulseCount) {
         //low
         Serial.println("calc case - low");
@@ -216,7 +223,21 @@ void TDSSensorDIY::calculateTDS() {
 
     double tds = (c / (1 + ALPHA_LTC * (Temperature - 25.00))); //  temperature compensation
     tds += Offset;
-    TdsVal = tds;
+    //TdsVal = tds;
+    Serial.print("TdsReading: ");
+    Serial.println(tds);
+
+    _tdsAvgArr[_tdsAvgArrIndex++] = tds;
+    if(_tdsAvgArrIndex == NUMSAMPLES) {
+        _tdsAvgArrIndex = 0;
+    }
+    double avgReading = MathExt::CalculateAverage(_tdsAvgArr, NUMSAMPLES);
+    TdsVal = avgReading;
+    Serial.print("TdsAvg: ");
+    Serial.println(TdsVal);
+
+
+
     //return tds;
 
 }
@@ -233,17 +254,7 @@ double TDSSensorDIY::convTempToFahrenheit(double temp) {
     return tempF;
 }
 
-void TDSSensorDIY::TurnOn() {
-    _enabled = true;
-    digitalWrite(_relayPin, HIGH);
-}
 
-void TDSSensorDIY::TurnOff() {
-    _enabled = false;
-    digitalWrite(_relayPin, LOW);
-    delay(1000);
-
-}
 
 void TDSSensorDIY::StartReading() {
     Serial.println("startReading ");
@@ -368,7 +379,17 @@ double TDSSensorDIY::getTemperature() {
     //  Serial.println(" *C");
 }
 
+void TDSSensorDIY::TurnOn() {
+    _enabled = true;
+    digitalWrite(_relayPin, HIGH);
+}
 
+void TDSSensorDIY::TurnOff() {
+    _enabled = false;
+    digitalWrite(_relayPin, LOW);
+    delay(1000);
+
+}
 
 //pen   diy   cnt     lvl   match
 //-------------------------

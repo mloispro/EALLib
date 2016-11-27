@@ -3,7 +3,7 @@
 
 namespace Sketch {
 
-    AsyncDelay _tdsSensorRun(TDSSensorDIY::SAMPLING_PERIOD * 1000, 1000);;
+    AsyncDelay _tdsSensorRun(TDSSensorDIY::SAMPLING_PERIOD, 2500);
 
     void(* resetFunc) (void) = 0;//declare reset function at address 0
 

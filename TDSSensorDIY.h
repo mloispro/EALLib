@@ -44,7 +44,7 @@ class TDSSensorDIY {
 
         //constants
         const int TEMP_MANUAL = 25; // temp. for nominal resistance (almost always 25 C)
-        const static int SAMPLING_PERIOD = 2; //*DONT EVER CHANGE *affects reading*, the number of seconds to measure 555 oscillations
+        const static long SAMPLING_PERIOD = 2200; //*DONT EVER CHANGE *affects reading* default is 2000, the number of seconds to measure 555 oscillations
         const long THERMISTOR_NOMINAL = 10000; //*DONT EVER CHANGE resistance at 25 degrees C
         const long SERIES_RESISTOR = 10000;  //*DONT EVER CHANGE the value of the 'other' resistor
         const long BETA_COEFFICIENT = 3950; // The beta coefficient of the thermistor (usually 3000-4000)

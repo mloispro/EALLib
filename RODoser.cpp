@@ -113,7 +113,7 @@ bool RODoser::ShouldRun(double tdsVal) {
     lastDoseTimeInMin = lastDoseTimeInMin * 15; //to speed up debugging
 #endif
     //if(lastDoseTimeInMin < 0 || lastDoseTimeInSecs >= 45) {
-    if(lastDoseTimeInMin < 0 || lastDoseTimeInMin >= 30) { //todo: uncomment this and comment above, should be 30
+    if(lastDoseTimeInMin < 0 || lastDoseTimeInMin >= 20) { //todo: uncomment this and comment above, should be 20
 
         //get tds check if less than 50..
         int minTds = TheSensorsMem.Tds_minVal;
