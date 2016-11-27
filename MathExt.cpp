@@ -138,6 +138,39 @@ namespace MathExt {
         }//if
         return avg;
     }
+    String GetTimeIntervalString(long milliseconds) {
+        String dateTime = "0s";
+        if (milliseconds >= 1000) {
+            long seconds = (long) (milliseconds / 1000) % 60;
+            auto minutes =  (milliseconds / 1000) / 60;
+            auto hours = minutes / 60;
+            auto days = hours / 24;
+
+            dateTime = String(seconds) + "s";
+            if(minutes <= 0) {
+                return dateTime;
+            }
+            if(minutes >= 60 ) {
+                minutes = minutes % 60;
+            }
+            dateTime = String(minutes) + "m" + dateTime;
+            if(hours <= 0) {
+                return dateTime;
+            }
+            if(hours >= 24 ) {
+                hours = hours % 24;
+            }
+            dateTime = String(hours) + "h" + dateTime;
+            if(days <= 0) {
+                return dateTime;
+            }
+            dateTime = String(days) + "d" + dateTime;
+
+            //dateTime = String(days) + "d" + String(hours) + "h" + String(minutes) + "m" + String(seconds) + "s";
+        }
+
+        return dateTime;
+    }
 }
 
 

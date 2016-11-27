@@ -12,48 +12,20 @@
 #include <cmath>
 using namespace std;
 
-#include "SensorsMem.h"
+#include "ROSensorsMem.h"
 using namespace Memory;
 #include "MathExt.h"
 #include "LCDBase.h"
+
 
 class TDSSensorDIY {
 
     private:
         int _pin;
-        int _tempSensorPin = 0;
+        int _tempSensorPin;
+        int _tdsPowerPin;
 
-        //##################################################################################
-        //-----------  Do not Replace R1 with a resistor lower than 300 ohms    ------------
-        //##################################################################################
-        int _resistance = 1000;//330; //R1
-        int _pinResistance = 25; //Resistance of powering Pins
-
-        float _ppmConversion = 0.7; //common conversion
-
-
-        //*************Compensating for temperature ************************************//
-        //The value below will change depending on what chemical solution we are measuring
-        //0.019 is generaly considered the standard for plant nutrients [google "Temperature compensation EC" for more info
-        //float TemperatureCoef = 0.019; //this changes depending on what chemical we are measuring
-        float _temperatureCoef = 0.0214; //for water according to google.
-
-
-        //********************** Cell Constant For Ec Measurements *********************//
-        //Mine was around 2.9 with plugs being a standard size they should all be around the same
-        //But If you get bad readings you can use the calibration script and fluid to get a better estimate for K
-        //float K = 2.88;
-        float _cellConstant = 2.7;
-
-        float _voltageRatio = 0.652173913;
-
-
-        float _tempProbeResistance = 10000.0; //10K ohm, always use 10K resistor on sensor board since it is a 10k sensor.
-
-
-        int _tdsArrayIndex = 0;
         int _printTDSEvery = 800;
-        float _temperature = 10;
         bool _printToLCD;
         int _relayPin;
         bool _enabled;
@@ -62,23 +34,47 @@ class TDSSensorDIY {
         LCDBase _lcd;
 
         void init();
-        double getTDSValue();
+        static void onPulse();
+        //double getTDSValue();
         double getTemperature();
         double convTempToFahrenheit(double temp);
+        void calculateTDS();
 
     public:
 
+        //constants
+        const int TEMP_MANUAL = 25; // temp. for nominal resistance (almost always 25 C)
+        const static int SAMPLING_PERIOD = 2; //*DONT EVER CHANGE *affects reading*, the number of seconds to measure 555 oscillations
+        const long THERMISTOR_NOMINAL = 10000; //*DONT EVER CHANGE resistance at 25 degrees C
+        const long SERIES_RESISTOR = 10000;  //*DONT EVER CHANGE the value of the 'other' resistor
+        const long BETA_COEFFICIENT = 3950; // The beta coefficient of the thermistor (usually 3000-4000)
+        const float ALPHA_LTC = 0.022; // Temperature correction coefficient
+
         String TdsString;
         String TempInFahrenheit;
+        String TimeSinceLastDose;
+        String TimeSinceLastDoseLcd;
+        String TdsMin;
+        String DoseDuration;
 
-        int Offset = 1;
+        double TdsVal = 0;
+        float Temperature = 10;
+        double Offset = 1.0;
+        double Volts = 5.0;
+        long LastDoseTime;
         double GetTDS();
         void PrintTDSToLCD();
-        void CalculateTDS();
+        void PrintTDSToSerial();
 
-        void Update(int offset);
-        TDSSensorDIY(int pin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
-        TDSSensorDIY(int pin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
+        void StartReading();
+        void StopReading();
+
+        void Update(double offset);
+        void UpdateVolts(double volts);
+        void UpdateTdsMin(int tdsMin);
+        void UpdateRunDurration(int runDurr);
+        TDSSensorDIY(int pin, int tdsPowerPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
+        TDSSensorDIY(int pin, int tdsPowerPin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
 
         void TurnOn();
         void TurnOff();

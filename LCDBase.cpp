@@ -30,7 +30,41 @@ void LCDBase::PrintLine(short lineNum, String text) {
 //_lcd.setCursor(0, lineNum);
 //_lcd.print(text);
 //}
+void LCDBase::HandleScrollText(short lineNum, String text) {
+    delay(200);
+    if(text.length() > 16) {
 
+        static unsigned long printTime = millis();
+        if(millis() - printTime > _scrollDelay) {
+
+            int pos = (text.length() * -1) - 12;
+            for(int i = 0; i < text.length() - 12; i++) {
+                pos += 1;
+                setCursor(0, lineNum);
+                print("                 ");
+                setCursor(pos, lineNum);
+                print(text);
+                //IsKeyPressed();
+                //if(_optionChanged && _selectedMenuId > -1) {
+                //PrintLine(0, _menuText);
+                //PrintLine(1, _optionText);
+                //return;
+                //}
+
+                delay(300);
+            }
+            setCursor(0, lineNum);
+            print(text);
+            //delay(500);
+            //delay(_scrollDelay);
+            printTime = millis();
+        }
+    }
+    else {
+        PrintLine(lineNum, text);
+    }
+    //delay(_scrollDelay);
+}
 LcdKeyPress LCDBase::DetectKeyPress() {
     int key = getKey();
     //SerialExt::Debug("key_dkp:", key);

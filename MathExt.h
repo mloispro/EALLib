@@ -23,6 +23,7 @@ namespace MathExt {
     extern double GetStdDeviation(vector<double> vec, double mean);
     extern double CalculateAverage(int* arr, int number);
     extern double CalculateAverage(int16_e* arr, int number);
+    extern String GetTimeIntervalString(long milliseconds);
     ////use debug prints for debug statements that should be removed, after debugging.
     //template<typename T, typename F>
     //extern void Debug(T&& text, F&& val) {

@@ -14,6 +14,7 @@ using namespace std;
 #include "LCDBase.h"
 //#include "PhSensor.h"
 #include "TDSSensorDIY.h"
+#include "AsyncDelay.h"
 
 namespace Sketch {
 
@@ -22,7 +23,8 @@ namespace Sketch {
     extern void Setup();
     extern void Loop();
     extern void AsyncDoWork();
-
+    extern void TDSSensorRun_Stop();
+    extern void TDSSensorRun_Start();
 
 }
 

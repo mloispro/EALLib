@@ -1,24 +1,133 @@
 
 #include "RODoser.h"
 
-RODoser::RODoser(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, bool enabled) :
-    ServoMotor(servo, pin, shakes, 0, 10, relayPin, runEverySeconds, theSwitch, AccessoryType::DryDoser, enabled) {
+RODoser::RODoser(int pin) : _pin(pin) {
+    Init();
 }
 
-RODoser::RODoser(Servo servo, int pin, int shakes, long runEverySeconds, AnalogSwitch theSwitch, bool enabled) :
-    ServoMotor(servo, pin, shakes, 0, 10, -1, runEverySeconds, theSwitch, AccessoryType::DryDoser, enabled) {
+RODoser::RODoser() {}
+
+void RODoser::Init() {
+
+    if(_pin >= 2) {
+        //Serial.print("init - runTime: ");
+        //Serial.println(_runTime);
+        //_runTime = millis();
+
+
+#ifdef DEBUG
+        digitalWrite(_pin, LOW);
+#else
+        digitalWrite(_pin, !_relayHigh);
+#endif
+        pinMode(_pin, OUTPUT);
+
+    }
+
+    //long lastDoseTime = TheSensorsMem.LastDoseTime;
+    //if(isnan(lastDoseTime) || isinf(lastDoseTime) != 0) {
+    //TheSensorsMem.LastDoseTime = 0;
+    //}
+
+    TheSensorsMem.LastDoseTime = 0; //setting to 0 on reset, so we dont wait for days for millis to catch up.
+
 }
 
-RODoser::RODoser() {
-    MotorType = AccessoryType::DryDoser;
-    //_theSpeed = 10;
+
+void RODoser::Run(double tdsVal) {
+    bool pinSet = CheckPin();
+    bool shouldRun = ShouldRun(tdsVal);
+    bool signalRelay = pinSet && shouldRun;
+
+    if(signalRelay) {
+        //SerialExt::Debug(F("Signaling Relay Pin: "), RelayPin);
+        Serial.print("Signaling Relay Pin: ");
+        Serial.println(_pin);
+        //digitalWrite(_pin, HIGH);
+
+#ifdef DEBUG
+        digitalWrite(_pin, HIGH);
+#else
+        digitalWrite(_pin, _relayHigh);
+#endif
+
+        handleRun();
+    }
+
+
+
+    if(signalRelay && !_isRunning) {
+        //digitalWrite(RelayPin, HIGH);
+        //digitalWrite(_pin, LOW);
+#ifdef DEBUG
+        digitalWrite(_pin, LOW);
+#else
+        digitalWrite(_pin, !_relayHigh);
+#endif
+    }
+
+
+}
+
+bool RODoser::handleRun() {
+    long doseDurr = TheSensorsMem.DoseDurrationInSecs * 1000;
+
+    if(!_isRunning) {
+        _stopTime = millis() + doseDurr;
+    }
+
+    Serial.print("millis: ");
+    Serial.println(millis());
+
+    Serial.print("stopTime: ");
+    Serial.println(_stopTime);
+
+    _isRunning = true;
+
+    if(millis() >= _stopTime) { //stop running if true.
+        _isRunning = false;
+        TheSensorsMem.LastDoseTime = millis();
+    }
+    //delay(doseDurr);
+    //TheSensorsMem.LastDoseTime = millis();
+}
+
+bool RODoser::CheckPin() {
+    if(_pin >= 2) {
+        return true;
+    }
+    return false;
 }
 
 
-void RODoser::RunDemo(vector<RODoser> dosers) {
+bool RODoser::ShouldRun(double tdsVal) {
 
-    //vector<ServoMotor> motors;
-    //copy(dosers.begin(), dosers.end(), back_inserter(motors));
-    //ServoMotor::RunMotorDemos(motors);
+    bool run = false;
 
+    //check that last dose time is greater than 30 min.
+    long lastDoseTime = millis() - TheSensorsMem.LastDoseTime;
+    long lastDoseTimeInSecs = lastDoseTime / 1000;
+    long lastDoseTimeInMin = lastDoseTimeInSecs / 60; //minute(lastDoseTime);
+
+#ifdef DEBUG
+    lastDoseTimeInMin = lastDoseTimeInMin * 15; //to speed up debugging
+#endif
+    //if(lastDoseTimeInMin < 0 || lastDoseTimeInSecs >= 45) {
+    if(lastDoseTimeInMin < 0 || lastDoseTimeInMin >= 30) { //todo: uncomment this and comment above, should be 30
+
+        //get tds check if less than 50..
+        int minTds = TheSensorsMem.Tds_minVal;
+
+        if(tdsVal < minTds) {
+            run = true;
+        }
+    }
+
+    return run;
+}
+
+
+void RODoser::SetRelayHigh() {
+    digitalWrite(_pin, LOW);
+    _relayHigh = true;
 }

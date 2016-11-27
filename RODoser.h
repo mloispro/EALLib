@@ -5,32 +5,35 @@
 
 #include <Arduino.h>
 
-#include "Servo.h"
-#include "ServoMotor.h"
-
 //#include "StandardCplusplus.h"
-#include <vector>
+//#include <vector>
 
-#include "SerialExt.h"
+//#include "SerialExt.h"
 #include "AnalogSwitch.h"
+#include "ROSensorsMem.h"
+using namespace Memory;
 using namespace Utils;
 
 using namespace std;
 
 
-class RODoser : public ServoMotor {
-  private:
+class RODoser { // : public ServoMotor {
+    private:
+        int _pin;
+        bool _relayHigh;
+        bool _isRunning;
+        long _stopTime;
+        bool handleRun();
+    public:
+        RODoser(int pin);
+        RODoser();
 
-  public:
-    RODoser(Servo servo, int pin, int shakes, short relayPin, long runEverySeconds, AnalogSwitch theSwitch, bool enabled);
-    RODoser(Servo servo, int pin, int shakes, long runEverySeconds, AnalogSwitch theSwitch, bool enabled);
-    RODoser();
-    static void RunDemo(vector<RODoser> dosers);
+        bool CheckPin();
+        bool ShouldRun(double tdsVal);
+        void Run(double tdsVal);
+        void SetRelayHigh();
+        void Init();
 };
-
-//vector<RODoser> RODoser::Feeders;
-
-//extern RODoserClass RODoser;
 
 #endif
 

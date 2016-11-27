@@ -23,6 +23,7 @@ class ROTankWire {
         //void Init();
         static String SplitString(String data, char separator, int index);
         static void Transmit(String partialResponse);
+        static void handleCmd(String var, String val);
     public:
         //WaterSensorWire(PHSensor phSensor, TDSSensor tdsSensor);
         static void Setup();

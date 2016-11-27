@@ -3,18 +3,26 @@
 
 namespace Sketch {
 
+    AsyncDelay _tdsSensorRun(TDSSensorDIY::SAMPLING_PERIOD * 1000, 1000);;
+
     void(* resetFunc) (void) = 0;//declare reset function at address 0
 
     void Setup() {
 
         wdt_enable(WDTO_8S);
 
+        if(IsHighLevelRelay) {
+            TheRODoser.SetRelayHigh(); //doing this because using a high level relay in aquarium controler
+        }
+
+        _tdsSensorRun.Start(TDSSensorRun_Start);
+        _tdsSensorRun.Stop(TDSSensorRun_Stop);
         TheTDSSensor.TurnOn();
         ROTankWire::Setup();
     }
 
     void Loop() {
-
+        _tdsSensorRun.Loop();
         //ThePHSensor.PrintPHToLCD();
         TheTDSSensor.PrintTDSToLCD();
 
@@ -50,7 +58,7 @@ namespace Sketch {
             //SwitchSensors();
             lastSensorReadTime = millis();
         }
-        TheTDSSensor.CalculateTDS();
+
         //if(ReadingTDS) {
         //TheTDSSensor.CalculateTDS();
         //}
@@ -58,6 +66,15 @@ namespace Sketch {
         ////ThePHSensor.CalculatePH();
         //}
 
+        TheRODoser.Run(TheTDSSensor.TdsVal);
+
+    }
+    void TDSSensorRun_Start() {
+        TheTDSSensor.StartReading();
+
+    }
+    void TDSSensorRun_Stop() {
+        TheTDSSensor.StopReading();
     }
 
     //void SwitchSensors() {

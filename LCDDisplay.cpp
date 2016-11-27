@@ -865,6 +865,7 @@ void LCDDisplay::HandleScrollText(short lineNum, String text) {
         _lcd.print(text);
         //delay(500);
     }
+    //todo: replace with if printtime=millis()...
     delay(_scrollDelay);
 }
 void LCDDisplay::PrintLine(short lineNum, String text) {

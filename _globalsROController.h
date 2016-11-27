@@ -16,8 +16,11 @@ using namespace std;
 #include "LCDBase.h"
 //#include "PhSensor.h"
 #include "TDSSensorDIY.h"
+#include "RODoser.h"
 
 namespace Globals {
+
+    extern bool IsHighLevelRelay;
 
     //extern LCDBase TheLCD;
     extern bool ReadingTDS;
@@ -30,7 +33,7 @@ namespace Globals {
     extern TDSSensorDIY& TheTDSSensor;
 
     extern LCDBase& TheLCD;
-
+    extern RODoser& TheRODoser;
 
     //namespace MegaPins {
     //const int PWM_2 = 2;

@@ -29,6 +29,7 @@ class LCDBase : public LiquidCrystal {
         //LiquidCrystal _lcd;
         int  _keyValues[5] { 50, 200, 400, 600, 800 };
         short _numOfKeys = 5;
+        int _scrollDelay = 3000;
 
         void Init();
         int getKey();
@@ -39,6 +40,7 @@ class LCDBase : public LiquidCrystal {
         LCDBase();
         void ClearLine(short lineNum);
         void PrintLine(short lineNum, String text);
+        void HandleScrollText(short lineNum, String text);
         LcdKeyPress DetectKeyPress();
         //template<typename T>
         //void Print(short lineNum, T&& text);
