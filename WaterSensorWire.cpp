@@ -11,6 +11,9 @@ static String _cmd = "";
 static String _cmdData = "";
 static String _response = "";
 //static long _lastReqReceived = 0;
+
+static String _lastResponse = "";
+
 static String _ph = "";
 //static String _phAvg = "";
 static String _tds = "";
@@ -20,6 +23,10 @@ static String _sensorReadDur = "";
 static String _reading = "";
 static String _phOffset = "";
 static String _tdsOffset = "";
+static String _tdsVolts = "";
+static String _timeSinceLastDose = "";
+static String _tdsMin = "";
+static String _doseDurr = "";
 
 void WaterSensorWire::Setup() {
     Serial.print(F("_slave: "));
@@ -37,12 +44,17 @@ void WaterSensorWire::Setup() {
 void WaterSensorWire::Loop() {
 
     _ph = ThePHSensor.PhString.c_str();
-    //_phAvg = ThePHSensor.PhAvgString.c_str();
-    _tds = TheTDSSensor.TdsString.c_str();
+
+    _tds = TheTDSSensor.TdsString;
     //_tdsAvg = TheTDSSensor.TdsAvgString.c_str();
 
     _phOffset = String(ThePHSensor.Offset, 2).c_str(); //c_str detaches from ref so faster, prevents wire hang.
     _tdsOffset = String(TheTDSSensor.Offset).c_str();
+    double volts = TheTDSSensor.Volts;
+    _tdsVolts = String(volts, 2).c_str();
+    _timeSinceLastDose = TheTDSSensor.TimeSinceLastDose;
+    _tdsMin = TheTDSSensor.TdsMin;
+    _doseDurr = TheTDSSensor.DoseDuration;
 
     if(!ReadingTDS) {
         _reading = "ph";
@@ -51,13 +63,44 @@ void WaterSensorWire::Loop() {
         _reading = "tds";
     }
 
+    //_reading = "tds";
+
     long dur = SensorReadDuration / 1000;
     _sensorReadDur = String(dur) + "s";
 
     long inter = SensorReadInterval / 1000;
     _sensorReadInter = String(inter) + "s";
 
+    Serial.print(F("Last Response: "));
+    Serial.println(_lastResponse);
+
 }
+//sets vals
+void WaterSensorWire::handleCmd(String var, String val) {
+    if(var == "tdsoffset") {
+        double offset = val.toFloat();
+        //TheSensorsMem.TdsOffset = offset;
+        TheTDSSensor.Update(offset);
+    }
+    else if(var == "phoffset") {
+        double offset = val.toFloat();
+        ThePHSensor.Update(offset);
+    }
+    else if(var == "tdsVolts") {
+        double volts = val.toFloat();
+        TheTDSSensor.UpdateVolts(volts);
+    }
+    else if(var == "tdsMin") {
+        int tdsMin = val.toInt();
+        TheTDSSensor.UpdateTdsMin(tdsMin);
+    }
+    else if(var == "doseDurr") {
+        int doseDurr = val.toInt();
+        TheTDSSensor.UpdateRunDurration(doseDurr);
+    }
+
+}
+//sets vals
 void WaterSensorWire::Receive(int bytes) {
     //!!DONT PUT SERIAL.PRINTS IN HERE IT WILL SCREW UP WIRE COMM!!
 
@@ -65,6 +108,8 @@ void WaterSensorWire::Receive(int bytes) {
     _cmd = "";
     _cmdData = "";
     if(bytes == _wireReqLength) {
+        _lastResponse = "";
+
         while (Wire.available() > 0) {
             char c = Wire.read();
             _wireRequest.concat(c);
@@ -83,15 +128,13 @@ void WaterSensorWire::Receive(int bytes) {
             Serial.println(_cmdData);
             String var = SplitString(_cmdData, '=', 0);
             String val = SplitString(_cmdData, '=', 1);
-            if(var == "tdsoffset") {
-                int offset = val.toInt();
-                //TheSensorsMem.TdsOffset = offset;
-                TheTDSSensor.Update(offset);
+
+            if(val == "-") { // means null value sent in, so do nothing with cmd.
+                //Transmit("-");
+                return;
             }
-            else if(var == "phoffset") {
-                double offset = val.toFloat();
-                ThePHSensor.Update(offset);
-            }
+
+            handleCmd(var, val);
         }
     }
     else {
@@ -99,6 +142,7 @@ void WaterSensorWire::Receive(int bytes) {
         Serial.println(bytes);
     }
 }
+//gets vals
 void WaterSensorWire::Request() {
     //!!DONT PUT SERIAL.PRINTS IN HERE IT WILL SCREW UP WIRE COMM!!
 
@@ -107,13 +151,10 @@ void WaterSensorWire::Request() {
 
     String partialResponse;
     if(_cmd == "/") {
-        partialResponse = "Index";
-
-        Transmit(partialResponse);
+        Transmit("Index");
         return;
     }
 
-    //
     _responseIndex++;
     //String partialResponse = "";
     if(_responseIndex == 0) {
@@ -144,14 +185,30 @@ void WaterSensorWire::Request() {
         //String interSec = String(inter, 0) + "s";
         //partialResponse = interSec.c_str();
         partialResponse = _sensorReadInter;
+    }
+    else if(_responseIndex == 7) {
+        partialResponse = _tdsVolts;
+    }
+    else if(_responseIndex == 8) {
+        partialResponse = _timeSinceLastDose;
+    }
+    else if(_responseIndex == 9) {
+        partialResponse = _tdsMin;
+    }
+    else if(_responseIndex == 10) {
+        partialResponse = _doseDurr;
         _responseIndex = -1; //need to keep this in last if always
     }
     else {
-        Serial.print(F("~responseIndex not found: "));
-        Serial.println(_responseIndex);
+        //Serial.print(F("~responseIndex not found: "));
+        //Serial.println(_responseIndex);
+        //partialResponse = String(_responseIndex) + "=!";
+        Transmit("IndexNF"); // index not Found
         _responseIndex = -1;
         return;
     }
+
+    _lastResponse += partialResponse + " ";
 
     Transmit(partialResponse);
 }
@@ -176,7 +233,7 @@ void WaterSensorWire::Transmit(String partialResponse) {
     //Serial.println(p);
     //}
     Wire.write(response, _wireRespLength);
-    // delay(10);//todo: may need to delete this
+    //delay(10);//todo: may need to delete this
 }
 //void (*resetFunc)(void) = 0;
 //void WaterSensorWire::CheckConnection() {

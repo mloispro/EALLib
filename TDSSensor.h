@@ -18,9 +18,12 @@ using namespace Memory;
 
 class TDSSensor {
 
+#define NUMSAMPLES 10
+
     private:
         int _pin;
 
+        int _tdsAvgArr[NUMSAMPLES];
         //int _tdsAverage[10];
         int _tdsArrayIndex = 0;
         int _printTDSEvery = 800;
@@ -42,6 +45,7 @@ class TDSSensor {
 
     public:
 
+        double TdsVal = 0;
         String TdsString;
         //String TdsAvgString;
 

@@ -13,13 +13,7 @@ void RODoser::Init() {
         //Serial.print("init - runTime: ");
         //Serial.println(_runTime);
         //_runTime = millis();
-
-
-#ifdef DEBUG
         digitalWrite(_pin, LOW);
-#else
-        digitalWrite(_pin, !_relayHigh);
-#endif
         pinMode(_pin, OUTPUT);
 
     }
@@ -41,29 +35,16 @@ void RODoser::Run(double tdsVal) {
 
     if(signalRelay) {
         //SerialExt::Debug(F("Signaling Relay Pin: "), RelayPin);
-        Serial.print("Signaling Relay Pin: ");
+        Serial.print(F("Signaling Relay Pin: "));
         Serial.println(_pin);
-        //digitalWrite(_pin, HIGH);
-
-#ifdef DEBUG
         digitalWrite(_pin, HIGH);
-#else
-        digitalWrite(_pin, _relayHigh);
-#endif
 
         handleRun();
     }
 
-
-
     if(signalRelay && !_isRunning) {
         //digitalWrite(RelayPin, HIGH);
-        //digitalWrite(_pin, LOW);
-#ifdef DEBUG
         digitalWrite(_pin, LOW);
-#else
-        digitalWrite(_pin, !_relayHigh);
-#endif
     }
 
 
@@ -112,8 +93,8 @@ bool RODoser::ShouldRun(double tdsVal) {
 #ifdef DEBUG
     lastDoseTimeInMin = lastDoseTimeInMin * 15; //to speed up debugging
 #endif
-    //if(lastDoseTimeInMin < 0 || lastDoseTimeInSecs >= 45) {
-    if(lastDoseTimeInMin < 0 || lastDoseTimeInMin >= 20) { //todo: uncomment this and comment above, should be 20
+    if(lastDoseTimeInMin < 0 || lastDoseTimeInSecs >= 45) {
+        //if(lastDoseTimeInMin < 0 || lastDoseTimeInMin >= 20) { //todo: uncomment this and comment above, should be 20
 
         //get tds check if less than 50..
         int minTds = TheSensorsMem.Tds_minVal;
@@ -127,7 +108,7 @@ bool RODoser::ShouldRun(double tdsVal) {
 }
 
 
-void RODoser::SetRelayHigh() {
-    digitalWrite(_pin, LOW);
-    _relayHigh = true;
-}
+//void RODoser::SetRelayHigh() {
+//digitalWrite(_pin, LOW);
+//_relayHigh = true;
+//}

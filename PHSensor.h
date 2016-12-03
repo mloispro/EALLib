@@ -33,8 +33,8 @@ class PHSensor {
         //float _pHAvgValue;
         float _voltage;
         bool _printToLCD;
-        int _relayPin;
-        bool _enabled;
+        int _powerPin;
+        bool _isReading;
         //int _outlierCount = 0;
 
         LCDBase _lcd;
@@ -42,27 +42,30 @@ class PHSensor {
         void init();
         void clearLCDLine(short lineNum);
         double getPHValue();
+        bool shouldRead();
         //bool isOutlier(double x, double avg);
         //PHSensor& operator=(const PHSensor& c);
         //PHSensor(const PHSensor& c);
     public:
 
+        bool Enabled;
         String PhString;
         //String PhAvgString;
 
         //double TankOffsetToSubtract = 0;
-        //erom::Entry<double> Offset = 3.0;
+        double PhVal = 0;
         double Offset = 3.0;
         double GetPH();
         void CalculatePH();
         double GetVoltage();
         void PrintPHToSerial();
-        void PrintPHToLCD();
+        void PrintPHToLCD(String tds, String tempF);
         void Update(double offset);
         //String GetResponseString();
 
         //PHSensor(int pin, int printPHEvery, LCDBase lcd);
-        PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd, int relayPin);
+
+        PHSensor(int pin, int powerPin, int printPHEvery,  bool printToLCD, LCDBase lcd, bool enabled);
         //PHSensor() {};
 
         void TurnOff();

@@ -12,7 +12,7 @@
 #include <cmath>
 using namespace std;
 
-#include "ROSensorsMem.h"
+#include "SensorsMem.h"
 using namespace Memory;
 #include "MathExt.h"
 #include "LCDBase.h"
@@ -20,16 +20,22 @@ using namespace Memory;
 
 class TDSSensorDIY {
 
+#define NUMSAMPLES 8 //**If you up this, increase the "AsyncDelay". how many samples to take and average, more takes longer, but is more 'smooth'
+
     private:
         int _pin;
         int _tempSensorPin;
-        int _tdsPowerPin;
+        int _powerPin;
 
         int _printTDSEvery = 800;
         bool _printToLCD;
-        int _relayPin;
-        bool _enabled;
-        int _numOfSamples = 0;
+
+        bool _isReading;
+
+        int _tdsAvgArr[NUMSAMPLES];
+        int _tdsAvgArrIndex = 0;
+        int _samples[NUMSAMPLES];
+        //int _numOfSamples = 0;
 
         LCDBase _lcd;
 
@@ -39,6 +45,7 @@ class TDSSensorDIY {
         double getTemperature();
         double convTempToFahrenheit(double temp);
         void calculateTDS();
+        bool shouldRead();
 
     public:
 
@@ -49,6 +56,8 @@ class TDSSensorDIY {
         const long SERIES_RESISTOR = 10000;  //*DONT EVER CHANGE the value of the 'other' resistor
         const long BETA_COEFFICIENT = 3950; // The beta coefficient of the thermistor (usually 3000-4000)
         const float ALPHA_LTC = 0.022; // Temperature correction coefficient
+
+        bool Enabled;
 
         String TdsString;
         String TempInFahrenheit;
@@ -73,8 +82,8 @@ class TDSSensorDIY {
         void UpdateVolts(double volts);
         void UpdateTdsMin(int tdsMin);
         void UpdateRunDurration(int runDurr);
-        TDSSensorDIY(int pin, int tdsPowerPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
-        TDSSensorDIY(int pin, int tdsPowerPin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin);
+        TDSSensorDIY(int pin, int tdsPowerPin, int printTDSEvery, bool printToLCD, LCDBase lcd, bool enabled);
+        TDSSensorDIY(int pin, int tdsPowerPin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, bool enabled);
 
         void TurnOn();
         void TurnOff();

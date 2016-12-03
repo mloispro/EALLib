@@ -13,17 +13,17 @@ using namespace std;
 namespace Memory {
 
     struct SensorsMem {
-        float_e PhOffset;
-        int16_e TdsOffset;
-        float_e PhVal;
-        float_e TdsVal;
-        int16_e PhAvgArr[30];
-        int16_e TdsAvgArr[10];
+        float_e Ph_Offset;
+        float_e Tds_Offset;
+        //float_e Ph_Val;
+        //float_e Tds_Val; //not saving this to save of eeprom wear.
+        //int16_e Ph_AvgArr[30];
+        //int16_e Tds_AvgArr[10];
+        float_e Tds_volts;
+        int32_e LastDoseTime;
+        float_e Tds_minVal;
+        int16_e DoseDurrationInSecs;
     };
-    //struct SensorsPGMem {
-    ////int16_p TdsAverage[40];
-    //int16_p t;
-    //};
 
     extern SensorsMem& TheSensorsMem;
     //extern SensorsPGMem& TheSensorsPGMem;

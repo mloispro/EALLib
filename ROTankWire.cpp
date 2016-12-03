@@ -53,14 +53,14 @@ void ROTankWire::Loop() {
     _tdsMin = TheTDSSensor.TdsMin;
     _doseDurr = TheTDSSensor.DoseDuration;
 
-    //if(!ReadingTDS) {
-    //_reading = "ph";
-    //}
-    //else {
-    //_reading = "tds";
-    //}
+    if(!ReadingTDS) {
+        _reading = "ph";
+    }
+    else {
+        _reading = "tds";
+    }
 
-    _reading = "tds";
+    //_reading = "tds";
 
     long dur = SensorReadDuration / 1000;
     _sensorReadDur = String(dur) + "s";

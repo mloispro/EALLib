@@ -1,12 +1,15 @@
 
 #include "PHSensor.h"
 
+#define NUMSAMPLES 10
+int _phAvgArr[NUMSAMPLES];
 
 //PHSensor::PHSensor(int pin, int printPHEvery, LCDBase lcd) :
 //PHSensor(pin, printPHEvery, false, lcd) {}
 
-PHSensor::PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd, int relayPin):
-    _pin(pin), _printPHEvery(printPHEvery), _printToLCD(printToLCD), _lcd(lcd), _relayPin(relayPin) {
+
+PHSensor::PHSensor(int pin, int powerPin, int printPHEvery,  bool printToLCD, LCDBase lcd, bool enabled):
+    _pin(pin), _powerPin(powerPin), _printPHEvery(printPHEvery),  _printToLCD(printToLCD), _lcd(lcd), Enabled(enabled) {
     init();
 }
 
@@ -14,23 +17,24 @@ PHSensor::PHSensor(int pin, int printPHEvery, bool printToLCD, LCDBase lcd, int 
 //PHSensor(0, 0, false) {}
 
 void PHSensor::init() {
+
     //led to show board working
     pinMode(13, OUTPUT);
-    pinMode(_relayPin, OUTPUT);
+    pinMode(_powerPin, OUTPUT);
 
     //load vars from eeprom
-    double offset = TheSensorsMem.PhOffset;
+    double offset = TheSensorsMem.Ph_Offset;
     if(!isnan(offset)) {
         Offset = offset;
     }
 
-    if(isnan(TheSensorsMem.PhVal)) {
-        TheSensorsMem.PhVal = 0;
-    }
+    //if(isnan(TheSensorsMem.PhVal)) {
+    //TheSensorsMem.PhVal = 0;
+    //}
 }
 void PHSensor::Update(double offset) {
     Offset = offset;
-    TheSensorsMem.PhOffset = Offset;
+    TheSensorsMem.Ph_Offset = Offset;
 }
 
 
@@ -40,15 +44,15 @@ double PHSensor::GetPH() {
     //Serial.print(TheSensorsMem.PhVal);
 
     //double tankPH = _pHValue;// - TankOffsetToSubtract;
-    PhString = String(TheSensorsMem.PhVal, 2).c_str();
+    PhString = String(PhVal, 2).c_str();
     //PhAvgString = String(_pHAvgValue, 2).c_str();
-    return TheSensorsMem.PhVal;
+    return PhVal;
 
 }
 
 void PHSensor::CalculatePH() {
 
-    if(!_enabled) {
+    if(!shouldRead()) {
         return;
     }
 
@@ -132,17 +136,21 @@ double PHSensor::getPHValue() {
 
     static unsigned long samplingTime = millis();
     if(millis() - samplingTime > interval) { //read every 1 second.
-        int numOfSamples = 30;
+        //int numOfSamples = 30;
         int reading = analogRead(_pin);
 
         Serial.print(F("PH Raw Reading: "));
         Serial.println(reading);
 
-        TheSensorsMem.PhAvgArr[_pHArrayIndex++] = reading;
-        if(_pHArrayIndex == numOfSamples) {
+        ////Serial.print(F("PH Sensor ON"));
+        //String powerPin = "power pin: " + String(_powerPin);
+        //Serial.println(powerPin);
+
+        _phAvgArr[_pHArrayIndex++] = reading;
+        if(_pHArrayIndex == NUMSAMPLES) {
             _pHArrayIndex = 0;
         }
-        double avgReading = MathExt::CalculateAverage(TheSensorsMem.PhAvgArr, numOfSamples);
+        double avgReading = MathExt::CalculateAverage(_phAvgArr, NUMSAMPLES);
         _voltage = avgReading * 5.0 / 1024;
         //float pHVal = 3.5 * _voltage + Offset; //for DH Robot PH Sensor
         float pHVal = 7 + ((2.5 - _voltage) / 0.18) + Offset;
@@ -156,11 +164,11 @@ double PHSensor::getPHValue() {
         //Serial.print(F("    pH value: "));
         //Serial.println(pHVal, 2);
 
-        TheSensorsMem.PhVal = pHVal;
+        PhVal = pHVal;
         samplingTime = millis();
         //return pHVal;
     }
-    return TheSensorsMem.PhVal;
+    return PhVal;
 
 }
 
@@ -169,6 +177,7 @@ double PHSensor::GetVoltage() {
     return _voltage;
 }
 void PHSensor::PrintPHToSerial() {
+
     double tankPH = GetPH();
     static unsigned long printTime = millis();
     if(millis() - printTime > _printPHEvery) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
@@ -182,7 +191,11 @@ void PHSensor::PrintPHToSerial() {
         printTime = millis();
     }
 }
-void PHSensor::PrintPHToLCD() {
+void PHSensor::PrintPHToLCD(String tds, String tempF) {
+    if(!shouldRead()) {
+        return;
+    }
+
     GetPH();
     static unsigned long printTime = millis();
     if(millis() - printTime > _printPHEvery + 400) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
@@ -190,12 +203,18 @@ void PHSensor::PrintPHToLCD() {
             //Serial.print(F("LCD Print: "));
             //Serial.println(tankPH, 2);
             String enabled = "";
-            if(_enabled) {
+            if(_isReading) {
                 enabled = "<";
             }
 
-            String text = "PH: " + PhString + " " + enabled;
+            String text = "PH:" + PhString + " " + enabled;
             _lcd.PrintLine(0, text);
+
+            //String text = "TDS:" + TdsString + " " + TempInFahrenheit + " " + enabled;
+            //_lcd.PrintLine(0, text);
+
+            String tdsText = "TDS:" + tds + " " + tempF;
+            _lcd.PrintLine(1, tdsText);
         }
         //digitalWrite(13, digitalRead(13) ^ 1);
         printTime = millis();
@@ -203,15 +222,21 @@ void PHSensor::PrintPHToLCD() {
 }
 
 
-
+bool PHSensor::shouldRead() {
+    return (Enabled && _isReading);
+}
 void PHSensor::TurnOn() {
-    _enabled = true;
-    digitalWrite(_relayPin, HIGH);
+    _isReading = true;
+    Serial.println(F("PH Sensor ON"));
+    String powerPin = "power pin: " + String(_powerPin);
+    Serial.println(powerPin);
+    Serial.println(_powerPin);
+    digitalWrite(_powerPin, HIGH);
 }
 
 void PHSensor::TurnOff() {
-    _enabled = false;
-    digitalWrite(_relayPin, LOW);
+    _isReading = false;
+    digitalWrite(_powerPin, LOW);
     delay(1000);
 
 }

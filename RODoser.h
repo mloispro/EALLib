@@ -10,7 +10,7 @@
 
 //#include "SerialExt.h"
 #include "AnalogSwitch.h"
-#include "ROSensorsMem.h"
+#include "SensorsMem.h"
 using namespace Memory;
 using namespace Utils;
 
@@ -31,7 +31,7 @@ class RODoser { // : public ServoMotor {
         bool CheckPin();
         bool ShouldRun(double tdsVal);
         void Run(double tdsVal);
-        void SetRelayHigh();
+        // void SetRelayHigh();
         void Init();
 };
 

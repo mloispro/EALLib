@@ -13,7 +13,8 @@ using namespace std;
 #include "WaterSensorWire.h"
 #include "LCDBase.h"
 #include "PhSensor.h"
-#include "TDSSensor.h"
+//#include "TDSSensor.h"
+#include "AsyncDelay.h"
 
 namespace Sketch {
 
@@ -22,6 +23,8 @@ namespace Sketch {
     extern void Setup();
     extern void Loop();
     extern void AsyncDoWork();
+    void TDSSensorRun_Start();
+    void TDSSensorRun_Stop();
 
     //namespace MegaPins {
     //const int PWM_2 = 2;

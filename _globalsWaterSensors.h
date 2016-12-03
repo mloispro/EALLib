@@ -15,11 +15,12 @@ using namespace std;
 
 #include "LCDBase.h"
 #include "PhSensor.h"
-#include "TDSSensor.h"
+//#include "TDSSensor.h"
+#include "TDSSensorDIY.h"
+#include "RODoser.h"
 
 namespace Globals {
 
-    //extern LCDBase TheLCD;
     extern bool ReadingTDS;
     extern long SensorReadInterval; // every 5 min switch ph and tds sensor
     extern long SensorReadDuration;
@@ -27,9 +28,12 @@ namespace Globals {
 
     extern PHSensor& ThePHSensor;
 
-    extern TDSSensor& TheTDSSensor;
+    //extern TDSSensor& TheTDSSensor;
+    extern TDSSensorDIY& TheTDSSensor;
 
     extern LCDBase& TheLCD;
+
+    extern RODoser& TheRODoser;
 
 
     //namespace MegaPins {

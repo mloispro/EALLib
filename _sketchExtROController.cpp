@@ -11,9 +11,9 @@ namespace Sketch {
 
         wdt_enable(WDTO_8S);
 
-        if(IsHighLevelRelay) {
-            TheRODoser.SetRelayHigh(); //doing this because using a high level relay in aquarium controler
-        }
+        //if(IsHighLevelRelay) {
+        //TheRODoser.SetRelayHigh(); //doing this because using a high level relay in aquarium controler
+        //}
 
         _tdsSensorRun.Start(TDSSensorRun_Start);
         _tdsSensorRun.Stop(TDSSensorRun_Stop);
@@ -23,18 +23,18 @@ namespace Sketch {
 
     void Loop() {
         _tdsSensorRun.Loop();
-        //ThePHSensor.PrintPHToLCD();
+        ThePHSensor.PrintPHToLCD();
         TheTDSSensor.PrintTDSToLCD();
 
         //CmdMessengerExt::Loop();
 
-        if(millis() >= 44400000) { //reset every 6 hours. 21600000
-
-            //Serial.print(F("Reseting Arduino: "));
-            //Serial.println(millis());
-            delay(100);
-            resetFunc(); //call reset
-        }
+        //if(millis() >= 44400000) { //reset every 6 hours. 21600000
+        //
+        ////Serial.print(F("Reseting Arduino: "));
+        ////Serial.println(millis());
+        //delay(100);
+        //resetFunc(); //call reset
+        //}
     }
 
     void AsyncDoWork() {
@@ -48,10 +48,11 @@ namespace Sketch {
 
         if(TheLCD.DetectKeyPress() == LcdKeyPress::Select) {
             Serial.println(F("[Selelct] Pressed"));
-            //SwitchSensors();
+            SwitchSensors();
             lastSensorReadTime = millis();
         }
         SensorReadDuration = millis() - lastSensorReadTime;
+
         ROTankWire::Loop();
         if(SensorReadDuration > SensorReadInterval) {
 
@@ -59,12 +60,9 @@ namespace Sketch {
             lastSensorReadTime = millis();
         }
 
-        //if(ReadingTDS) {
-        //TheTDSSensor.CalculateTDS();
-        //}
-        //else {
-        ////ThePHSensor.CalculatePH();
-        //}
+        if(!ReadingTDS) {
+            ThePHSensor.CalculatePH();
+        }
 
         TheRODoser.Run(TheTDSSensor.TdsVal);
 
@@ -77,17 +75,17 @@ namespace Sketch {
         TheTDSSensor.StopReading();
     }
 
-    //void SwitchSensors() {
-    //ReadingTDS = !ReadingTDS;
-    //if(ReadingTDS) {
-    //ThePHSensor.TurnOff();
-    //TheTDSSensor.TurnOn(); //signal mofset
-    //}
-    //else {
-    //TheTDSSensor.TurnOff();//signal mofset
-    //ThePHSensor.TurnOn();
-    //}
-    //}
+    void SwitchSensors() {
+        ReadingTDS = !ReadingTDS;
+        if(ReadingTDS) {
+            ThePHSensor.TurnOff();
+            TheTDSSensor.TurnOn(); //signal mofset
+        }
+        else {
+            TheTDSSensor.TurnOff();//signal mofset
+            ThePHSensor.TurnOn();
+        }
+    }
 
 }
 

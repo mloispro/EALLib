@@ -16,31 +16,26 @@ const int medPulse = 4140;
 const int highPulse = 6350;//7350;
 const int highHighPulse = 10200;
 
-#define NUMSAMPLES 8 //**If you up this, increase the "AsyncDelay". how many samples to take and average, more takes longer, but is more 'smooth'
-int _samples[NUMSAMPLES];
-int _tdsAvgArr[NUMSAMPLES];
-int _tdsAvgArrIndex = 0;
-
 long _pulseCount = 0;  //a pulse counter variable
 unsigned long _pulseTime, _lastTime, _duration, _totalDuration;
 
 static int _tdsSensorPin;
 
-TDSSensorDIY::TDSSensorDIY(int pin, int tdsPowerPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin):
-    TDSSensorDIY(pin, tdsPowerPin, 0, printTDSEvery, printToLCD, lcd, relayPin) {
+TDSSensorDIY::TDSSensorDIY(int pin, int tdsPowerPin, int printTDSEvery, bool printToLCD, LCDBase lcd, bool enabled):
+    TDSSensorDIY(pin, tdsPowerPin, 0, printTDSEvery, printToLCD, lcd, enabled) {
 }
 
-TDSSensorDIY::TDSSensorDIY(int pin, int tdsPowerPin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, int relayPin):
-    _pin(pin), _tempSensorPin(tempSensorPin), _tdsPowerPin(tdsPowerPin), _printTDSEvery(printTDSEvery), _printToLCD(printToLCD), _lcd(lcd), _relayPin(relayPin) {
+TDSSensorDIY::TDSSensorDIY(int pin, int tdsPowerPin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, bool enabled):
+    _pin(pin), _tempSensorPin(tempSensorPin), _powerPin(tdsPowerPin), _printTDSEvery(printTDSEvery), _printToLCD(printToLCD), _lcd(lcd), Enabled(enabled) {
     init();
 }
 
 void TDSSensorDIY::init() {
+
     //led to show board working
     pinMode(13, OUTPUT);
-    pinMode(_relayPin, OUTPUT);
 
-    pinMode(_tdsPowerPin, OUTPUT);
+    pinMode(_powerPin, OUTPUT);
     _tdsSensorPin = _pin;
 
     //load vars from eeprom
@@ -126,12 +121,15 @@ double TDSSensorDIY::GetTDS() {
 
 }
 void TDSSensorDIY::PrintTDSToLCD() {
+    if(!shouldRead()) {
+        return;
+    }
     GetTDS();
     static unsigned long printTime = millis();
     if(millis() - printTime > _printTDSEvery + 400) { //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
         if(_printToLCD) {
             String enabled = "";
-            //if(_enabled) {
+            //if(_isReading) {
             //enabled = "<";
             //}
             String text = "TDS:" + TdsString + " " + TempInFahrenheit + " " + enabled;
@@ -158,10 +156,6 @@ void TDSSensorDIY::PrintTDSToLCD() {
 
 void TDSSensorDIY::calculateTDS() {
 
-    if(!_enabled) {
-        return;
-    }
-
     float a;
     float b;
     float c = 0;
@@ -180,7 +174,7 @@ void TDSSensorDIY::calculateTDS() {
 
     if (_pulseCount >= noPulse && _pulseCount < lowPulseCount) {
         //low
-        Serial.println("calc case - low");
+        //Serial.println(F("calc case - low"));
         higherPulseVar = lowPulse;
         lowerPulseVar = noPulse;
         higherEcVar = lowEC;
@@ -188,7 +182,7 @@ void TDSSensorDIY::calculateTDS() {
     }
     else if (_pulseCount >= lowPulseCount && _pulseCount < medPulseCount) {
         //med
-        Serial.println("calc case - med");
+        //Serial.println(F("calc case - med"));
         higherPulseVar = medPulse;
         lowerPulseVar = lowPulse;
         higherEcVar = medEC;
@@ -196,7 +190,7 @@ void TDSSensorDIY::calculateTDS() {
     }
     else if (_pulseCount >= medPulseCount && _pulseCount < highHighPulseCount) {
         //high
-        Serial.println("calc case - high");
+        //Serial.println(F("calc case - high"));
         higherPulseVar = highPulse;
         lowerPulseVar = medPulse;
         higherEcVar = highEC;
@@ -204,7 +198,7 @@ void TDSSensorDIY::calculateTDS() {
     }
     else if (_pulseCount >= highHighPulseCount) {
         //highhigh
-        Serial.println("calc case - highhigh");
+        //Serial.println(F("calc case - highhigh"));
         higherPulseVar = highHighPulse;
         lowerPulseVar = highPulse;
         higherEcVar = highHighEC;
@@ -217,14 +211,14 @@ void TDSSensorDIY::calculateTDS() {
         c = (_pulseCount - b) / a;
     }
     else {
-        Serial.println("calc case - none");
+        //Serial.println(F("calc case - none"));
         c = 0;
     }
 
     double tds = (c / (1 + ALPHA_LTC * (Temperature - 25.00))); //  temperature compensation
     tds += Offset;
     //TdsVal = tds;
-    Serial.print("TdsReading: ");
+    Serial.print(F("TdsReading: "));
     Serial.println(tds);
 
     _tdsAvgArr[_tdsAvgArrIndex++] = tds;
@@ -233,7 +227,7 @@ void TDSSensorDIY::calculateTDS() {
     }
     double avgReading = MathExt::CalculateAverage(_tdsAvgArr, NUMSAMPLES);
     TdsVal = avgReading;
-    Serial.print("TdsAvg: ");
+    Serial.print(F("TdsAvg: "));
     Serial.println(TdsVal);
 
 
@@ -257,9 +251,17 @@ double TDSSensorDIY::convTempToFahrenheit(double temp) {
 
 
 void TDSSensorDIY::StartReading() {
-    Serial.println("startReading ");
+
+    if(!shouldRead()) {
+        return;
+    }
+
+    Serial.println(F("startReading "));
+    //String sensorPin = "Sensor Pin: " + String(_tdsSensorPin);
+    //Serial.println(sensorPin);
+
     //turn on the 555 system
-    digitalWrite(_tdsPowerPin, HIGH); //turns on the 555 timer subcircuit
+    digitalWrite(_powerPin, HIGH); //turns on the 555 timer subcircuit
 
     getTemperature();
 
@@ -276,12 +278,16 @@ void TDSSensorDIY::StartReading() {
 }
 
 void TDSSensorDIY::StopReading() {
-    Serial.println("stopReading ");
+    if(!shouldRead()) {
+        return;
+    }
+
+    Serial.println(F("stopReading "));
     detachInterrupt(digitalPinToInterrupt(_pin)); //we've finished sampling, so detach the interrupt function -- don't count any more pulses
     //detachInterrupt(1);
 
     //turn off the 555 system
-    digitalWrite(_tdsPowerPin, LOW);
+    digitalWrite(_powerPin, LOW);
 
     if (_pulseCount > 0) { //use this logic in case something went wrong
 
@@ -322,21 +328,25 @@ void TDSSensorDIY::onPulse() {
     //Serial.println(totalDuration);
 }
 
+bool TDSSensorDIY::shouldRead() {
+    return (Enabled && _isReading);
+}
+
 void TDSSensorDIY::PrintTDSToSerial() {
-    Serial.println(' ');
-    Serial.print("  t ");
+    Serial.println(F(""));
+    Serial.print(F("  t "));
     Serial.print(Temperature, 1);
-    Serial.print("*C ");
-    Serial.print(" , ");
+    Serial.print(F("*C "));
+    Serial.print(F(" , "));
     Serial.print(TempInFahrenheit);
     //Serial.print("*F ");
-    Serial.print("  TDS ");
+    Serial.print(F("  TDS "));
     Serial.print(TdsVal, 2);
-    Serial.print("   PPM ");
+    Serial.print(F("   PPM "));
     Serial.print(TdsVal * 500, 0);
-    Serial.print("   Frequency ");
+    Serial.print(F("   Frequency "));
     Serial.print(_pulseCount);
-    Serial.println(" Hz");
+    Serial.println(F(" Hz"));
 }
 
 double TDSSensorDIY::getTemperature() {
@@ -380,13 +390,13 @@ double TDSSensorDIY::getTemperature() {
 }
 
 void TDSSensorDIY::TurnOn() {
-    _enabled = true;
-    digitalWrite(_relayPin, HIGH);
+    _isReading = true;
+    //digitalWrite(_relayPin, HIGH);
 }
 
 void TDSSensorDIY::TurnOff() {
-    _enabled = false;
-    digitalWrite(_relayPin, LOW);
+    _isReading = false;
+    digitalWrite(_powerPin, LOW);
     delay(1000);
 
 }
