@@ -11,5 +11,7 @@ void AsyncDelay::Stop(delay_callback f) {
     }
     delayStopCallback = f;
 }
-
+void AsyncDelay::UpdateWakeDurration(long wakeDurr) {
+    WakeDurration = wakeDurr;
+}
 

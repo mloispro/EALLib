@@ -27,11 +27,17 @@ void RODoser::Init() {
 
 }
 
-
 void RODoser::Run(double tdsVal) {
+    Run(tdsVal, false);
+}
+void RODoser::Run(double tdsVal, bool force) {
     bool pinSet = CheckPin();
     bool shouldRun = ShouldRun(tdsVal);
     bool signalRelay = pinSet && shouldRun;
+
+    if(force) {
+        signalRelay = true;
+    }
 
     if(signalRelay) {
         //SerialExt::Debug(F("Signaling Relay Pin: "), RelayPin);
@@ -83,6 +89,11 @@ bool RODoser::CheckPin() {
 
 bool RODoser::ShouldRun(double tdsVal) {
 
+
+    if(_isRunning) {
+        return true;
+    }
+
     bool run = false;
 
     //check that last dose time is greater than 30 min.
@@ -90,9 +101,6 @@ bool RODoser::ShouldRun(double tdsVal) {
     long lastDoseTimeInSecs = lastDoseTime / 1000;
     long lastDoseTimeInMin = lastDoseTimeInSecs / 60; //minute(lastDoseTime);
 
-#ifdef DEBUG
-    lastDoseTimeInMin = lastDoseTimeInMin * 15; //to speed up debugging
-#endif
     //if(lastDoseTimeInMin < 0 || lastDoseTimeInSecs >= 45) {
     if(lastDoseTimeInMin < 0 || lastDoseTimeInMin >= 20) { //todo: uncomment this and comment above, should be 20
 

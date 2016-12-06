@@ -32,8 +32,10 @@ class AsyncDelay {
 
         void Start(delay_callback f);
         void Stop(delay_callback f);
+        void UpdateWakeDurration(long wakeDurr);
 
         void Loop() {
+
             // check to see if it's time to change the state
             _currentMillis = millis();
             MilliSecRemaining = _currentMillis - _previousMillis;

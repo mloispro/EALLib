@@ -23,6 +23,7 @@ namespace Memory {
         int32_e LastDoseTime;
         float_e Tds_minVal;
         int16_e DoseDurrationInSecs;
+        int32_e Tds_SampleDurration;
     };
 
     extern SensorsMem& TheSensorsMem;

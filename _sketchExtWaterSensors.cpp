@@ -3,7 +3,6 @@
 
 namespace Sketch {
 
-    AsyncDelay _tdsSensorRun(TDSSensorDIY::SAMPLING_PERIOD, 2500);
 
     void(* resetFunc) (void) = 0;//declare reset function at address 0
 
@@ -11,14 +10,15 @@ namespace Sketch {
 
         wdt_enable(WDTO_8S);
 
-        _tdsSensorRun.Start(TDSSensorRun_Start);
-        _tdsSensorRun.Stop(TDSSensorRun_Stop);
+        TdsSensorRun.Start(TDSSensorRun_Start);
+        TdsSensorRun.Stop(TDSSensorRun_Stop);
+        ThePHSensor.TurnOff();
         TheTDSSensor.TurnOn();
         WaterSensorWire::Setup();
     }
 
     void Loop() {
-        _tdsSensorRun.Loop();
+        TdsSensorRun.Loop();
         TheTDSSensor.PrintTDSToLCD();
 
         String tdsVal = TheTDSSensor.TdsString;
@@ -35,11 +35,15 @@ namespace Sketch {
         //delay(100);
         //resetFunc(); //call reset
         //}
+        delay(60); //give a little time to complete processing..
     }
 
     void AsyncDoWork() {
 
         wdt_reset();
+
+        //Serial.print("WakeDurr: ");
+        //Serial.println(TdsSensorRun.WakeDurration);
 
         //Serial.print(F("millis: "));
         //Serial.println(millis());

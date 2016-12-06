@@ -27,6 +27,7 @@ static String _tdsVolts = "";
 static String _timeSinceLastDose = "";
 static String _tdsMin = "";
 static String _doseDurr = "";
+static String _tdsSampleDurr = "";
 
 void WaterSensorWire::Setup() {
     Serial.print(F("_slave: "));
@@ -71,8 +72,11 @@ void WaterSensorWire::Loop() {
     long inter = SensorReadInterval / 1000;
     _sensorReadInter = String(inter) + "s";
 
-    Serial.print(F("Last Response: "));
-    Serial.println(_lastResponse);
+    _tdsSampleDurr = TheTDSSensor.TdsSampleDuration;
+
+    //Serial.print(F("Last Response: "));
+    //Serial.println(_lastResponse);
+    delay(20);
 
 }
 //sets vals
@@ -98,6 +102,16 @@ void WaterSensorWire::handleCmd(String var, String val) {
         int doseDurr = val.toInt();
         TheTDSSensor.UpdateRunDurration(doseDurr);
     }
+    else if(var == "tdsSampleDurr") {
+        long tdsSampleDurr = val.toInt();
+        TheTDSSensor.UpdateSampleDurration(tdsSampleDurr);
+        TdsSensorRun.UpdateWakeDurration(tdsSampleDurr);
+    }
+    else if(var == "doseNow") {
+        bool doseNow = val.toInt();
+        TheRODoser.Run(TheTDSSensor.TdsVal, doseNow);
+    }
+
 
 }
 //sets vals
@@ -197,6 +211,9 @@ void WaterSensorWire::Request() {
     }
     else if(_responseIndex == 10) {
         partialResponse = _doseDurr;
+    }
+    else if(_responseIndex == 11) {
+        partialResponse = _tdsSampleDurr;
         _responseIndex = -1; //need to keep this in last if always
     }
     else {

@@ -1,8 +1,8 @@
 
 #include "PHSensor.h"
 
-#define NUMSAMPLES 10
-int _phAvgArr[NUMSAMPLES];
+#define PH_NUMSAMPLES 36
+int _phAvgArr[PH_NUMSAMPLES];
 
 //PHSensor::PHSensor(int pin, int printPHEvery, LCDBase lcd) :
 //PHSensor(pin, printPHEvery, false, lcd) {}
@@ -20,7 +20,10 @@ void PHSensor::init() {
 
     //led to show board working
     pinMode(13, OUTPUT);
+
+    //digitalWrite(_powerPin, HIGH); //** turns pnp off, needed before pinmode.
     pinMode(_powerPin, OUTPUT);
+    //digitalWrite(_powerPin, HIGH);
 
     //load vars from eeprom
     double offset = TheSensorsMem.Ph_Offset;
@@ -126,9 +129,11 @@ void PHSensor::CalculatePH() {
 
 }
 
+int _runningAvg = 0;
+float _runningPHAvg = 0;
 double PHSensor::getPHValue() {
 
-    int interval = 5000;
+    int interval = 4000;
 
 #if DEBUG
     interval = 2;
@@ -146,14 +151,27 @@ double PHSensor::getPHValue() {
         //String powerPin = "power pin: " + String(_powerPin);
         //Serial.println(powerPin);
 
-        _phAvgArr[_pHArrayIndex++] = reading;
-        if(_pHArrayIndex == NUMSAMPLES) {
+        if(_runningAvg == 0) {
+            _runningAvg = reading;
+        }
+
+        _runningAvg = (_runningAvg + reading) / 2;
+
+        _phAvgArr[_pHArrayIndex++] = _runningAvg;
+        if(_pHArrayIndex == PH_NUMSAMPLES) {
             _pHArrayIndex = 0;
         }
-        double avgReading = MathExt::CalculateAverage(_phAvgArr, NUMSAMPLES);
+        double avgReading = MathExt::CalculateAverage(_phAvgArr, PH_NUMSAMPLES);
         _voltage = avgReading * 5.0 / 1024;
         //float pHVal = 3.5 * _voltage + Offset; //for DH Robot PH Sensor
         float pHVal = 7 + ((2.5 - _voltage) / 0.18) + Offset;
+
+        if(_runningPHAvg == 0) {
+            _runningPHAvg = pHVal;
+        }
+
+        _runningPHAvg = (_runningPHAvg + pHVal) / 2;
+        pHVal = _runningPHAvg;
 
         if(pHVal < 0) {
             pHVal = 0;
@@ -231,11 +249,13 @@ void PHSensor::TurnOn() {
     String powerPin = "power pin: " + String(_powerPin);
     Serial.println(powerPin);
     Serial.println(_powerPin);
+    //digitalWrite(_powerPin, LOW); //pnp
     digitalWrite(_powerPin, HIGH);
 }
 
 void PHSensor::TurnOff() {
     _isReading = false;
+    //digitalWrite(_powerPin, HIGH); //pnp
     digitalWrite(_powerPin, LOW);
     delay(1000);
 

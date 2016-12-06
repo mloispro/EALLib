@@ -18,6 +18,7 @@ using namespace std;
 //#include "TDSSensor.h"
 #include "TDSSensorDIY.h"
 #include "RODoser.h"
+#include "AsyncDelay.h"
 
 namespace Globals {
 
@@ -30,6 +31,7 @@ namespace Globals {
 
     //extern TDSSensor& TheTDSSensor;
     extern TDSSensorDIY& TheTDSSensor;
+    extern AsyncDelay& TdsSensorRun;
 
     extern LCDBase& TheLCD;
 

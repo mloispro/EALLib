@@ -51,7 +51,7 @@ class TDSSensorDIY {
 
         //constants
         const int TEMP_MANUAL = 25; // temp. for nominal resistance (almost always 25 C)
-        const static long SAMPLING_PERIOD = 2200; //*DONT EVER CHANGE *affects reading* default is 2000, the number of seconds to measure 555 oscillations
+        //const static long SAMPLING_PERIOD = 2200; //*DONT EVER CHANGE *affects reading* default is 2000, the number of seconds to measure 555 oscillations
         const long THERMISTOR_NOMINAL = 10000; //*DONT EVER CHANGE resistance at 25 degrees C
         const long SERIES_RESISTOR = 10000;  //*DONT EVER CHANGE the value of the 'other' resistor
         const long BETA_COEFFICIENT = 3950; // The beta coefficient of the thermistor (usually 3000-4000)
@@ -65,11 +65,14 @@ class TDSSensorDIY {
         String TimeSinceLastDoseLcd;
         String TdsMin;
         String DoseDuration;
+        String TdsSampleDuration;
 
         double TdsVal = 0;
         float Temperature = 10;
         double Offset = 1.0;
         double Volts = 5.0;
+        long SampleDuration = 2200; //*DONT EVER CHANGE *affects reading* default is 2000, the number of seconds to measure 555 oscillations
+
         long LastDoseTime;
         double GetTDS();
         void PrintTDSToLCD();
@@ -82,6 +85,7 @@ class TDSSensorDIY {
         void UpdateVolts(double volts);
         void UpdateTdsMin(int tdsMin);
         void UpdateRunDurration(int runDurr);
+        void UpdateSampleDurration(long sampleDurr);
         TDSSensorDIY(int pin, int tdsPowerPin, int printTDSEvery, bool printToLCD, LCDBase lcd, bool enabled);
         TDSSensorDIY(int pin, int tdsPowerPin, int tempSensorPin, int printTDSEvery, bool printToLCD, LCDBase lcd, bool enabled);
 

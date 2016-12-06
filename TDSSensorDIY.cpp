@@ -78,6 +78,17 @@ void TDSSensorDIY::init() {
         TheSensorsMem.DoseDurrationInSecs = 2;//2 secs
     }
 
+    long sampleDurr = TheSensorsMem.Tds_SampleDurration;
+    if(isnan(sampleDurr) ||
+            isinf(sampleDurr) != 0 ||
+            sampleDurr < 0 ||
+            sampleDurr > 4000) {
+        TheSensorsMem.Tds_SampleDurration = SampleDuration;
+    }
+    else {
+        SampleDuration = sampleDurr;
+    }
+
 }
 void TDSSensorDIY::Update(double offset) {
     Offset = offset;
@@ -94,6 +105,9 @@ void TDSSensorDIY::UpdateTdsMin(int tdsMin) {
 void TDSSensorDIY::UpdateRunDurration(int runDurr) {
     //TdsMin = tdsMin;
     TheSensorsMem.DoseDurrationInSecs = runDurr;
+}
+void TDSSensorDIY::UpdateSampleDurration(long sampleDurr) {
+    TheSensorsMem.Tds_SampleDurration = sampleDurr;
 }
 
 double TDSSensorDIY::GetTDS() {
@@ -116,6 +130,9 @@ double TDSSensorDIY::GetTDS() {
     int doseDurr = TheSensorsMem.DoseDurrationInSecs;
     DoseDuration = String(doseDurr).c_str();
     DoseDuration += "s";
+
+    long sampleDurr = TheSensorsMem.Tds_SampleDurration;
+    TdsSampleDuration = String(sampleDurr).c_str();
 
     return TdsVal;
 

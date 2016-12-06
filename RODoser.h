@@ -31,6 +31,7 @@ class RODoser { // : public ServoMotor {
         bool CheckPin();
         bool ShouldRun(double tdsVal);
         void Run(double tdsVal);
+        void Run(double tdsVal, bool force);
         // void SetRelayHigh();
         void Init();
 };
