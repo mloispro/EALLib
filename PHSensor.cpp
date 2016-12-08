@@ -25,6 +25,8 @@ void PHSensor::init() {
     pinMode(_powerPin, OUTPUT);
     //digitalWrite(_powerPin, HIGH);
 
+    PhString = "0"; //so json isnt blank
+
     //load vars from eeprom
     double offset = TheSensorsMem.Ph_Offset;
     if(!isnan(offset)) {

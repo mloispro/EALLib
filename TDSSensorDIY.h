@@ -17,10 +17,9 @@ using namespace Memory;
 #include "MathExt.h"
 #include "LCDBase.h"
 
+#define TDS_NUMSAMPLES 20 //**If you up this, increase the "AsyncDelay". how many samples to take and average, more takes longer, but is more 'smooth'
 
 class TDSSensorDIY {
-
-#define NUMSAMPLES 8 //**If you up this, increase the "AsyncDelay". how many samples to take and average, more takes longer, but is more 'smooth'
 
     private:
         int _pin;
@@ -32,9 +31,9 @@ class TDSSensorDIY {
 
         bool _isReading;
 
-        int _tdsAvgArr[NUMSAMPLES];
+        int _tdsAvgArr[TDS_NUMSAMPLES];
         int _tdsAvgArrIndex = 0;
-        int _samples[NUMSAMPLES];
+        int _samples[TDS_NUMSAMPLES];
         //int _numOfSamples = 0;
 
         LCDBase _lcd;

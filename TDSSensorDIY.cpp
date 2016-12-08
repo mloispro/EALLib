@@ -2,6 +2,7 @@
 #include "TDSSensorDIY.h"
 //https://hackaday.io/project/7008-fly-wars-a-hackers-solution-to-world-hunger/log/24646-three-dollar-ec-ppm-meter-arduino
 
+
 //*dont change*
 const float noEC = 0.00;   //  The conductivity probe is dry
 const float lowEC = 6.00;//2.00   //  Value of calibration buffers
@@ -38,11 +39,7 @@ void TDSSensorDIY::init() {
     pinMode(_powerPin, OUTPUT);
     _tdsSensorPin = _pin;
 
-    //load vars from eeprom
-    //TdsOffset.load();
-    //if(isnan(TdsOffset)) {
-    //TdsOffset = 1210;
-    //}
+    TdsString = "0"; //so json isnt blank
 
     double offset = TheSensorsMem.Tds_Offset;
     if(!isnan(offset)) {
@@ -170,7 +167,7 @@ void TDSSensorDIY::PrintTDSToLCD() {
 //getTDSValue();
 //
 //}
-
+double _prevTds = 0;
 void TDSSensorDIY::calculateTDS() {
 
     float a;
@@ -238,11 +235,18 @@ void TDSSensorDIY::calculateTDS() {
     Serial.print(F("TdsReading: "));
     Serial.println(tds);
 
+    if(_prevTds == 0) {
+        _prevTds = tds;
+    }
+
+    _prevTds = (_prevTds + tds) / 2;
+    tds = _prevTds;
+
     _tdsAvgArr[_tdsAvgArrIndex++] = tds;
-    if(_tdsAvgArrIndex == NUMSAMPLES) {
+    if(_tdsAvgArrIndex == TDS_NUMSAMPLES) {
         _tdsAvgArrIndex = 0;
     }
-    double avgReading = MathExt::CalculateAverage(_tdsAvgArr, NUMSAMPLES);
+    double avgReading = MathExt::CalculateAverage(_tdsAvgArr, TDS_NUMSAMPLES);
     TdsVal = avgReading;
     Serial.print(F("TdsAvg: "));
     Serial.println(TdsVal);
@@ -372,7 +376,7 @@ double TDSSensorDIY::getTemperature() {
     float average;
 
     // take N samples in a row, with a slight delay
-    for (int i = 0; i < NUMSAMPLES; i++) {
+    for (int i = 0; i < TDS_NUMSAMPLES; i++) {
         int tempReading = analogRead(_tempSensorPin);
         //     Serial.print("tempReading: ");
         //      Serial.println(tempReading);
@@ -382,10 +386,10 @@ double TDSSensorDIY::getTemperature() {
 
     // average all the samples out
     average = 0;
-    for (int i = 0; i < NUMSAMPLES; i++) {
+    for (int i = 0; i < TDS_NUMSAMPLES; i++) {
         average += _samples[i];
     }
-    average /= NUMSAMPLES;
+    average /= TDS_NUMSAMPLES;
 
     // convert the value to resistance
     average = 1023 / average - 1;
